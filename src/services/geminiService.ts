@@ -3,10 +3,10 @@ import { IELTS_TASK_1_BAND_DESCRIPTORS, IELTS_TASK_2_BAND_DESCRIPTORS } from '..
 import type { Feedback, Guidance, TaskType } from '../types';
 
 if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
+    throw new Error("API_KEY environment variable not set. Please create a .env.local file and add your API_KEY.");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: 'AIzaSyAFZD1KgvX-jO9wIwNTNIGUaDfSQLpS0DQ' });
 
 const brainstormingModel = 'gemini-2.5-flash';
 const feedbackModel = 'gemini-2.5-pro';
@@ -19,12 +19,11 @@ export const generateGuidance = async (taskType: TaskType, prompt: string, image
         : "You are an expert IELTS writing instructor. Your task is to help a student brainstorm for an IELTS Writing Task 2 essay.";
     
     const promptText = isTask1
-        ? `Analyze the following IELTS Writing Task 1 prompt and the provided image. Identify and list 3-4 key features, main trends, or significant points the student should focus on in their summary. Present them as a simple list.`
+        ? `Analyze the following IELTS Writing Task 1 prompt ${imageBase64 ? 'and the provided image' : 'and its description of a chart/diagram'}. Identify and list 3-4 key features, main trends, or significant points the student should focus on in their summary. Present them as a simple list.`
         : `Generate two simple, open-ended brainstorming questions in **Vietnamese** for the following IELTS essay prompt. The questions should guide the student in structuring their essay.`;
 
     const fullContent = `${promptText}\n\nEssay Prompt: "${prompt}"`;
     
-    // FIX: Construct `parts` array dynamically to allow TypeScript to infer a union type for text and image parts.
     const parts = [];
     if (isTask1 && imageBase64) {
         parts.push({
@@ -39,9 +38,7 @@ export const generateGuidance = async (taskType: TaskType, prompt: string, image
 
     const response = await ai.models.generateContent({
       model: brainstormingModel,
-      contents,
       config: {
-        // FIX: Moved `systemInstruction` into the `config` object as per Gemini API guidelines.
         systemInstruction,
         responseMimeType: "application/json",
         responseSchema: {
@@ -56,6 +53,7 @@ export const generateGuidance = async (taskType: TaskType, prompt: string, image
             required: ['points']
         },
       },
+      contents,
     });
 
     const jsonText = response.text;
@@ -84,7 +82,6 @@ export const generateBrainstormingIdeas = async (prompt: string, questions: stri
             ${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
             `,
             config: {
-                // FIX: Moved `systemInstruction` into the `config` object as per Gemini API guidelines.
                 systemInstruction: "You are an expert IELTS writing instructor. Your task is to provide brainstorming ideas for a student's Writing Task 2 essay.",
                 responseMimeType: "application/json",
                 responseSchema: {
@@ -180,7 +177,6 @@ export const getIeltsFeedback = async (taskType: TaskType, prompt: string, essay
             model: feedbackModel,
             contents,
             config: {
-                // FIX: Moved `systemInstruction` into the `config` object as per Gemini API guidelines.
                 systemInstruction,
                 responseMimeType: "application/json",
                 responseSchema: {
