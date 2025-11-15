@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Feedback, TaskType, TaskContext } from './types';
 import { IELTS_TASK_1_PROMPTS, IELTS_TASK_2_PROMPTS } from './constants';
@@ -37,17 +38,20 @@ const App: React.FC = () => {
 
   const handleNewPrompt = useCallback(async (taskToLoad: TaskType) => {
     const setter = taskToLoad === 'Task 1' ? setTask1Context : setTask2Context;
-    
-    setter(getInitialTaskContext(true, true));
+    const prompts = taskToLoad === 'Task 1' ? IELTS_TASK_1_PROMPTS : IELTS_TASK_2_PROMPTS;
+    const newPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+    // Reset state, but immediately set the new prompt and start loading for guidance
+    setter({
+      ...getInitialTaskContext(true, true), // sets isLoadingPrompt = true
+      prompt: newPrompt, // Set the prompt immediately
+    });
     setError(null);
     
     try {
-      const prompts = taskToLoad === 'Task 1' ? IELTS_TASK_1_PROMPTS : IELTS_TASK_2_PROMPTS;
-      const newPrompt = prompts[Math.floor(Math.random() * prompts.length)];
       const points = await generateGuidance(taskToLoad, newPrompt);
       setter(prev => ({
         ...prev,
-        prompt: newPrompt,
         guidancePoints: points,
         isLoadingPrompt: false,
       }));

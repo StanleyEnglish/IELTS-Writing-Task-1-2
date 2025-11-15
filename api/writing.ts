@@ -1,44 +1,30 @@
+// api/writing.ts - Serverless Function
 import { GoogleGenAI, Type } from "@google/genai";
 import { IELTS_TASK_1_BAND_DESCRIPTORS, IELTS_TASK_2_BAND_DESCRIPTORS } from '../constants';
 import type { Feedback, Guidance, TaskType } from '../types';
 
-// Define basic types for Vercel's request and response objects
-interface VercelRequest {
-    method?: string;
-    body: {
-        type: 'guidance' | 'brainstorming' | 'feedback';
-        payload: any;
-    };
-}
-
-interface VercelResponse {
-    status: (code: number) => {
-        json: (data: any) => void;
-    };
-}
-
-// This is the main serverless function that will be executed by Vercel
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+// This is a generic handler function for serverless environments like Vercel.
+// It assumes `req` and `res` objects similar to Express.
+export default async function handler(req: any, res: any) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
     if (!process.env.API_KEY) {
-        console.error("API_KEY environment variable not set on the server.");
-        return res.status(500).json({ error: "Server configuration error: API key is missing." });
+        console.error("API_KEY environment variable not set");
+        return res.status(500).json({ error: 'Server configuration error: API key not found.' });
     }
 
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const brainstormingModel = 'gemini-2.5-flash';
+    const feedbackModel = 'gemini-2.5-pro';
+
     try {
-        const ai = new GoogleGenAI({ 'AIzaSyAFZD1KgvX-jO9wIwNTNIGUaDfSQLpS0DQ' });
-        const brainstormingModel = 'gemini-2.5-flash';
-        const feedbackModel = 'gemini-2.5-pro';
+        const { action, payload } = req.body;
 
-        const { type, payload } = req.body;
-
-        switch (type) {
-            case 'guidance': {
-                const { taskType, prompt, imageBase64 } = payload as { taskType: TaskType; prompt: string; imageBase64?: string | null };
-                
+        switch (action) {
+            case 'generateGuidance': {
+                const { taskType, prompt, imageBase64 } = payload as { taskType: TaskType, prompt: string, imageBase64?: string | null };
                 const isTask1 = taskType === 'Task 1';
                 const systemInstruction = isTask1 
                     ? "You are an expert IELTS writing instructor. Your task is to help a student identify the key features for an IELTS Writing Task 1 essay."
@@ -50,19 +36,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
                 const fullContent = `${promptText}\n\nEssay Prompt: "${prompt}"`;
                 
-                const parts: any[] = [{ text: fullContent }];
+                let contents;
                 if (isTask1 && imageBase64) {
-                    parts.unshift({
-                        inlineData: {
-                            mimeType: 'image/jpeg',
-                            data: imageBase64,
-                        },
-                    });
+                    contents = {
+                        parts: [
+                            {
+                                inlineData: {
+                                    mimeType: 'image/jpeg',
+                                    data: imageBase64,
+                                },
+                            },
+                            { text: fullContent },
+                        ],
+                    };
+                } else {
+                    contents = fullContent;
                 }
-                
+
                 const response = await ai.models.generateContent({
                   model: brainstormingModel,
-                  contents: { parts },
+                  contents,
                   config: {
                     systemInstruction,
                     responseMimeType: "application/json",
@@ -80,12 +73,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   },
                 });
 
-                return res.status(200).json(JSON.parse(response.text));
+                const jsonText = response.text;
+                const parsed: Guidance = JSON.parse(jsonText);
+                return res.status(200).json(parsed);
             }
 
-            case 'brainstorming': {
-                const { prompt, questions } = payload as { prompt: string; questions: string[] };
-
+            case 'generateBrainstormingIdeas': {
+                const { prompt, questions } = payload as { prompt: string, questions: string[] };
                 const response = await ai.models.generateContent({
                     model: brainstormingModel,
                     contents: `Based on the essay prompt and the provided brainstorming questions, generate 2-3 short, bullet-pointed ideas for EACH question. The ideas should be simple, distinct, and directly answer the questions. Present them as a single list.
@@ -111,13 +105,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         },
                     },
                 });
-                
-                return res.status(200).json(JSON.parse(response.text));
+                const jsonText = response.text;
+                const parsed: { ideas: string[] } = JSON.parse(jsonText);
+                return res.status(200).json(parsed);
             }
 
-            case 'feedback': {
-                const { taskType, prompt, essay, imageBase64 } = payload as { taskType: TaskType; prompt: string; essay: string; imageBase64?: string | null };
-
+            case 'getIeltsFeedback': {
+                const { taskType, prompt, essay, imageBase64 } = payload as { taskType: TaskType, prompt: string, essay: string, imageBase64?: string | null };
                 const isTask1 = taskType === 'Task 1';
                 const bandDescriptors = isTask1 ? IELTS_TASK_1_BAND_DESCRIPTORS : IELTS_TASK_2_BAND_DESCRIPTORS;
                 const taskCompletionCriterion = isTask1 ? "Task Achievement" : "Task Response";
@@ -155,18 +149,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ---
                 `;
                 
-                const parts: any[] = [{ text: essayContent }];
+                let contents;
                 if (isTask1 && imageBase64) {
-                    parts.unshift({
-                        inlineData: { mimeType: 'image/jpeg', data: imageBase64 }
-                    });
+                    contents = {
+                        parts: [
+                            { inlineData: { mimeType: 'image/jpeg', data: imageBase64 } },
+                            { text: essayContent }
+                        ]
+                    };
+                } else {
+                    contents = essayContent;
                 }
                 
                 const baseFeedbackProperties = {
                     strengths: { type: Type.STRING, description: "Positive feedback on the criterion." },
                     weaknesses: { type: Type.STRING, description: "Actionable areas for improvement on the criterion." }
                 };
-        
+
                 const mistakeSchema = {
                     type: Type.OBJECT,
                     properties: {
@@ -179,7 +178,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
                 const response = await ai.models.generateContent({
                     model: feedbackModel,
-                    contents: { parts },
+                    contents,
                     config: {
                         systemInstruction,
                         responseMimeType: "application/json",
@@ -244,17 +243,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         },
                     },
                 });
-
-                return res.status(200).json(JSON.parse(response.text));
+                const jsonText = response.text;
+                const parsed: Feedback = JSON.parse(jsonText);
+                return res.status(200).json(parsed);
             }
 
             default:
-                // This is a type guard, `type` will be `never` here if all cases are handled.
-                const exhaustiveCheck: never = type;
-                return res.status(400).json({ error: `Invalid API route type: ${exhaustiveCheck}` });
+                return res.status(400).json({ error: 'Invalid action specified' });
         }
     } catch (error) {
-        console.error('Error in API handler (api/writing.ts):', error);
-        res.status(500).json({ error: 'An internal error occurred while contacting the AI service.' });
+        console.error(`Error in API action handler:`, error);
+        const message = error instanceof Error ? error.message : "An unknown error occurred on the server.";
+        return res.status(500).json({ error: message });
     }
 }
