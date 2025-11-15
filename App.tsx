@@ -28,6 +28,10 @@ const App: React.FC = () => {
   const [task2Context, setTask2Context] = useState<TaskContext>(getInitialTaskContext(true, false));
   const [error, setError] = useState<string | null>(null);
 
+  // Global timer state
+  const [timeRemaining, setTimeRemaining] = useState(3600); // 60 minutes
+  const [isTimerActive, setIsTimerActive] = useState(false);
+
   const activeContext = taskType === 'Task 1' ? task1Context : task2Context;
   const setActiveContext = taskType === 'Task 1' ? setTask1Context : setTask2Context;
 
@@ -64,6 +68,24 @@ const App: React.FC = () => {
       handleNewPrompt(taskType);
     }
   }, [taskType, task1Context, task2Context, handleNewPrompt]);
+  
+  // Effect for the global timer
+  useEffect(() => {
+    if (!isTimerActive) return;
+
+    const intervalId = setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev <= 1) {
+          setIsTimerActive(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [isTimerActive]);
+
 
   const handleSetCustomPromptMode = () => {
     setActiveContext(getInitialTaskContext(false, true));
@@ -123,6 +145,16 @@ const App: React.FC = () => {
       setActiveContext(prev => ({ ...prev, isLoadingFeedback: false }));
     }
   };
+
+  const handleToggleTimer = () => {
+    if (timeRemaining <= 0) return;
+    setIsTimerActive(prev => !prev);
+  };
+
+  const handleResetTimer = () => {
+      setTimeRemaining(3600);
+      setIsTimerActive(false);
+  };
   
   const isLoading = activeContext.isLoadingPrompt || activeContext.isLoadingFeedback;
 
@@ -132,6 +164,10 @@ const App: React.FC = () => {
         taskType={taskType} 
         setTaskType={handleTaskTypeChange}
         isLoading={isLoading}
+        timeRemaining={timeRemaining}
+        isTimerActive={isTimerActive}
+        onToggleTimer={handleToggleTimer}
+        onResetTimer={handleResetTimer}
       />
       <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-8 xl:gap-12">
@@ -143,6 +179,7 @@ const App: React.FC = () => {
               guidancePoints={activeContext.guidancePoints}
               ideas={activeContext.brainstormingIdeas}
               onNewPrompt={() => handleNewPrompt(taskType)}
+              // FIX: Corrected typo from `active` to `activeContext`.
               isLoadingPrompt={activeContext.isLoadingPrompt}
               isLoadingIdeas={activeContext.isLoadingIdeas}
               onGenerateIdeas={handleGenerateIdeas}

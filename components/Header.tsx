@@ -1,10 +1,15 @@
 import React from 'react';
 import type { TaskType } from '../types';
+import Timer from './Timer';
 
 interface HeaderProps {
     taskType: TaskType;
     setTaskType: (task: TaskType) => void;
     isLoading: boolean;
+    timeRemaining: number;
+    isTimerActive: boolean;
+    onToggleTimer: () => void;
+    onResetTimer: () => void;
 }
 
 const TaskToggleButton: React.FC<{
@@ -29,7 +34,7 @@ const TaskToggleButton: React.FC<{
     )
 }
 
-const Header: React.FC<HeaderProps> = ({ taskType, setTaskType, isLoading }) => {
+const Header: React.FC<HeaderProps> = ({ taskType, setTaskType, isLoading, timeRemaining, isTimerActive, onToggleTimer, onResetTimer }) => {
   return (
     <header className="bg-white shadow-md sticky top-0 z-10">
       <div className="container mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
@@ -37,19 +42,28 @@ const Header: React.FC<HeaderProps> = ({ taskType, setTaskType, isLoading }) => 
             IELTS Writing
         </h1>
         
-        <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-lg">
-           <TaskToggleButton 
-                label="Task 1"
-                isActive={taskType === 'Task 1'}
-                onClick={() => setTaskType('Task 1')}
+        <div className="flex items-center gap-4">
+            <Timer
+                timeRemaining={timeRemaining}
+                isTimerActive={isTimerActive}
+                onToggleTimer={onToggleTimer}
+                onResetTimer={onResetTimer}
                 disabled={isLoading}
-           />
-           <TaskToggleButton 
-                label="Task 2"
-                isActive={taskType === 'Task 2'}
-                onClick={() => setTaskType('Task 2')}
-                disabled={isLoading}
-           />
+            />
+            <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-lg">
+               <TaskToggleButton 
+                    label="Task 1"
+                    isActive={taskType === 'Task 1'}
+                    onClick={() => setTaskType('Task 1')}
+                    disabled={isLoading}
+               />
+               <TaskToggleButton 
+                    label="Task 2"
+                    isActive={taskType === 'Task 2'}
+                    onClick={() => setTaskType('Task 2')}
+                    disabled={isLoading}
+               />
+            </div>
         </div>
       </div>
     </header>

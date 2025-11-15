@@ -77,3 +77,21 @@ export const WrenchScrewdriverIcon: React.FC<{ className?: string }> = (props) =
         <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.471-2.471a1.125 1.125 0 011.591 0L16.5 13.5m-5.08 1.67l-2.47-2.47a1.125 1.125 0 00-1.591 0L3.5 13.5m5.08 1.67L15.17 11.42m0 0l2.47-2.471a1.125 1.125 0 011.591 0L21 10.5m-5.877 5.877l-2.47-2.47a1.125 1.125 0 00-1.591 0L10.5 15.17m-2.228-2.228l-2.47-2.47a1.125 1.125 0 010-1.591l2.47-2.471m5.878 5.878l2.47-2.47a1.125 1.125 0 000-1.591l-2.47-2.47m-5.877 5.877L6.75 7.5m6.121 6.121L15.17 11.42" />
     </svg>
 );
+
+export const PlayIcon: React.FC<{ className?: string }> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
+    </svg>
+);
+
+export const PauseIcon: React.FC<{ className?: string }> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-6-13.5v13.5" />
+    </svg>
+);
+
+export const ArrowPathIcon: React.FC<{ className?: string }> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.181-3.183m-3.181-4.991v4.99" />
+    </svg>
+);
