@@ -6,7 +6,7 @@ if (!process.env.API_KEY) {
     throw new Error("API_KEY environment variable not set");
 }
 
-const ai = new GoogleGenAI({ apiKey: 'AIzaSyAFZD1KgvX-jO9wIwNTNIGUaDfSQLpS0DQ' });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const brainstormingModel = 'gemini-2.5-flash';
 const feedbackModel = 'gemini-2.5-pro';
@@ -39,10 +39,9 @@ export const generateGuidance = async (taskType: TaskType, prompt: string, image
 
     const response = await ai.models.generateContent({
       model: brainstormingModel,
+      systemInstruction,
       contents,
       config: {
-        // FIX: Moved `systemInstruction` into the `config` object as per Gemini API guidelines.
-        systemInstruction,
         responseMimeType: "application/json",
         responseSchema: {
             type: Type.OBJECT,
@@ -76,6 +75,7 @@ export const generateBrainstormingIdeas = async (prompt: string, questions: stri
     try {
         const response = await ai.models.generateContent({
             model: brainstormingModel,
+            systemInstruction: "You are an expert IELTS writing instructor. Your task is to provide brainstorming ideas for a student's Writing Task 2 essay.",
             contents: `Based on the essay prompt and the provided brainstorming questions, generate 2-3 short, bullet-pointed ideas for EACH question. The ideas should be simple, distinct, and directly answer the questions. Present them as a single list.
 
             Essay Prompt: "${prompt}"
@@ -84,8 +84,6 @@ export const generateBrainstormingIdeas = async (prompt: string, questions: stri
             ${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
             `,
             config: {
-                // FIX: Moved `systemInstruction` into the `config` object as per Gemini API guidelines.
-                systemInstruction: "You are an expert IELTS writing instructor. Your task is to provide brainstorming ideas for a student's Writing Task 2 essay.",
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: Type.OBJECT,
@@ -178,10 +176,9 @@ export const getIeltsFeedback = async (taskType: TaskType, prompt: string, essay
 
         const response = await ai.models.generateContent({
             model: feedbackModel,
+            systemInstruction,
             contents,
             config: {
-                // FIX: Moved `systemInstruction` into the `config` object as per Gemini API guidelines.
-                systemInstruction,
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: Type.OBJECT,
