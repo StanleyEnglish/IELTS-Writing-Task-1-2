@@ -6,7 +6,7 @@ if (!process.env.API_KEY) {
     throw new Error("API_KEY environment variable not set");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: 'AIzaSyAFZD1KgvX-jO9wIwNTNIGUaDfSQLpS0DQ' });
 
 const brainstormingModel = 'gemini-2.5-flash';
 const feedbackModel = 'gemini-2.5-pro';
