@@ -1,37 +1,39 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
-import { IELTS_TASK_1_BAND_DESCRIPTORS, IELTS_TASK_2_BAND_DESCRIPTORS } from '../constants';
+import {
+  IELTS_TASK_1_BAND_DESCRIPTORS,
+  IELTS_TASK_2_BAND_DESCRIPTORS,
+} from "../constants";
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error("GEMINI_API_KEY environment variable not set");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-const brainstormingModel = 'gemini-2.5-flash';
-const feedbackModel = 'gemini-2.5-pro';
+const brainstormingModel = "gemini-2.5-flash";
+const feedbackModel = "gemini-2.5-pro";
 
 export const generateGuidance = async (taskType, prompt, imageBase64) => {
   try {
-    const isTask1 = taskType === 'Task 1';
-    const systemInstruction = isTask1 
-        ? "You are an expert IELTS writing instructor. Your task is to help a student identify the key features for an IELTS Writing Task 1 essay."
-        : "You are an expert IELTS writing instructor. Your task is to help a student brainstorm for an IELTS Writing Task 2 essay.";
-    
+    const isTask1 = taskType === "Task 1";
+    const systemInstruction = isTask1
+      ? "You are an expert IELTS writing instructor. Your task is to help a student identify the key features for an IELTS Writing Task 1 essay."
+      : "You are an expert IELTS writing instructor. Your task is to help a student brainstorm for an IELTS Writing Task 2 essay.";
+
     const promptText = isTask1
-        ? `Analyze the following IELTS Writing Task 1 prompt and the provided image. Identify and list 3-4 key features, main trends, or significant points the student should focus on in their summary. Present them as a simple list.`
-        : `Generate two simple, open-ended brainstorming questions in **Vietnamese** for the following IELTS essay prompt. The questions should guide the student in structuring their essay.`;
+      ? `Analyze the following IELTS Writing Task 1 prompt and the provided image. Identify and list 3-4 key features, main trends, or significant points the student should focus on in their summary. Present them as a simple list.`
+      : `Generate two simple, open-ended brainstorming questions in **Vietnamese** for the following IELTS essay prompt. The questions should guide the student in structuring their essay.`;
 
     const fullContent = `${promptText}\n\nEssay Prompt: "${prompt}"`;
-    
+
     const parts = [];
     if (isTask1 && imageBase64) {
-        parts.push({
-            inlineData: {
-                mimeType: 'image/jpeg',
-                data: imageBase64,
-            },
-        });
+      parts.push({
+        inlineData: {
+          mimeType: "image/jpeg",
+          data: imageBase64,
+        },
+      });
     }
     parts.push({ text: fullContent });
     const contents = { parts };
@@ -43,15 +45,17 @@ export const generateGuidance = async (taskType, prompt, imageBase64) => {
         systemInstruction,
         responseMimeType: "application/json",
         responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-                points: {
-                    type: Type.ARRAY,
-                    description: isTask1 ? "An array of 3-4 key features to report on." : "An array of two brainstorming questions in Vietnamese.",
-                    items: { type: Type.STRING }
-                }
+          type: Type.OBJECT,
+          properties: {
+            points: {
+              type: Type.ARRAY,
+              description: isTask1
+                ? "An array of 3-4 key features to report on."
+                : "An array of two brainstorming questions in Vietnamese.",
+              items: { type: Type.STRING },
             },
-            required: ['points']
+          },
+          required: ["points"],
         },
       },
     });
@@ -59,64 +63,76 @@ export const generateGuidance = async (taskType, prompt, imageBase64) => {
     const jsonText = response.text;
     const parsed = JSON.parse(jsonText);
     if (parsed.points && parsed.points.length > 0) {
-        return parsed.points;
+      return parsed.points;
     }
     throw new Error("AI did not return any guidance points.");
-
   } catch (error) {
     console.error("Error generating guidance:", error);
-    throw new Error("The AI failed to generate guidance. This might be a temporary issue. Please try again.");
+    throw new Error(
+      "The AI failed to generate guidance. This might be a temporary issue. Please try again."
+    );
   }
 };
 
-
 export const generateBrainstormingIdeas = async (prompt, questions) => {
-    try {
-        const response = await ai.models.generateContent({
-            model: brainstormingModel,
-            contents: `Based on the essay prompt and the provided brainstorming questions, generate 2-3 short, bullet-pointed ideas for EACH question. The ideas should be simple, distinct, and directly answer the questions. Present them as a single list.
+  try {
+    const response = await ai.models.generateContent({
+      model: brainstormingModel,
+      contents: `Based on the essay prompt and the provided brainstorming questions, generate 2-3 short, bullet-pointed ideas for EACH question. The ideas should be simple, distinct, and directly answer the questions. Present them as a single list.
 
             Essay Prompt: "${prompt}"
 
             Brainstorming Questions:
-            ${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+            ${questions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
             `,
-            config: {
-                systemInstruction: "You are an expert IELTS writing instructor. Your task is to provide brainstorming ideas for a student's Writing Task 2 essay.",
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        ideas: {
-                            type: Type.ARRAY,
-                            description: "An array of bullet-pointed ideas, starting with '-'.",
-                            items: { type: Type.STRING }
-                        }
-                    },
-                    required: ['ideas']
-                },
+      config: {
+        systemInstruction:
+          "You are an expert IELTS writing instructor. Your task is to provide brainstorming ideas for a student's Writing Task 2 essay.",
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            ideas: {
+              type: Type.ARRAY,
+              description:
+                "An array of bullet-pointed ideas, starting with '-'.",
+              items: { type: Type.STRING },
             },
-        });
-        const jsonText = response.text;
-        const parsed = JSON.parse(jsonText);
-        if (parsed.ideas && Array.isArray(parsed.ideas)) {
-            return parsed.ideas;
-        }
-        throw new Error("AI did not return ideas in the expected format.");
-    } catch (error) {
-        console.error("Error generating brainstorming ideas:", error);
-        throw new Error("Failed to generate ideas. This could be a temporary issue, please try again.");
+          },
+          required: ["ideas"],
+        },
+      },
+    });
+    const jsonText = response.text;
+    const parsed = JSON.parse(jsonText);
+    if (parsed.ideas && Array.isArray(parsed.ideas)) {
+      return parsed.ideas;
     }
+    throw new Error("AI did not return ideas in the expected format.");
+  } catch (error) {
+    console.error("Error generating brainstorming ideas:", error);
+    throw new Error(
+      "Failed to generate ideas. This could be a temporary issue, please try again."
+    );
+  }
 };
 
+export const getIeltsFeedback = async (
+  taskType,
+  prompt,
+  essay,
+  imageBase64
+) => {
+  try {
+    const isTask1 = taskType === "Task 1";
+    const bandDescriptors = isTask1
+      ? IELTS_TASK_1_BAND_DESCRIPTORS
+      : IELTS_TASK_2_BAND_DESCRIPTORS;
+    const taskCompletionCriterion = isTask1
+      ? "Task Achievement"
+      : "Task Response";
 
-export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64) => {
-    try {
-        const isTask1 = taskType === 'Task 1';
-        const bandDescriptors = isTask1 ? IELTS_TASK_1_BAND_DESCRIPTORS : IELTS_TASK_2_BAND_DESCRIPTORS;
-        const taskCompletionCriterion = isTask1 ? "Task Achievement" : "Task Response";
-
-        const systemInstruction = `You are an expert IELTS examiner providing feedback on an IELTS Writing ${taskType} essay for a student aiming for a 7.0-7.5 band score. Your evaluation MUST be consistent, rigorous, and meticulously precise.
+    const systemInstruction = `You are an expert IELTS examiner providing feedback on an IELTS Writing ${taskType} essay for a student aiming for a 7.0-7.5 band score. Your evaluation MUST be consistent, rigorous, and meticulously precise.
 
         **Your Task:**
         1.  **Evaluate Rigorously:** Evaluate the essay against the provided official IELTS Band Descriptors for Bands 6, 7, and 8.
@@ -139,7 +155,7 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64) => 
         ---
         `;
 
-        const essayContent = `Please analyze the following essay based on the instructions.
+    const essayContent = `Please analyze the following essay based on the instructions.
 
         **Essay Prompt:** "${prompt}"
         
@@ -148,105 +164,160 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64) => 
         ${essay}
         ---
         `;
-        
-        const parts = [];
-        if (isTask1 && imageBase64) {
-            parts.push({
-                inlineData: { mimeType: 'image/jpeg', data: imageBase64 }
-            });
-        }
-        parts.push({ text: essayContent });
-        const contents = { parts };
-        
-        const baseFeedbackProperties = {
-            strengths: { type: Type.STRING, description: "Positive feedback on the criterion." },
-            weaknesses: { type: Type.STRING, description: "Actionable areas for improvement on the criterion." }
-        };
 
-        const mistakeSchema = {
-            type: Type.OBJECT,
-            properties: {
-                originalPhrase: { type: Type.STRING, description: "The incorrect phrase from the essay." },
-                suggestedCorrection: { type: Type.STRING, description: "The corrected version of the phrase." },
-                explanation: { type: Type.STRING, description: "A brief explanation of the mistake." }
-            },
-            required: ['originalPhrase', 'suggestedCorrection', 'explanation']
-        };
-
-        const response = await ai.models.generateContent({
-            model: feedbackModel,
-            contents,
-            config: {
-                systemInstruction,
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        taskCompletion: { 
-                            type: Type.OBJECT,
-                            properties: baseFeedbackProperties,
-                            required: ['strengths', 'weaknesses']
-                        },
-                        taskCompletionScore: { type: Type.INTEGER, description: `An integer band score from 5-9 for ${taskCompletionCriterion}.` },
-                        coherenceCohesion: {
-                            type: Type.OBJECT,
-                            properties: {
-                                ...baseFeedbackProperties,
-                                referencingAndSubstitution: { type: Type.STRING, description: "Specific feedback on referencing and substitution." }
-                            },
-                             required: ['strengths', 'weaknesses']
-                        },
-                        coherenceCohesionScore: { type: Type.INTEGER, description: "An integer band score from 5-9 for Coherence & Cohesion." },
-                        lexicalResource: {
-                            type: Type.OBJECT,
-                            properties: {
-                                ...baseFeedbackProperties,
-                                mistakes: {
-                                    type: Type.ARRAY,
-                                    description: "List of specific lexical mistakes and corrections. Returns empty array if none.",
-                                    items: mistakeSchema
-                                }
-                            },
-                            required: ['strengths', 'weaknesses']
-                        },
-                        lexicalResourceScore: { type: Type.INTEGER, description: "An integer band score from 5-9 for Lexical Resource." },
-                        grammaticalRange: {
-                            type: Type.OBJECT,
-                            properties: {
-                                ...baseFeedbackProperties,
-                                mistakes: {
-                                    type: Type.ARRAY,
-                                    description: "List of specific grammatical mistakes and corrections. Returns empty array if none.",
-                                    items: mistakeSchema
-                                }
-                            },
-                             required: ['strengths', 'weaknesses']
-                        },
-                        grammaticalRangeScore: { type: Type.INTEGER, description: "An integer band score from 5-9 for Grammatical Range & Accuracy." },
-                        sentenceImprovements: {
-                            type: Type.ARRAY,
-                            description: "A list of suggestions for ALL sentences that are awkward or unnatural.",
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    originalSentence: { type: Type.STRING, description: "The original sentence from the user's essay." },
-                                    suggestedSentence: { type: Type.STRING, description: "The rewritten, more natural-sounding sentence." }
-                                },
-                                required: ['originalSentence', 'suggestedSentence']
-                            }
-                        }
-                    },
-                    required: ['taskCompletion', 'taskCompletionScore', 'coherenceCohesion', 'coherenceCohesionScore', 'lexicalResource', 'lexicalResourceScore', 'grammaticalRange', 'grammaticalRangeScore', 'sentenceImprovements']
-                },
-            },
-        });
-
-        const jsonText = response.text;
-        const parsed = JSON.parse(jsonText);
-        return parsed;
-
-    } catch (error) {
-        console.error("Error getting IELTS feedback:", error);
-        throw new Error("Failed to get feedback from the AI. This may be a temporary issue. Please try again.");
+    const parts = [];
+    if (isTask1 && imageBase64) {
+      parts.push({
+        inlineData: { mimeType: "image/jpeg", data: imageBase64 },
+      });
     }
+    parts.push({ text: essayContent });
+    const contents = { parts };
+
+    const baseFeedbackProperties = {
+      strengths: {
+        type: Type.STRING,
+        description: "Positive feedback on the criterion.",
+      },
+      weaknesses: {
+        type: Type.STRING,
+        description: "Actionable areas for improvement on the criterion.",
+      },
+    };
+
+    const mistakeSchema = {
+      type: Type.OBJECT,
+      properties: {
+        originalPhrase: {
+          type: Type.STRING,
+          description: "The incorrect phrase from the essay.",
+        },
+        suggestedCorrection: {
+          type: Type.STRING,
+          description: "The corrected version of the phrase.",
+        },
+        explanation: {
+          type: Type.STRING,
+          description: "A brief explanation of the mistake.",
+        },
+      },
+      required: ["originalPhrase", "suggestedCorrection", "explanation"],
+    };
+
+    const response = await ai.models.generateContent({
+      model: feedbackModel,
+      contents,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            taskCompletion: {
+              type: Type.OBJECT,
+              properties: baseFeedbackProperties,
+              required: ["strengths", "weaknesses"],
+            },
+            taskCompletionScore: {
+              type: Type.INTEGER,
+              description: `An integer band score from 5-9 for ${taskCompletionCriterion}.`,
+            },
+            coherenceCohesion: {
+              type: Type.OBJECT,
+              properties: {
+                ...baseFeedbackProperties,
+                referencingAndSubstitution: {
+                  type: Type.STRING,
+                  description:
+                    "Specific feedback on referencing and substitution.",
+                },
+              },
+              required: ["strengths", "weaknesses"],
+            },
+            coherenceCohesionScore: {
+              type: Type.INTEGER,
+              description:
+                "An integer band score from 5-9 for Coherence & Cohesion.",
+            },
+            lexicalResource: {
+              type: Type.OBJECT,
+              properties: {
+                ...baseFeedbackProperties,
+                mistakes: {
+                  type: Type.ARRAY,
+                  description:
+                    "List of specific lexical mistakes and corrections. Returns empty array if none.",
+                  items: mistakeSchema,
+                },
+              },
+              required: ["strengths", "weaknesses"],
+            },
+            lexicalResourceScore: {
+              type: Type.INTEGER,
+              description:
+                "An integer band score from 5-9 for Lexical Resource.",
+            },
+            grammaticalRange: {
+              type: Type.OBJECT,
+              properties: {
+                ...baseFeedbackProperties,
+                mistakes: {
+                  type: Type.ARRAY,
+                  description:
+                    "List of specific grammatical mistakes and corrections. Returns empty array if none.",
+                  items: mistakeSchema,
+                },
+              },
+              required: ["strengths", "weaknesses"],
+            },
+            grammaticalRangeScore: {
+              type: Type.INTEGER,
+              description:
+                "An integer band score from 5-9 for Grammatical Range & Accuracy.",
+            },
+            sentenceImprovements: {
+              type: Type.ARRAY,
+              description:
+                "A list of suggestions for ALL sentences that are awkward or unnatural.",
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  originalSentence: {
+                    type: Type.STRING,
+                    description: "The original sentence from the user's essay.",
+                  },
+                  suggestedSentence: {
+                    type: Type.STRING,
+                    description:
+                      "The rewritten, more natural-sounding sentence.",
+                  },
+                },
+                required: ["originalSentence", "suggestedSentence"],
+              },
+            },
+          },
+          required: [
+            "taskCompletion",
+            "taskCompletionScore",
+            "coherenceCohesion",
+            "coherenceCohesionScore",
+            "lexicalResource",
+            "lexicalResourceScore",
+            "grammaticalRange",
+            "grammaticalRangeScore",
+            "sentenceImprovements",
+          ],
+        },
+      },
+    });
+
+    const jsonText = response.text;
+    const parsed = JSON.parse(jsonText);
+    return parsed;
+  } catch (error) {
+    console.error("Error getting IELTS feedback:", error);
+    throw new Error(
+      "Failed to get feedback from the AI. This may be a temporary issue. Please try again."
+    );
+  }
 };
