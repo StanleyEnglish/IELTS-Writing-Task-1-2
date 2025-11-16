@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Feedback, TaskType, TaskContext } from './types';
 import { IELTS_TASK_1_PROMPTS, IELTS_TASK_2_PROMPTS } from './constants';
-import { generateGuidance, getIeltsFeedback, generateBrainstormingIdeas } from './services/geminiService';
+// FIX: Corrected import to point to the .js file to avoid module resolution conflict with an empty .ts file.
+import { generateGuidance, getIeltsFeedback, generateBrainstormingIdeas } from './api/gemini.js';
 import Header from './components/Header';
 import PromptSection from './components/PromptSection';
 import WritingEditor from './components/WritingEditor';
@@ -44,7 +45,7 @@ const App: React.FC = () => {
     try {
       const prompts = taskToLoad === 'Task 1' ? IELTS_TASK_1_PROMPTS : IELTS_TASK_2_PROMPTS;
       const newPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-      const points = await generateGuidance(taskToLoad, newPrompt);
+      const points = await generateGuidance(taskToLoad, newPrompt, null);
       setter(prev => ({
         ...prev,
         prompt: newPrompt,
@@ -179,7 +180,6 @@ const App: React.FC = () => {
               guidancePoints={activeContext.guidancePoints}
               ideas={activeContext.brainstormingIdeas}
               onNewPrompt={() => handleNewPrompt(taskType)}
-              // FIX: Corrected typo from `active` to `activeContext`.
               isLoadingPrompt={activeContext.isLoadingPrompt}
               isLoadingIdeas={activeContext.isLoadingIdeas}
               onGenerateIdeas={handleGenerateIdeas}
