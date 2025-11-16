@@ -1,3 +1,4 @@
+
 export const IELTS_TASK_2_PROMPTS = [
   "Some people think that children should have the freedom to make mistakes, while other people believe that adults should prevent children from making mistakes. Discuss both views and give your own opinion.",
   "In some countries, young people are encouraged to work or travel for a year between finishing high school and starting university studies. Discuss the advantages and disadvantages for young people who decide to do this.",
@@ -5,13 +6,6 @@ export const IELTS_TASK_2_PROMPTS = [
   "Governments should spend money on railways rather than roads. To what extent do you agree or disagree?",
   "Some people think that the best way to reduce crime is to give longer prison sentences. Others, however, believe there are better alternative ways of reducing crime. Discuss both views and give your own opinion.",
   "Nowadays, the way many people interact with each other has changed because of technology. In what ways has technology affected the types of relationships people make? Has this been a positive or negative development?"
-];
-
-export const IELTS_TASK_1_PROMPTS = [
-    "The chart below shows the changes in the proportion of the population aged 65 and over in three countries from 1980 to 2020, with projections for 2040. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
-    "The diagram below shows the process of how bricks are manufactured for the building industry. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
-    "The table below gives information about the underground railway systems in six cities. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
-    "The bar chart below shows the percentage of Australian men and women in different age groups who did regular physical activity in 2010. Summarise the information by selecting and reporting the main features, and make comparisons where relevant."
 ];
 
 export const IELTS_TASK_1_BAND_DESCRIPTORS = `

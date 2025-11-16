@@ -30,6 +30,13 @@ export interface Feedback {
   sentenceImprovements: SentenceImprovementSuggestion[];
 }
 
+export interface Task1Guidance {
+  introduction: string;
+  overall: string[];
+  body1: string[];
+  body2: string[];
+}
+
 export interface Guidance {
     points: string[];
 }
@@ -39,6 +46,7 @@ export interface TaskContext {
   customPromptInput: string;
   isCustomPromptMode: boolean;
   guidancePoints: string[];
+  task1Guidance: Task1Guidance | null;
   brainstormingIdeas: string[];
   task1Image: string | null;
   userEssay: string;

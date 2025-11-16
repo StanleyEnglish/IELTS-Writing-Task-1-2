@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Feedback, TaskType, TaskContext } from './types';
-import { IELTS_TASK_1_PROMPTS, IELTS_TASK_2_PROMPTS } from './constants';
+import { IELTS_TASK_2_PROMPTS } from './constants';
 // FIX: Corrected import to point to the .js file to avoid module resolution conflict with an empty .ts file.
 import { generateGuidance, getIeltsFeedback, generateBrainstormingIdeas } from './api/gemini.js';
 import Header from './components/Header';
@@ -13,6 +13,7 @@ const getInitialTaskContext = (isLoadingPrompt = false, isInitialized = false): 
   customPromptInput: '',
   isCustomPromptMode: false,
   guidancePoints: [],
+  task1Guidance: null,
   brainstormingIdeas: [],
   task1Image: null,
   userEssay: '',
@@ -25,7 +26,10 @@ const getInitialTaskContext = (isLoadingPrompt = false, isInitialized = false): 
 
 const App: React.FC = () => {
   const [taskType, setTaskType] = useState<TaskType>('Task 2');
-  const [task1Context, setTask1Context] = useState<TaskContext>(getInitialTaskContext());
+  const [task1Context, setTask1Context] = useState<TaskContext>({
+    ...getInitialTaskContext(false, true),
+    isCustomPromptMode: true,
+  });
   const [task2Context, setTask2Context] = useState<TaskContext>(getInitialTaskContext(true, false));
   const [error, setError] = useState<string | null>(null);
 
@@ -36,25 +40,25 @@ const App: React.FC = () => {
   const activeContext = taskType === 'Task 1' ? task1Context : task2Context;
   const setActiveContext = taskType === 'Task 1' ? setTask1Context : setTask2Context;
 
-  const handleNewPrompt = useCallback(async (taskToLoad: TaskType) => {
-    const setter = taskToLoad === 'Task 1' ? setTask1Context : setTask2Context;
-    
-    setter(getInitialTaskContext(true, true));
+  const handleNewPrompt = useCallback(async () => {
+    setTask2Context(getInitialTaskContext(true, true));
     setError(null);
     
     try {
-      const prompts = taskToLoad === 'Task 1' ? IELTS_TASK_1_PROMPTS : IELTS_TASK_2_PROMPTS;
+      const prompts = IELTS_TASK_2_PROMPTS;
       const newPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-      const points = await generateGuidance(taskToLoad, newPrompt, null);
-      setter(prev => ({
+      const guidanceResult = await generateGuidance('Task 2', newPrompt, null);
+
+      setTask2Context(prev => ({
         ...prev,
         prompt: newPrompt,
-        guidancePoints: points,
+        guidancePoints: guidanceResult,
         isLoadingPrompt: false,
       }));
+      
     } catch (e) {
       setError(e instanceof Error ? e.message : 'An unknown error occurred.');
-      setter(prev => ({ ...prev, isLoadingPrompt: false }));
+      setTask2Context(prev => ({ ...prev, isLoadingPrompt: false }));
     }
   }, []);
   
@@ -64,11 +68,11 @@ const App: React.FC = () => {
   };
   
   useEffect(() => {
-    const contextToLoad = taskType === 'Task 1' ? task1Context : task2Context;
-    if (!contextToLoad.isInitialized) {
-      handleNewPrompt(taskType);
+    // Task 1 is initialized by default. This effect only handles Task 2 initialization.
+    if (taskType === 'Task 2' && !task2Context.isInitialized) {
+      handleNewPrompt();
     }
-  }, [taskType, task1Context, task2Context, handleNewPrompt]);
+  }, [taskType, task2Context.isInitialized, handleNewPrompt]);
   
   // Effect for the global timer
   useEffect(() => {
@@ -100,16 +104,25 @@ const App: React.FC = () => {
       return;
     }
     setError(null);
-    setActiveContext(prev => ({ ...prev, isLoadingPrompt: true, guidancePoints: [], brainstormingIdeas: [] }));
+    setActiveContext(prev => ({ ...prev, isLoadingPrompt: true, guidancePoints: [], task1Guidance: null, brainstormingIdeas: [] }));
 
     try {
-      const questions = await generateGuidance(taskType, activeContext.customPromptInput, activeContext.task1Image);
-      setActiveContext(prev => ({ 
-        ...prev, 
-        prompt: prev.customPromptInput, 
-        guidancePoints: questions,
-        isLoadingPrompt: false
-      }));
+      const guidanceResult = await generateGuidance(taskType, activeContext.customPromptInput, activeContext.task1Image);
+      if (taskType === 'Task 1') {
+        setActiveContext(prev => ({ 
+          ...prev, 
+          prompt: prev.customPromptInput, 
+          task1Guidance: guidanceResult,
+          isLoadingPrompt: false
+        }));
+      } else {
+         setActiveContext(prev => ({ 
+          ...prev, 
+          prompt: prev.customPromptInput, 
+          guidancePoints: guidanceResult,
+          isLoadingPrompt: false
+        }));
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'An unknown error occurred.');
       setActiveContext(prev => ({ ...prev, isLoadingPrompt: false }));
@@ -178,8 +191,9 @@ const App: React.FC = () => {
               taskType={taskType}
               prompt={activeContext.prompt}
               guidancePoints={activeContext.guidancePoints}
+              task1Guidance={activeContext.task1Guidance}
               ideas={activeContext.brainstormingIdeas}
-              onNewPrompt={() => handleNewPrompt(taskType)}
+              onNewPrompt={handleNewPrompt}
               isLoadingPrompt={activeContext.isLoadingPrompt}
               isLoadingIdeas={activeContext.isLoadingIdeas}
               onGenerateIdeas={handleGenerateIdeas}
