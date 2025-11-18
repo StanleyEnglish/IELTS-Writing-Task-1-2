@@ -1,19 +1,13 @@
-
-
-
 import { GoogleGenAI, Type } from "@google/genai";
-import { IELTS_TASK_1_BAND_DESCRIPTORS, IELTS_TASK_2_BAND_DESCRIPTORS } from '../constants';
-
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+import { IELTS_TASK_1_BAND_DESCRIPTORS, IELTS_TASK_2_BAND_DESCRIPTORS, IELTS_TASK_1_EXEMPLARS, IELTS_TASK_2_EXEMPLARS } from '../constants';
 
 const brainstormingModel = 'gemini-2.5-flash';
-const feedbackModel = 'gemini-2.5-pro';
+const feedbackModel = 'gemini-2.5-flash';
 
-export const generateGuidance = async (taskType, prompt, imageBase64) => {
+export const generateGuidance = async (taskType, prompt, imageBase64, apiKey) => {
+  if (!apiKey) throw new Error("API key is missing.");
+  const ai = new GoogleGenAI({ apiKey });
+
   try {
     if (taskType === 'Task 1') {
         const systemInstruction = "You are an expert IELTS writing instructor. Your task is to provide a structured guide in Vietnamese for an IELTS Writing Task 1 essay based on the user's prompt and image. The guide must follow a specific four-part structure: Introduction, Overall, Body 1, and Body 2.";
@@ -110,12 +104,17 @@ Essay Prompt: "${prompt}"`;
 
   } catch (error) {
     console.error("Error generating guidance:", error);
-    throw new Error("The AI failed to generate guidance. This might be a temporary issue. Please try again.");
+    if (error.message.includes('API key not valid')) {
+        throw new Error("Your API key is not valid. Please check it and try again.");
+    }
+    throw new Error("The AI failed to generate guidance. This might be a temporary issue or a problem with your API key. Please try again.");
   }
 };
 
 
-export const generateBrainstormingIdeas = async (prompt, questions) => {
+export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
+    if (!apiKey) throw new Error("API key is missing.");
+    const ai = new GoogleGenAI({ apiKey });
     try {
         const response = await ai.models.generateContent({
             model: brainstormingModel,
@@ -150,21 +149,39 @@ export const generateBrainstormingIdeas = async (prompt, questions) => {
         throw new Error("AI did not return ideas in the expected format.");
     } catch (error) {
         console.error("Error generating brainstorming ideas:", error);
-        throw new Error("Failed to generate ideas. This could be a temporary issue, please try again.");
+        if (error.message.includes('API key not valid')) {
+            throw new Error("Your API key is not valid. Please check it and try again.");
+        }
+        throw new Error("Failed to generate ideas. This could be a temporary issue or a problem with your API key. Please try again.");
     }
 };
 
 
-export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64) => {
+export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, apiKey) => {
+    if (!apiKey) throw new Error("API key is missing.");
+    const ai = new GoogleGenAI({ apiKey });
     try {
         const isTask1 = taskType === 'Task 1';
         const bandDescriptors = isTask1 ? IELTS_TASK_1_BAND_DESCRIPTORS : IELTS_TASK_2_BAND_DESCRIPTORS;
         const taskCompletionCriterion = isTask1 ? "Task Achievement" : "Task Response";
+        const exemplars = isTask1 ? `
+**Band 9.0 Exemplars for Task 1:**
+To calibrate your evaluation, here are several examples of Band 9.0 responses for different Task 1 types. Use these as a reference for excellent structure, vocabulary, and task achievement.
+---
+${IELTS_TASK_1_EXEMPLARS}
+---
+` : `
+**High-Scoring Exemplars for Task 2:**
+To calibrate your evaluation, here are several examples of high-scoring responses for different Task 2 types. Use these as a reference for excellent structure, vocabulary, argumentation, and task response.
+---
+${IELTS_TASK_2_EXEMPLARS}
+---
+`;
 
         const systemInstruction = `You are an expert IELTS examiner providing feedback on an IELTS Writing ${taskType} essay for a student aiming for a 7.0-7.5 band score. Your evaluation MUST be consistent, rigorous, and meticulously precise.
 
         **Your Task:**
-        1.  **Evaluate Rigorously:** Evaluate the essay against the provided official IELTS Band Descriptors for Bands 6, 7, and 8.
+        1.  **Evaluate Rigorously:** Evaluate the essay against the provided official IELTS Band Descriptors for Bands 5, 6, 7, 8, and 9.
         2.  **Ensure Consistency:** Your evaluation must be rigorously consistent. When evaluating the same essay text multiple times, the scores for unchanged criteria must remain identical. Base your scores SOLELY on the provided band descriptors and the strict logic. Do not introduce variability.
         3.  **Use Image for Task 1:** For Task 1, if an image is provided, your evaluation of ${taskCompletionCriterion} MUST consider how accurately the student described the data in the image.
         4.  **Strict Scoring Logic:** Follow a strict, top-down scoring logic: A criterion's score is capped at the band level where a weakness described in a lower band is present.
@@ -182,6 +199,7 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64) => 
         ---
         ${bandDescriptors}
         ---
+        ${exemplars}
         `;
 
         const essayContent = `Please analyze the following essay based on the instructions.
@@ -292,6 +310,9 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64) => 
 
     } catch (error) {
         console.error("Error getting IELTS feedback:", error);
-        throw new Error("Failed to get feedback from the AI. This may be a temporary issue. Please try again.");
+        if (error.message.includes('API key not valid')) {
+            throw new Error("Your API key is not valid. Please check it and try again.");
+        }
+        throw new Error("Failed to get feedback from the AI. This may be a temporary issue or a problem with your API key. Please try again.");
     }
 };

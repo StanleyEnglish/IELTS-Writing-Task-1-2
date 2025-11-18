@@ -1,7 +1,7 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Feedback, TaskType, TaskContext } from './types';
 import { IELTS_TASK_2_PROMPTS } from './constants';
-// FIX: Corrected import to point to the .js file to avoid module resolution conflict with an empty .ts file.
 import { generateGuidance, getIeltsFeedback, generateBrainstormingIdeas } from './api/gemini.js';
 import Header from './components/Header';
 import PromptSection from './components/PromptSection';
@@ -33,21 +33,53 @@ const App: React.FC = () => {
   const [task2Context, setTask2Context] = useState<TaskContext>(getInitialTaskContext(true, false));
   const [error, setError] = useState<string | null>(null);
 
+  // API Key State
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+
   // Global timer state
   const [timeRemaining, setTimeRemaining] = useState(3600); // 60 minutes
   const [isTimerActive, setIsTimerActive] = useState(false);
 
   const activeContext = taskType === 'Task 1' ? task1Context : task2Context;
   const setActiveContext = taskType === 'Task 1' ? setTask1Context : setTask2Context;
+  
+  // Load API Key from localStorage on initial render
+  useEffect(() => {
+    const storedKey = localStorage.getItem('gemini-api-key');
+    if (storedKey) {
+      setApiKey(storedKey);
+    } else {
+      setApiKeyError("Please enter your Google Gemini API key to begin.");
+    }
+  }, []);
+  
+  const handleApiError = (e: unknown) => {
+    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+    const isApiKeyError = /API key not valid|permission denied|API key is missing/i.test(errorMessage);
+
+    if (isApiKeyError) {
+      localStorage.removeItem('gemini-api-key');
+      setApiKey(null);
+      setApiKeyError("Your API key seems invalid. Please check it or get a new one from Google AI Studio.");
+    } else {
+      setError(errorMessage);
+    }
+  };
 
   const handleNewPrompt = useCallback(async () => {
+    if (!apiKey) {
+      setApiKeyError("Please save a valid API key to generate a new prompt.");
+      return;
+    }
     setTask2Context(getInitialTaskContext(true, true));
     setError(null);
+    setApiKeyError(null);
     
     try {
       const prompts = IELTS_TASK_2_PROMPTS;
       const newPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-      const guidanceResult = await generateGuidance('Task 2', newPrompt, null);
+      const guidanceResult = await generateGuidance('Task 2', newPrompt, null, apiKey);
 
       setTask2Context(prev => ({
         ...prev,
@@ -57,10 +89,10 @@ const App: React.FC = () => {
       }));
       
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'An unknown error occurred.');
+      handleApiError(e);
       setTask2Context(prev => ({ ...prev, isLoadingPrompt: false }));
     }
-  }, []);
+  }, [apiKey]);
   
   const handleTaskTypeChange = (newType: TaskType) => {
     if (newType === taskType) return;
@@ -68,13 +100,11 @@ const App: React.FC = () => {
   };
   
   useEffect(() => {
-    // Task 1 is initialized by default. This effect only handles Task 2 initialization.
-    if (taskType === 'Task 2' && !task2Context.isInitialized) {
+    if (taskType === 'Task 2' && !task2Context.isInitialized && apiKey) {
       handleNewPrompt();
     }
-  }, [taskType, task2Context.isInitialized, handleNewPrompt]);
+  }, [taskType, task2Context.isInitialized, handleNewPrompt, apiKey]);
   
-  // Effect for the global timer
   useEffect(() => {
     if (!isTimerActive) return;
 
@@ -99,15 +129,20 @@ const App: React.FC = () => {
   };
 
   const handleGenerateFromCustomPrompt = async () => {
+    if (!apiKey) {
+      setApiKeyError("Please save a valid API key to generate guidance.");
+      return;
+    }
     if (!activeContext.customPromptInput.trim()) {
       setError("Please enter a prompt.");
       return;
     }
     setError(null);
+    setApiKeyError(null);
     setActiveContext(prev => ({ ...prev, isLoadingPrompt: true, guidancePoints: [], task1Guidance: null, brainstormingIdeas: [] }));
 
     try {
-      const guidanceResult = await generateGuidance(taskType, activeContext.customPromptInput, activeContext.task1Image);
+      const guidanceResult = await generateGuidance(taskType, activeContext.customPromptInput, activeContext.task1Image, apiKey);
       if (taskType === 'Task 1') {
         setActiveContext(prev => ({ 
           ...prev, 
@@ -124,40 +159,61 @@ const App: React.FC = () => {
         }));
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'An unknown error occurred.');
+      handleApiError(e);
       setActiveContext(prev => ({ ...prev, isLoadingPrompt: false }));
     }
   };
 
   const handleGenerateIdeas = async () => {
+    if (!apiKey) {
+      setApiKeyError("Please save a valid API key to generate ideas.");
+      return;
+    }
     if (activeContext.guidancePoints.length === 0 || taskType === 'Task 1') return;
     setError(null);
+    setApiKeyError(null);
     setActiveContext(prev => ({ ...prev, isLoadingIdeas: true, brainstormingIdeas: [] }));
 
     try {
-      const ideas = await generateBrainstormingIdeas(activeContext.prompt, activeContext.guidancePoints);
+      const ideas = await generateBrainstormingIdeas(activeContext.prompt, activeContext.guidancePoints, apiKey);
       setActiveContext(prev => ({ ...prev, brainstormingIdeas: ideas, isLoadingIdeas: false }));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'An unknown error occurred.');
+      handleApiError(e);
       setActiveContext(prev => ({ ...prev, isLoadingIdeas: false }));
     }
   };
 
   const handleSubmitEssay = async () => {
+    if (!apiKey) {
+      setApiKeyError("Please save a valid API key to get feedback.");
+      return;
+    }
     if (!activeContext.userEssay.trim()) {
       setError("Please write an essay before requesting feedback.");
       return;
     }
     setError(null);
+    setApiKeyError(null);
     setActiveContext(prev => ({ ...prev, isLoadingFeedback: true, feedback: null }));
 
     try {
-      const result = await getIeltsFeedback(taskType, activeContext.prompt, activeContext.userEssay, activeContext.task1Image);
+      const result = await getIeltsFeedback(taskType, activeContext.prompt, activeContext.userEssay, activeContext.task1Image, apiKey);
       setActiveContext(prev => ({ ...prev, feedback: result, isLoadingFeedback: false }));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'An unknown error occurred.');
+      handleApiError(e);
       setActiveContext(prev => ({ ...prev, isLoadingFeedback: false }));
     }
+  };
+  
+  const handleSaveApiKey = (key: string) => {
+    // A very basic check. Real validation happens on API call.
+    if (!key.startsWith('AIza')) {
+        setApiKeyError("This doesn't look like a valid Gemini API key. Please check it.");
+        return;
+    }
+    setApiKey(key);
+    localStorage.setItem('gemini-api-key', key);
+    setApiKeyError(null);
   };
 
   const handleToggleTimer = () => {
@@ -182,6 +238,9 @@ const App: React.FC = () => {
         isTimerActive={isTimerActive}
         onToggleTimer={handleToggleTimer}
         onResetTimer={handleResetTimer}
+        apiKey={apiKey}
+        onSaveApiKey={handleSaveApiKey}
+        apiKeyError={apiKeyError}
       />
       <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-8 xl:gap-12">

@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export const RefreshIcon: React.FC<{ className?: string }> = (props) => (
