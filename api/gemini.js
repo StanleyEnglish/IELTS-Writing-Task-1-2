@@ -1,8 +1,35 @@
+
+
 import { GoogleGenAI, Type } from "@google/genai";
-import { IELTS_TASK_1_BAND_DESCRIPTORS, IELTS_TASK_2_BAND_DESCRIPTORS, IELTS_TASK_1_EXEMPLARS, IELTS_TASK_2_EXEMPLARS } from '../constants';
+import { IELTS_TASK_1_BAND_DESCRIPTORS, IELTS_TASK_2_BAND_DESCRIPTORS, IELTS_TASK_1_EXEMPLARS, IELTS_TASK_2_EXEMPLARS, IELTS_TASK_2_BAND_6_7_EXEMPLARS } from '../constants';
 
 const brainstormingModel = 'gemini-2.5-flash';
 const feedbackModel = 'gemini-2.5-flash';
+
+const handleApiError = (error, context) => {
+    console.error(`Error during ${context}:`, error);
+    if (error instanceof Error) {
+        if (error.message.includes('API key not valid')) {
+            throw new Error("Your API key is not valid. Please check it and try again.");
+        }
+        if (error.message.toLowerCase().includes('quota')) {
+            throw new Error("You have likely exceeded your API key's usage quota. Please check your account on Google AI Studio.");
+        }
+        if (error.message.includes('schema')) {
+            throw new Error("The AI had trouble formatting its response. This is often a temporary issue. Please try submitting again.");
+        }
+        if (error.message.includes('[400]')) {
+            throw new Error("The request to the AI was invalid, which could be due to the prompt's content. Please try modifying your essay or prompt.");
+        }
+        if (error.message.includes('503') || error.message.includes('500')) {
+            throw new Error("The AI service is currently unavailable or experiencing high traffic. Please wait a few moments and try again.");
+        }
+        if (error.message.toLowerCase().includes('safety')) {
+            throw new Error("The response was blocked due to safety concerns. Please modify your prompt or essay content.");
+        }
+    }
+    throw new Error(`Failed to ${context}. This may be a temporary issue with the AI service. If the problem persists, please check your API key.`);
+};
 
 export const generateGuidance = async (taskType, prompt, imageBase64, apiKey) => {
   if (!apiKey) throw new Error("API key is missing.");
@@ -103,11 +130,7 @@ Essay Prompt: "${prompt}"`;
     throw new Error("AI did not return any guidance points.");
 
   } catch (error) {
-    console.error("Error generating guidance:", error);
-    if (error.message.includes('API key not valid')) {
-        throw new Error("Your API key is not valid. Please check it and try again.");
-    }
-    throw new Error("The AI failed to generate guidance. This might be a temporary issue or a problem with your API key. Please try again.");
+    handleApiError(error, 'generate guidance');
   }
 };
 
@@ -148,11 +171,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
         }
         throw new Error("AI did not return ideas in the expected format.");
     } catch (error) {
-        console.error("Error generating brainstorming ideas:", error);
-        if (error.message.includes('API key not valid')) {
-            throw new Error("Your API key is not valid. Please check it and try again.");
-        }
-        throw new Error("Failed to generate ideas. This could be a temporary issue or a problem with your API key. Please try again.");
+        handleApiError(error, 'generate brainstorming ideas');
     }
 };
 
@@ -171,6 +190,10 @@ To calibrate your evaluation, here are several examples of Band 9.0 responses fo
 ${IELTS_TASK_1_EXEMPLARS}
 ---
 ` : `
+**Band 6.0 vs 7.0 Calibration:**
+Study these examples to distinguish between Band 6 and Band 7 performance, paying close attention to the examiner's commentary on mistakes vs strengths.
+${IELTS_TASK_2_BAND_6_7_EXEMPLARS}
+---
 **High-Scoring Exemplars for Task 2:**
 To calibrate your evaluation, here are several examples of high-scoring responses for different Task 2 types. Use these as a reference for excellent structure, vocabulary, argumentation, and task response.
 ---
@@ -180,11 +203,27 @@ ${IELTS_TASK_2_EXEMPLARS}
 
         const systemInstruction = `You are an expert IELTS examiner providing feedback on an IELTS Writing ${taskType} essay for a student aiming for a 7.0-7.5 band score. Your evaluation MUST be consistent, rigorous, and meticulously precise.
 
+        **Examiner's Marking Method:**
+        You MUST follow this exact marking method to ensure accuracy:
+        - Read the task carefully and identify the requirements of the task (Task 1) or different parts of the prompt (Task 2).
+        - Start with ${taskCompletionCriterion} and then move to Coherence & Cohesion, Lexical Resource, and Grammatical Range & Accuracy. For each criterion, read the first statement that most closely matches the features of the script.
+        - Focus on the more detailed features of performance at that band and assess if these features match the script. Check that the script contains all of the positive features presented at that band.
+        - Check the descriptors below to ensure that the script does not contain negative features that would prevent a higher band, for example, inadequate paragraphing. Check the descriptors above to check that your rating is accurate.
+        
+        **Critical Scoring Rules & Penalties:**
+        1. **Under-length responses:** 
+           - Task 1 < 150 words: Penalty. Limit rating.
+           - Task 2 < 250 words: Penalty. Limit rating.
+        2. **Missing Key Features (Task 1):** If all key features aren't presented, Task Achievement is limited to Band 4.
+        3. **Inappropriate Format:** Bullet points, numbered lists, or headings result in Band 4 or 5 for TA/TR. Essays must be in paragraphs.
+        4. **No Overview (Task 1):** If there is no overview, or it is unclear, Task Achievement is limited to Band 5. An overview is required for Band 6+.
+        5. **Insufficient Data (Task 1):** If there is no data to support the description, Task Achievement is limited to Band 5.
+
         **Your Task:**
-        1.  **Evaluate Rigorously:** Evaluate the essay against the provided official IELTS Band Descriptors for Bands 5, 6, 7, 8, and 9.
+        1.  **Evaluate Rigorously:** Evaluate the essay against the provided official IELTS Band Descriptors for Bands 5, 6, 7, 8, and 9, strictly following the marking methodology above.
         2.  **Ensure Consistency:** Your evaluation must be rigorously consistent. When evaluating the same essay text multiple times, the scores for unchanged criteria must remain identical. Base your scores SOLELY on the provided band descriptors and the strict logic. Do not introduce variability.
         3.  **Use Image for Task 1:** For Task 1, if an image is provided, your evaluation of ${taskCompletionCriterion} MUST consider how accurately the student described the data in the image.
-        4.  **Strict Scoring Logic:** Follow a strict, top-down scoring logic: A criterion's score is capped at the band level where a weakness described in a lower band is present.
+        4.  **Evaluate Task 2 Examples:** For Task 2, you MUST critically evaluate the supporting examples. Using fabricated statistics with specific numbers (e.g., "A recent study shows 80%...") is a significant weakness for Band 7+ and should be penalized under 'Task Response'. Praise and reward the use of real-world or personal experience-based examples (e.g., "In my country..." or "For example, in Sydney...").
         5.  **Assign Scores:** Assign an integer score (5-9) for each of the four criteria.
         6.  **Strengths & Weaknesses:** For each criterion, provide specific "Strengths" and "Weaknesses", referencing the band descriptors.
         7.  **Coherence & Cohesion Details:** For "Coherence & Cohesion", provide a dedicated analysis of the student's use of referencing (e.g., pronouns) and substitution (e.g., synonyms).
@@ -257,7 +296,7 @@ ${IELTS_TASK_2_EXEMPLARS}
                                 ...baseFeedbackProperties,
                                 referencingAndSubstitution: { type: Type.STRING, description: "Specific feedback on referencing and substitution." }
                             },
-                             required: ['strengths', 'weaknesses']
+                             required: ['strengths', 'weaknesses', 'referencingAndSubstitution']
                         },
                         coherenceCohesionScore: { type: Type.INTEGER, description: "An integer band score from 5-9 for Coherence & Cohesion." },
                         lexicalResource: {
@@ -270,7 +309,7 @@ ${IELTS_TASK_2_EXEMPLARS}
                                     items: mistakeSchema
                                 }
                             },
-                            required: ['strengths', 'weaknesses']
+                            required: ['strengths', 'weaknesses', 'mistakes']
                         },
                         lexicalResourceScore: { type: Type.INTEGER, description: "An integer band score from 5-9 for Lexical Resource." },
                         grammaticalRange: {
@@ -283,7 +322,7 @@ ${IELTS_TASK_2_EXEMPLARS}
                                     items: mistakeSchema
                                 }
                             },
-                             required: ['strengths', 'weaknesses']
+                             required: ['strengths', 'weaknesses', 'mistakes']
                         },
                         grammaticalRangeScore: { type: Type.INTEGER, description: "An integer band score from 5-9 for Grammatical Range & Accuracy." },
                         sentenceImprovements: {
@@ -309,10 +348,6 @@ ${IELTS_TASK_2_EXEMPLARS}
         return parsed;
 
     } catch (error) {
-        console.error("Error getting IELTS feedback:", error);
-        if (error.message.includes('API key not valid')) {
-            throw new Error("Your API key is not valid. Please check it and try again.");
-        }
-        throw new Error("Failed to get feedback from the AI. This may be a temporary issue or a problem with your API key. Please try again.");
+        handleApiError(error, 'get feedback from the AI');
     }
 };

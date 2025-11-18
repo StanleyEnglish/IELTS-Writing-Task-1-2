@@ -70,7 +70,7 @@ export const IELTS_TASK_1_BAND_DESCRIPTORS = `
 - **Lexical Resource:**
     - The resource is generally adequate and appropriate for the task.
     - The meaning is generally clear in spite of a rather restricted range or a lack of precision in word choice.
-- **Grammatical Range & Accuracy:**
+    - Grammatical Range & Accuracy:
     - A mix of simple and complex sentence forms is used but flexibility is limited.
     - Errors in grammar and punctuation occur, but rarely impede communication.
 
@@ -389,4 +389,55 @@ Living alone or with a small family allows individuals to experience greater fre
 Moreover, economic stability plays a significant role in the decision to live in a small family or independently. It is notably easier to manage financial responsibilities when living alone or with a partner and only one child. This allows for better financial planning, as it can provide a higher quality of life for their children and savings for emergencies. Additionally, living independently encourages individuals to develop essential life skills such as personal financial management, household chores, cooking, and shopping. Independent living also means not having to provide for other family members continually, which helps avoid excessive expenses.
 
 In conclusion, I am confident that the trend toward smaller households and independent living is beneficial for society as a whole. It offers increased personal space and freedom, along with financial advantages and valuable life skills.
+---
+### Exemplar 9: Advantages outweigh disadvantages
+**Prompt:** Many parents choose to teach their children at home instead of sending them to school. Do you think the benefits of homeschooling outweigh its drawbacks?
+
+**Essay:**
+In this day and age, an increasing number of parents prefer home-schooling their children to enrolling them in traditional schools. While there are certain benefits to this trend, I believe it is a net negative.
+
+Proponents of this shift might argue that teaching at home would enable better supervision. Through one-on-one learning, parents can support children more easily and immediately, including identifying their weaknesses and strengths, potentially tailoring a more personalized and effective academic plan for these individuals. Another viable argument is that this way of education may create a stress-free learning environment, allowing children to comfortably learn at their own pace without the constant urge to keep up with peers in normal classes. As a result, homeschooling can hopefully alleviate mental complications like peer pressure, grades obsession, and depression, which primarily stem from academic pressure at schools. This approach may be especially suitable for mentally vulnerable or autistic students, who learn better with detailed guidance and specialized care.
+
+However, despite the aforementioned merits, I am convinced that the drawbacks of this trend are more pronounced. The foremost reason is that parent-led education can gradually fuel a sense of overdependence. While home-schooling may offer better personal guidance, children are likely to become reluctant to find solutions themselves without the help of adults. This passivity would, in turn, erode their decision-making skills, negatively affecting such individuals later in life. My argument is further bolstered by the fact that this educational model can undermine children’s interpersonal skills. Traditional schools offer a wide range of networking opportunities with teachers, peers and seniors. Such relationships not only help students become more sociable, but are also valuable in terms of finding future career prospects or advice during hardships. This is not found in home-schooling, where children mostly interact with parents, hindering their chances for network expansion. This limitation ultimately creates obstacles for children to integrate with their peers in adulthood, potentially restricting future job opportunities.
+
+In conclusion, notwithstanding certain desirable outcomes that home-education brings, I firmly believe that they pale in comparison with the disadvantages of this teaching approach.
+`;
+
+export const IELTS_TASK_2_BAND_6_7_EXEMPLARS = `
+### Exemplar Band 6.0
+**Prompt:** Increasing the price of petrol is the best way to solve growing traffic and pollution problems. To what extend do you agree or disagree? What other measures do you think might be effective?
+
+**Essay:**
+Air pollution is a worldwide concerned issue, because it influences the safety of human living. In addition, traffic jam is another big issue having negative impact on the happyness of life. There are different ways to resolve the problems, such as limited car use, restricting the waste products from the industry, and the increased petrol price. This article will discuss the reason why the increased price of petrol is not the most effective way to resolve the issue and other ways help release the traffic and pollution issue.
+
+First of all, just solely increasing the cost in petrol is not the most effective method to resolve the traffic and pollution issue. This is because people may not cease using a car just because the price is higher than before, comparing with the poor and expensive public transportation. For example, in Australia, people need to spend eight AUD for one day traffic. If the people does not have a long journey, they may not choose taking public transport, because public transport is more expensive and unconvenient for them compared with using privaite cars. As a result, just increasing the petrol fee would not be the best way to control the car use, and then it would not accomplish the aim.
+
+However, if government could use the multiple methods to control the issue, such as by educating, media spreading, increasing the price and increasing the age of the drivers. It may be more effective because the different combination ways are aiming to different groups to control the use of car. For example, to increase the age requirement for the drivers can restrict the young generation to use the private car. By spreading the traffic and pollution problem by television will be useful for the groups who generally watch televisions. Therefore, it would be more effective to accomplish the aim of traffic and pollution control.
+
+In conclusion, the effective way to control the traffic and pollution issue is not solely focusing on increasing the cost of petrol, because the effectiveness depends on different public transport situations, however, the combination ways may be more effective to resolve the problem.
+
+**Examiner Commentary (Band 6.0):**
+- **TR:** The test taker presents ideas that support both parts of the prompt and there is a clear position. The response focuses more on dealing with traffic problems than pollution problems and this prevents a higher rating as some parts of the prompt are more fully covered than others.
+- **CC:** The progression of ideas is logical throughout and paragraphing is very clear. A range of cohesive devices are used, and substitution and referencing are generally well managed. The range presented and the clear overall progression of ideas means the positive features of a Band 7 are met.
+- **LR:** The test taker attempts to use a wider range of vocabulary to allow some flexibility and precision. There are some good examples of appropriate collocation and some lower frequency lexis [effectiveness | big issue | restricting waste products | accomplish the aim]. However, more than occasional errors are made in word choice and spelling, and this limits the rating to a Band 6.
+- **GRA:** A mix of simple and complex sentence structures are used but errors in grammar and punctuation occur and indicate limitations in control [If the people does not have a long journey, they may not choose taking public transport].
+
+---
+### Exemplar Band 7.0
+**Prompt:** Increasing the price of petrol is the best way to solve growing traffic and pollution problems. To what extend do you agree or disagree? What other measures do you think might be effective?
+
+**Essay:**
+The growing traffic and pollution problems bring a lot of negative influences for people. Some people think that increasing the price of petrol is a good way to solve these problems. I believe that to control the price of petrol can reduce traffic congestion and air pollution to a certain extent, but it is not the best way and cannot thoroughly solve these problems.
+
+On the one hand, it is undeniable that traffic jam and air pollution will be improved when petrol becomes more expensive. In this case, people can reduce to use their private cars. Many people may take public transportation to travel, which means gas emission will be decreased and the number of cars which are driven on the way become lower. At the same time, raising the cost of petrol can help reduce the environmental impact of the airline industry because the price of the air ticket will be increased. Higher prices have discouraged people from traveling great distances to other places. Greenhouse gases produced by airplanes can decrease if the number of air flight drops.
+
+However, increasing the price of petrol is not the best way to solve growing traffic and pollution problems. Traffic congestion and pollution problems are complex problems include overpopulation, low technology etc. These problems can be easily solved when science and technology are improved higher. For example, people can explore more space to immigration, or install gas purifier on the automobile exhaust pipe. Governments can control the number of population to prevent traffic jam and population conditions. There are more methods to solve these problems.
+
+Overall, controlling the price of petrol can reduce traffic congestion and air pollution to a certain extent, but it is not the best way and cannot thoroughly solve these problems. More solutions can be taken to solve them, such as high-technology and controlling the number of population.
+
+**Examiner Commentary (Band 7.0):**
+- **TR:** The writer addresses both aspects of the task and presents a clear position throughout the response. Main ideas are generally clear, though the second part of the prompt could have more supporting detail.
+- **CC:** Ideas are generally well organised and there is a clear overall progression. A range of cohesive devices is used effectively, but there is some underuse (in the penultimate paragraph) and a tendency to place the linker at the beginning of sentences.
+- **LR:** A sufficient range of vocabulary is used with some flexibility and there are examples of less common lexical items and appropriate collocation [gas emission | environmental impact | greenhouse gases | easily solved | exhaust pipe]. There are some awkward expressions or inappropriacies in word choice, but they do not limit the rating for this criterion [driven on the way | air ticket | number of population].
+- **GRA:** A variety of complex structures is used with some accuracy [overall, controlling the price of petrol can reduce traffic congestion and air pollution to a certain extent, but it is not the best way and cannot thoroughly solve these problems]. Punctuation is generally well controlled and errors do not impede communication.
 `;
