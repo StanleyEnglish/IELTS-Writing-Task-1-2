@@ -184,7 +184,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                         {ideas.length > 0 ? (
                             <div className="mt-6 animate-fade-in">
                                 <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">
-                                    Brainstorming Ideas & Structure
+                                    Brainstorming Ideas & Outline
                                 </h4>
                                 <div className="space-y-4 bg-slate-50 p-4 rounded-md border border-slate-200">
                                     {ideas.map((ideaBlock, index) => (

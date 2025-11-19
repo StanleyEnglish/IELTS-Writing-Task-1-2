@@ -242,9 +242,9 @@ const App: React.FC = () => {
         onSaveApiKey={handleSaveApiKey}
         apiKeyError={apiKeyError}
       />
-      <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-8 xl:gap-12">
-          {/* Left Column */}
+      <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
+        <div className="flex flex-col gap-8">
+          {/* Prompt and Editor Section */}
           <div className="flex flex-col gap-6">
             <PromptSection
               taskType={taskType}
@@ -273,8 +273,8 @@ const App: React.FC = () => {
             />
           </div>
 
-          {/* Right Column */}
-          <div className="mt-8 lg:mt-0">
+          {/* Feedback Section - Now at the bottom */}
+          <div className="w-full">
              <FeedbackDisplay 
                 taskType={taskType} 
                 feedback={activeContext.feedback} 
