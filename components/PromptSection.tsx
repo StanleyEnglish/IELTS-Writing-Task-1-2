@@ -31,7 +31,7 @@ const formatIdeaText = (text: string) => {
       return <strong key={index} className="font-bold text-slate-900">{part.slice(2, -2)}</strong>;
     }
     if (part.startsWith('[') && part.endsWith(']')) {
-      return <span key={index} className="text-orange-500 font-medium ml-1">{part}</span>;
+      return <span key={index} className="text-orange-500 font-bold ml-1">{part}</span>;
     }
     return <span key={index}>{part}</span>;
   });
@@ -176,40 +176,46 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                 ) : (
                     <>
                         <ul className="space-y-2 list-disc list-inside text-slate-600">
-                            {guidancePoints.map((q, index) => (
-                                <li key={index}>{q}</li>
-                            ))}
+                           {guidancePoints.map((point, index) => (
+                               <li key={index} className="leading-relaxed">{point}</li>
+                           ))}
                         </ul>
-                        {taskType === 'Task 2' && guidancePoints.length > 0 && (
-                            <div className="mt-4">
-                                <button 
-                                    onClick={onGenerateIdeas}
-                                    disabled={isLoadingIdeas || ideas.length > 0}
-                                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-amber-800 bg-amber-100 rounded-md hover:bg-amber-200 transition-colors duration-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
-                                >
-                                    {isLoadingIdeas ? <LoadingSpinner className="h-4 w-4 text-amber-800"/> : <SparklesIcon className="h-4 w-4" />}
-                                    Gợi ý ideas
-                                </button>
-                            </div>
-                        )}
-                        {isLoadingIdeas && (
-                             <div className="animate-pulse space-y-3 mt-4">
-                                <div className="h-4 bg-slate-200 rounded w-4/5"></div>
-                                <div className="h-4 bg-slate-200 rounded w-full"></div>
-                                <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-                            </div>
-                        )}
-                        {ideas.length > 0 && (
-                            <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-md">
-                                <h4 className="font-semibold text-sm text-slate-600 mb-3">Suggested Outline:</h4>
-                                <ul className="space-y-4 text-slate-600 text-sm">
-                                    {ideas.map((idea, index) => (
-                                        <li key={index} className="whitespace-pre-wrap leading-relaxed bg-white p-3 rounded border border-slate-100 shadow-sm list-none">
-                                            {formatIdeaText(idea)}
-                                        </li>
+                        
+                        {ideas.length > 0 ? (
+                            <div className="mt-6 animate-fade-in">
+                                <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">
+                                    Brainstorming Ideas & Structure
+                                </h4>
+                                <div className="space-y-4 bg-slate-50 p-4 rounded-md border border-slate-200">
+                                    {ideas.map((ideaBlock, index) => (
+                                        <div key={index} className="text-sm text-slate-700 whitespace-pre-line">
+                                           {formatIdeaText(ideaBlock)}
+                                        </div>
                                     ))}
-                                </ul>
+                                </div>
                             </div>
+                        ) : (
+                           taskType === 'Task 2' && (
+                                <div className="mt-4">
+                                    <button
+                                        onClick={onGenerateIdeas}
+                                        disabled={isLoadingIdeas}
+                                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-amber-500 rounded-md hover:bg-amber-600 transition-colors duration-200 disabled:bg-slate-300 disabled:cursor-not-allowed"
+                                    >
+                                        {isLoadingIdeas ? (
+                                            <>
+                                                <LoadingSpinner className="h-4 w-4" />
+                                                Generating Ideas...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <SparklesIcon className="h-4 w-4" />
+                                                Generate Ideas & Outline
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                           )
                         )}
                     </>
                 )

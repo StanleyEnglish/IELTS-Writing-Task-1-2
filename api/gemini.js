@@ -148,8 +148,8 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
             The output MUST be an array of exactly 4 strings, representing the 4 main sections of the essay.
             
             **CRITICAL INSTRUCTION FOR INTRODUCTION:**
-            - **Paraphrase**: The suggestion MUST completely rephrase the prompt using synonyms and different grammatical structures. **Do NOT simply copy or translate the prompt word-for-word.**
-            - **Thesis Statement**: Keep it simple, clear, concise, and not too long. Avoid overly complicated sentence structures.
+            - **Diễn giải đề (Paraphrase)**: The suggestion MUST completely rephrase the prompt using synonyms and different grammatical structures. **Do NOT simply copy or translate the prompt word-for-word.**
+            - **Luận điểm (Thesis Statement)**: Keep it simple, clear, concise, and not too long. Avoid overly complicated sentence structures.
 
             **CRITICAL INSTRUCTION FOR CONCLUSION:**
             - The suggestions for **Summary** and **Final Thought** must be **simple, concise, and clear**.
@@ -163,37 +163,37 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
             - Example format: "Người dân ngày càng phụ thuộc vào công nghệ [increasingly rely on technology] để làm việc..."
 
             **STRUCTURE & LABELS:**
-            You MUST use the following **ENGLISH LABELS** in **Bold** (Markdown style). Do NOT use Vietnamese for these labels.
+            You MUST use the following **VIETNAMESE LABELS** in **Bold** (Markdown style).
 
             Structure the response exactly as follows:
 
-            1. **Introduction**:
-               - **Paraphrase**: [Vietnamese suggestion for paraphrasing] [vocabulary]
-               - **Thesis Statement**: [Vietnamese suggestion for position] [vocabulary]
+            1. **Mở bài**:
+               - **Diễn giải đề**: [Vietnamese suggestion for paraphrasing] [vocabulary]
+               - **Luận điểm**: [Vietnamese suggestion for position] [vocabulary]
 
-            2. **Body Paragraph 1**:
-               - **Topic Sentence**: [State the main idea] [vocabulary]
-               - **Explanation**: [Explain the idea in detail] [vocabulary]
-               - **Example**: [Provide a specific, realistic example. e.g. "For instance..."] [vocabulary]
-               - **Result/Link**: [Conclude or link to next point] [vocabulary]
+            2. **Thân bài 1**:
+               - **Câu chủ đề**: [State the main idea] [vocabulary]
+               - **Giải thích**: [Explain the idea in detail] [vocabulary]
+               - **Ví dụ**: [Provide a specific, realistic example. e.g. "Ví dụ..."] [vocabulary]
+               - **Kết quả/Liên kết**: [Conclude or link to next point] [vocabulary]
 
-            3. **Body Paragraph 2**:
-               - **Topic Sentence**: [State the main idea] [vocabulary]
-               - **Explanation**: [Explain the idea in detail] [vocabulary]
-               - **Example**: [Provide a specific, realistic example] [vocabulary]
-               - **Result/Link**: [Conclude or link] [vocabulary]
+            3. **Thân bài 2**:
+               - **Câu chủ đề**: [State the main idea] [vocabulary]
+               - **Giải thích**: [Explain the idea in detail] [vocabulary]
+               - **Ví dụ**: [Provide a specific, realistic example] [vocabulary]
+               - **Kết quả/Liên kết**: [Conclude or link] [vocabulary]
 
-            4. **Conclusion**:
-               - **Summary**: [Summarize main points] [vocabulary]
-               - **Final Thought**: [Final concluding thought] [vocabulary]
+            4. **Kết bài**:
+               - **Tóm tắt**: [Summarize main points] [vocabulary]
+               - **Lời kết**: [Final concluding thought] [vocabulary]
 
-            Language: Vietnamese for the outline content. English for the labels and specific Vocabulary items inside square brackets [ ].`;
+            Language: Vietnamese for the outline content. English for the specific Vocabulary items inside square brackets [ ].`;
 
         const response = await ai.models.generateContent({
             model: brainstormingModel,
             contents,
             config: {
-                systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific ENGLISH headers and labels provided in the prompt. Ensure Introduction Paraphrase is distinct from the prompt. Keep Introduction and Conclusion suggestions simple, concise and clear. Insert English vocabulary suggestions directly into the text using square brackets [ ] for ALL sections. For Vocabulary, strictly prioritize naturalness, appropriateness, and clarity (Band 7+ style).",
+                systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Ensure Introduction Paraphrase is distinct from the prompt. Keep Introduction and Conclusion suggestions simple, concise and clear. Insert English vocabulary suggestions directly into the text using square brackets [ ] for ALL sections. For Vocabulary, strictly prioritize naturalness, appropriateness, and clarity (Band 7+ style).",
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: Type.OBJECT,
