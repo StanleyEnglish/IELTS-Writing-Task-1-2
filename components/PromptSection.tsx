@@ -24,6 +24,19 @@ interface PromptSectionProps {
   setTask1Image: (image: string | null) => void;
 }
 
+const formatIdeaText = (text: string) => {
+  const parts = text.split(/(\*\*.*?\*\*|\[.*?\])/g);
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={index} className="font-bold text-slate-900">{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('[') && part.endsWith(']')) {
+      return <span key={index} className="text-orange-500 font-medium ml-1">{part}</span>;
+    }
+    return <span key={index}>{part}</span>;
+  });
+};
+
 const PromptSection: React.FC<PromptSectionProps> = ({ 
   taskType,
   prompt, 
@@ -188,10 +201,12 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                         )}
                         {ideas.length > 0 && (
                             <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-md">
-                                <h4 className="font-semibold text-sm text-slate-600 mb-2">Suggested Ideas:</h4>
-                                <ul className="space-y-1 text-slate-600 text-sm">
+                                <h4 className="font-semibold text-sm text-slate-600 mb-3">Suggested Outline:</h4>
+                                <ul className="space-y-4 text-slate-600 text-sm">
                                     {ideas.map((idea, index) => (
-                                        <li key={index}>{idea}</li>
+                                        <li key={index} className="whitespace-pre-wrap leading-relaxed bg-white p-3 rounded border border-slate-100 shadow-sm list-none">
+                                            {formatIdeaText(idea)}
+                                        </li>
                                     ))}
                                 </ul>
                             </div>
