@@ -30,8 +30,9 @@ const handleApiError = (error, context) => {
     throw new Error(`Failed to ${context}. This may be a temporary issue with the AI service. If the problem persists, please check your API key.`);
 };
 
-// Helper function to retry API calls on 503/500 errors
-const callWithRetry = async (apiCallFn, retries = 3, initialDelay = 1000) => {
+// Helper to retry API calls on 503/500 errors
+// Increased retries to 5 and initial delay to 2000ms for better robustness against high traffic
+const callWithRetry = async (apiCallFn, retries = 5, initialDelay = 2000) => {
     for (let i = 0; i < retries; i++) {
         try {
             return await apiCallFn();
@@ -40,7 +41,7 @@ const callWithRetry = async (apiCallFn, retries = 3, initialDelay = 1000) => {
             const isLastAttempt = i === retries - 1;
 
             if (isServerError && !isLastAttempt) {
-                // Exponential backoff: 1s, 2s, 4s
+                // Exponential backoff: 2s, 4s, 8s, 16s...
                 const delay = initialDelay * Math.pow(2, i);
                 console.warn(`API Error (Attempt ${i + 1}/${retries}). Retrying in ${delay}ms...`, error.message);
                 await new Promise(resolve => setTimeout(resolve, delay));
@@ -49,6 +50,17 @@ const callWithRetry = async (apiCallFn, retries = 3, initialDelay = 1000) => {
             throw error;
         }
     }
+};
+
+// Helper to get random subset of exemplars to reduce context size and prevent timeouts
+const getRandomExemplars = (exemplarsString, count) => {
+    if (!exemplarsString) return "";
+    // Split by "### Exemplar"
+    const chunks = exemplarsString.split(/### Exemplar/g).filter(chunk => chunk.trim().length > 0);
+    // Shuffle and slice
+    const selected = chunks.sort(() => 0.5 - Math.random()).slice(0, count);
+    // Reconstruct
+    return selected.map(chunk => `### Exemplar${chunk}`).join('\n---\n');
 };
 
 export const generateGuidance = async (taskType, prompt, imageBase64, apiKey) => {
@@ -262,76 +274,69 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, api
         const bandDescriptors = isTask1 ? IELTS_TASK_1_BAND_DESCRIPTORS : IELTS_TASK_2_BAND_DESCRIPTORS;
         const taskCompletionCriterion = isTask1 ? "Task Achievement" : "Task Response";
         const wordCount = essay.trim() ? essay.trim().split(/\s+/).length : 0;
-        const exemplars = isTask1 ? `
-**Band 9.0 Exemplars for Task 1:**
-To calibrate your evaluation, here are several examples of Band 9.0 responses for different Task 1 types. Use these as a reference for excellent structure, vocabulary, and task achievement.
+        
+        // OPTIMIZATION: Use random subset of exemplars to keep prompt size manageable and avoid 503/500 timeouts.
+        let exemplarsSection = "";
+        if (isTask1) {
+            // Select 3 random exemplars from Task 1 list
+            const subset = getRandomExemplars(IELTS_TASK_1_EXEMPLARS, 3);
+            exemplarsSection = `
+**Band 9.0 Exemplars for Task 1 (Reference):**
+Use these Band 9.0 examples to calibrate your scoring for structure and task achievement.
 ---
-${IELTS_TASK_1_EXEMPLARS}
----
-` : `
-**Band 6.0 vs 7.0 Calibration:**
-Study these examples to distinguish between Band 6 and Band 7 performance, paying close attention to the examiner's commentary on mistakes vs strengths.
-${IELTS_TASK_2_BAND_6_7_EXEMPLARS}
----
-**High-Scoring Exemplars for Task 2:**
-To calibrate your evaluation, here are several examples of high-scoring responses for different Task 2 types. Use these as a reference for excellent structure, vocabulary, argumentation, and task response.
----
-${IELTS_TASK_2_EXEMPLARS}
+${subset}
 ---
 `;
+        } else {
+            // Select 3 random exemplars from Task 2 list + the specific Band 6/7 comparison
+            const subset = getRandomExemplars(IELTS_TASK_2_EXEMPLARS, 3);
+            exemplarsSection = `
+**Band 6.0 vs 7.0 Calibration (CRITICAL):**
+Study these examples to distinguish between Band 6 and Band 7 performance.
+${IELTS_TASK_2_BAND_6_7_EXEMPLARS}
+---
+**High-Scoring Exemplars for Task 2 (Reference):**
+Use these high-scoring examples to calibrate your evaluation.
+---
+${subset}
+---
+`;
+        }
 
-        const systemInstruction = `You are an expert IELTS examiner providing feedback on an IELTS Writing ${taskType} essay. Your evaluation MUST be consistent, rigorous, and meticulously precise.
+        const systemInstruction = `You are an expert IELTS examiner providing feedback on an IELTS Writing ${taskType} essay.
 
-        **Examiner's Marking Method:**
-        You MUST follow this exact marking method to ensure accuracy:
-        - Read the task carefully and identify the requirements of the task (Task 1) or different parts of the prompt (Task 2).
-        - Start with ${taskCompletionCriterion} and then move to Coherence & Cohesion, Lexical Resource, and Grammatical Range & Accuracy. For each criterion, read the first statement that most closely matches the features of the script.
-        - Focus on the more detailed features of performance at that band and assess if these features match the script. Check that the script contains all of the positive features presented at that band.
-        - Check the descriptors below to ensure that the script does not contain negative features that would prevent a higher band, for example, inadequate paragraphing. Check the descriptors above to check that your rating is accurate.
+        **Examiner's Marking Method (Strict Adherence Required):**
+        - **Process:** Start with ${taskCompletionCriterion}, then Coherence & Cohesion (CC), Lexical Resource (LR), and Grammatical Range (GRA).
+        - **Matching:** For each criterion, find the band descriptor statement that best matches the essay features. Check positive features of that band and ensure no negative features from lower bands are present.
         
-        **Academic Tone Requirement:**
-        - Writing must remain formal, objective, non-emotional, and consistent.
-        - Penalize the use of slang, contractions (e.g., "don't", "can't"), conversational expressions, exaggeration, or idioms.
-        - Do NOT reward overly ornate, archaic, or forced academic language ("purple prose").
-        - Band 8-9 requires a tone that is clear, natural, and precise.
+        **Academic Tone:**
+        - Formal, objective, non-emotional. No slang/contractions.
+        - Band 8-9: Natural, precise, clear. NOT overly ornate/fancy.
         
-        **Guiding Principles for High Band Scoring (Band 8-9):**
-        1. **Tolerance for Slips:** Band 9 is NOT perfection. It allows for "extremely rare lapses" or "minor errors" (slips). Do NOT reduce scores for minor, acceptable errors that do not impede communication.
-        2. **Vocabulary Assessment:** Do NOT judge based on the "fanciness" or rarity of words. Band 8-9 requires precision, naturalness, and sophisticated control, not obscure vocabulary. High-level clarity is paramount.
-        3. **No Comparison:** Evaluate ONLY against the provided band descriptors. Do not compare the essay to others.
-        4. **Descriptor Citation:** When explaining the score in 'strengths' or 'weaknesses', you MUST cite specific phrases from the provided Band Descriptors to justify your assessment (e.g., "presents a fully developed position", "uses cohesion naturally", "uses a wide range of structures with full flexibility").
+        **Band 8-9 Principles:**
+        - **Slips:** Band 9 allows for "extremely rare" minor errors. Do NOT penalize slips that don't impede communication.
+        - **Vocabulary:** Focus on precision and naturalness, NOT rarity.
+        - **No Comparison:** Grade strictly against descriptors, not other essays.
+        - **Justify:** YOU MUST QUOTE SPECIFIC DESCRIPTOR PHRASES to justify scores in 'strengths'/'weaknesses'.
 
-        **Critical Scoring Rules & Penalties:**
-        1. **Word Count Assessment:** 
-           - Task 1 target: 150 words. Task 2 target: 250 words.
-           - **Nuanced Penalty:** Do NOT automatically cap or severely downgrade the score just because an essay is slightly under length.
-           - **Quality Over Quantity:** If an essay is short (e.g., Task 2 is 230-240 words) but fully developed, concise, and high-quality, penalize minimally (if at all).
-           - **Significant Under-length:** Only apply severe penalties if the short length results in undeveloped ideas or insufficient content (e.g., Task 2 < 200 words).
-        2. **Missing Key Features (Task 1):** If all key features aren't presented, Task Achievement is limited to Band 4.
-        3. **Inappropriate Format:** Bullet points, numbered lists, or headings result in Band 4 or 5 for TA/TR. Essays must be in paragraphs.
-        4. **No Overview (Task 1):** If there is no overview, or it is unclear, Task Achievement is limited to Band 5. An overview is required for Band 6+.
-        5. **Insufficient Data (Task 1):** If there is no data to support the description, Task Achievement is limited to Band 5.
+        **Critical Scoring Rules:**
+        1. **Word Count:** Task 1 target: 150. Task 2 target: 250. 
+           - **Do NOT severely penalize** slight under-length if quality/development is high. Only penalize significant under-length that affects content.
+        2. **Task 1:** Missing key features = Band 4 TA. No/unclear overview = Band 5 TA. No data = Band 5 TA.
+        3. **Format:** Bullet points/lists = Band 4/5. Must be paragraphs.
+        4. **Task 2 Evidence:** Fabricated statistics (e.g. "80% of people...") are a weakness. Reward real-world examples/experience.
 
-        **Your Task:**
-        1.  **Evaluate Rigorously:** Evaluate the essay against the provided official IELTS Band Descriptors for Bands 5, 6, 7, 8, and 9, strictly following the marking methodology above.
-        2.  **Ensure Consistency:** Your evaluation must be rigorously consistent. When evaluating the same essay text multiple times, the scores for unchanged criteria must remain identical. Base your scores SOLELY on the provided band descriptors and the strict logic. Do not introduce variability.
-        3.  **Use Image for Task 1:** For Task 1, if an image is provided, your evaluation of ${taskCompletionCriterion} MUST consider how accurately the student described the data in the image.
-        4.  **Evaluate Task 2 Examples:** For Task 2, you MUST critically evaluate the supporting examples. Using fabricated statistics with specific numbers (e.g., "A recent study shows 80%...") is a significant weakness for Band 7+ and should be penalized under 'Task Response'. Praise and reward the use of real-world or personal experience-based examples (e.g., "In my country..." or "For example, in Sydney...").
-        5.  **Assign Scores:** Assign an integer score (5-9) for each of the four criteria.
-        6.  **Strengths & Weaknesses:** For each criterion, provide specific "Strengths" and "Weaknesses". You **MUST** quote specific phrases from the official band descriptors in your response to support your rating (e.g., "uses cohesion naturally").
-        7.  **Coherence & Cohesion Details:** For "Coherence & Cohesion", provide a dedicated analysis of the student's use of referencing (e.g., pronouns) and substitution (e.g., synonyms).
-        8.  **List All Mistakes (LR & GRA):** For "Lexical Resource" and "Grammatical Range & Accuracy", you MUST identify specific mistakes.
-            - **CRITICAL PRECISION:** When providing a 'suggestedCorrection', it MUST be meaningfully different from the 'originalPhrase'. Do not suggest a correction that is identical to the original text. Quote the original phrase EXACTLY as it appears.
-            - For each mistake, provide the original incorrect phrase, a corrected version, and a brief explanation. If there are no mistakes, return an empty array.
-        9.  **Improve All Awkward Sentences:** Provide a list of 'Sentence Improvement' suggestions for ALL sentences from the essay that are grammatically correct but sound unnatural or awkward.
-            - **COMPREHENSIVE LIST:** This list must be exhaustive. Do not omit any sentences that require improvement to meet a 7.0+ standard.
-            - Provide the full original sentence and a rewritten, more natural-sounding version.
-            
+        **Output Requirements:**
+        1. Evaluate against Band 5-9 descriptors.
+        2. **Consistency:** Scores for identical text must be identical.
+        3. **Mistakes:** List specific LR/GRA errors. Suggested correction must differ from original.
+        4. **Improvement:** Rewrite ALL awkward/unnatural sentences.
+        
         **Evaluation Criteria:**
         ---
         ${bandDescriptors}
         ---
-        ${exemplars}
+        ${exemplarsSection}
         `;
 
         const essayContent = `Please analyze the following essay based on the instructions.

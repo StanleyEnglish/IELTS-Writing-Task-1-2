@@ -244,36 +244,40 @@ const App: React.FC = () => {
       />
       <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
         <div className="flex flex-col gap-8">
-          {/* Prompt and Editor Section */}
-          <div className="flex flex-col gap-6">
-            <PromptSection
-              taskType={taskType}
-              prompt={activeContext.prompt}
-              guidancePoints={activeContext.guidancePoints}
-              task1Guidance={activeContext.task1Guidance}
-              ideas={activeContext.brainstormingIdeas}
-              onNewPrompt={handleNewPrompt}
-              isLoadingPrompt={activeContext.isLoadingPrompt}
-              isLoadingIdeas={activeContext.isLoadingIdeas}
-              onGenerateIdeas={handleGenerateIdeas}
-              isCustomPromptMode={activeContext.isCustomPromptMode}
-              onSetCustomPromptMode={handleSetCustomPromptMode}
-              customPromptInput={activeContext.customPromptInput}
-              setCustomPromptInput={(val) => setActiveContext(p => ({...p, customPromptInput: val}))}
-              onGenerateFromCustomPrompt={handleGenerateFromCustomPrompt}
-              task1Image={activeContext.task1Image}
-              setTask1Image={(val) => setActiveContext(p => ({...p, task1Image: val}))}
-            />
-            <WritingEditor
-              taskType={taskType}
-              essay={activeContext.userEssay}
-              setEssay={(val) => setActiveContext(p => ({...p, userEssay: val}))}
-              onSubmit={handleSubmitEssay}
-              isLoading={activeContext.isLoadingFeedback}
-            />
+          {/* Prompt and Editor Section: Grid Layout for Large Screens */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            <div className="h-full">
+                <PromptSection
+                  taskType={taskType}
+                  prompt={activeContext.prompt}
+                  guidancePoints={activeContext.guidancePoints}
+                  task1Guidance={activeContext.task1Guidance}
+                  ideas={activeContext.brainstormingIdeas}
+                  onNewPrompt={handleNewPrompt}
+                  isLoadingPrompt={activeContext.isLoadingPrompt}
+                  isLoadingIdeas={activeContext.isLoadingIdeas}
+                  onGenerateIdeas={handleGenerateIdeas}
+                  isCustomPromptMode={activeContext.isCustomPromptMode}
+                  onSetCustomPromptMode={handleSetCustomPromptMode}
+                  customPromptInput={activeContext.customPromptInput}
+                  setCustomPromptInput={(val) => setActiveContext(p => ({...p, customPromptInput: val}))}
+                  onGenerateFromCustomPrompt={handleGenerateFromCustomPrompt}
+                  task1Image={activeContext.task1Image}
+                  setTask1Image={(val) => setActiveContext(p => ({...p, task1Image: val}))}
+                />
+            </div>
+            <div className="h-full">
+                <WritingEditor
+                  taskType={taskType}
+                  essay={activeContext.userEssay}
+                  setEssay={(val) => setActiveContext(p => ({...p, userEssay: val}))}
+                  onSubmit={handleSubmitEssay}
+                  isLoading={activeContext.isLoadingFeedback}
+                />
+            </div>
           </div>
 
-          {/* Feedback Section - Now at the bottom */}
+          {/* Feedback Section - Full Width at Bottom */}
           <div className="w-full">
              <FeedbackDisplay 
                 taskType={taskType} 
