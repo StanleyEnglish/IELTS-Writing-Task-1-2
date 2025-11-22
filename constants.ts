@@ -1,12 +1,40 @@
 
 
+
 export const IELTS_TASK_2_PROMPTS = [
   "Some people think that children should have the freedom to make mistakes, while other people believe that adults should prevent children from making mistakes. Discuss both views and give your own opinion.",
   "In some countries, young people are encouraged to work or travel for a year between finishing high school and starting university studies. Discuss the advantages and disadvantages for young people who decide to do this.",
   "Some people believe that unpaid community service should be a compulsory part of high school programmes. To what extent do you agree or disagree?",
   "Governments should spend money on railways rather than roads. To what extent do you agree or disagree?",
   "Some people think that the best way to reduce crime is to give longer prison sentences. Others, however, believe there are better alternative ways of reducing crime. Discuss both views and give your own opinion.",
-  "Nowadays, the way many people interact with each other has changed because of technology. In what ways has technology affected the types of relationships people make? Has this been a positive or negative development?"
+  "Nowadays, the way many people interact with each other has changed because of technology. In what ways has technology affected the types of relationships people make? Has this been a positive or negative development?",
+  "Some people believe it is important to plant more trees in open areas in towns and cities than building housing in these places. Do you agree or disagree?",
+  "Some people think that governments should ban dangerous sports, while others think people should have freedom to do any sports or activity. Discuss both views and give your own opinion.",
+  "In some countries, students pay their college or university fees, while in some others, the government pays for them. Do you think the advantages outweigh the disadvantages.",
+  "Some think that having ambition is a good quality. Is it important to be ambitious? Is it a positive or negative characteristic?",
+  "The population of many cities is growing rapidly. What are the effects on people living in these cities? What can be done to maintain the quality of life of these people?",
+  "More and more people today are spending large amounts of money on their complexions in order to look younger. Why do people want to look younger? Do you think this is a positive or negative development?",
+  "Some people think news has no connection to people’s lives. So then it is a waste of time to read the newspaper and watch television news programs. To what extent do you agree or disagree",
+  "Human activities have negative effects on plant and animal species. Some people think it is too late to do anything about this problem. Others believe effective measures can be taken to improve this situation. Discuss both views and give your opinion.",
+  "Many people use social media to keep in touch with others and news. Do advantages outweigh disadvantage?",
+  "Advertisements are becoming more and more common in everyday life. Is it a positive or negative development?",
+  "Recent research suggests that the majority of criminals who are sent to prison commit crimes after they are released. Why is this the case? What can be done to solve this problem?",
+  "Nowadays, some parents put a lot of pressure on their children. What is the reason for this? Is this a positive or negative development for the children?",
+  "Some people think investing money in developing technology for space exploration is not justifiable. They believe there are more beneficial ways to spend money. Agree or disagree?",
+  "Some people think the increasing business and cultural contact between countries brings many positive effects. Others say it causes the loss of national identities. Discuss both views and give your own opinion.",
+  "Some school leavers travel or work for a period of time instead of going directly to university. What are the advantages or disadvantages for their study?",
+  "Nowadays people depend on technology in their free time. Is this a positive or negative development?",
+  "In some countries, more and more people are becoming interested in finding out about the history of the house or building they live in. What are the reasons for this? How can people research this?",
+  "In some parts of the world, it is increasingly popular to research the history of one’s own family. Why do people want to do this? Is it a positive or negative development?",
+  "The typical teaching situation of a teacher and students in the class will not exist by the year 2050. To what extent do you agree or disagree?",
+  "Some people think that people should be given the right to use freshwater as they like. Others believe governments should strictly control the use of freshwater. Discuss both views and give your own opinion.",
+  "Today family members do not eat meals together. Is this a positive or negative trend?",
+  "As major cities in the world are growing today, so do their problems. What are the problems for young people who are living in the cities as the result of continued growth? What are the solutions for these problems?",
+  "In many countries people increasingly talk about money (how much they earn or how much they pay for things in their daily conversations). Why is this happening? Do you think this is a positive or a negative trend?",
+  "Some people think that the best way to be successful in life is to get a university education. Others disagree and say that nowadays this is no longer true. Discuss both views and give your own opinion.",
+  "As transport and accommodation problems are increasing in many cities, some governments encourage businesses to move to rural areas. Do you think the advantages outweigh the disadvantages?",
+  "Scientists believe that computers will become more intelligent than human beings. Some people find it is positive while others think it is a negative development. Discuss both views and give your own opinion.",
+  "The increase in the production of consumer goods results in damage to the natural environment. What are the causes of this? What can be done to solve this problem?"
 ];
 
 export const IELTS_TASK_1_BAND_DESCRIPTORS = `

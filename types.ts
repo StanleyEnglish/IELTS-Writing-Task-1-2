@@ -1,3 +1,4 @@
+
 export type TaskType = 'Task 1' | 'Task 2';
 
 export interface MistakeCorrection {
@@ -39,6 +40,12 @@ export interface Task1Guidance {
 
 export interface Guidance {
     points: string[];
+}
+
+export interface WritingSuggestion {
+    english: string;
+    tone: string;
+    explanation: string;
 }
 
 export interface TaskContext {

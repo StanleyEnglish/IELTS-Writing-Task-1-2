@@ -31,7 +31,6 @@ const handleApiError = (error, context) => {
 };
 
 // Helper to retry API calls on 503/500 errors
-// Increased retries to 5 and initial delay to 2000ms for better robustness against high traffic
 const callWithRetry = async (apiCallFn, retries = 5, initialDelay = 2000) => {
     for (let i = 0; i < retries; i++) {
         try {
@@ -41,7 +40,6 @@ const callWithRetry = async (apiCallFn, retries = 5, initialDelay = 2000) => {
             const isLastAttempt = i === retries - 1;
 
             if (isServerError && !isLastAttempt) {
-                // Exponential backoff: 2s, 4s, 8s, 16s...
                 const delay = initialDelay * Math.pow(2, i);
                 console.warn(`API Error (Attempt ${i + 1}/${retries}). Retrying in ${delay}ms...`, error.message);
                 await new Promise(resolve => setTimeout(resolve, delay));
@@ -52,14 +50,11 @@ const callWithRetry = async (apiCallFn, retries = 5, initialDelay = 2000) => {
     }
 };
 
-// Helper to get random subset of exemplars to reduce context size and prevent timeouts
+// Helper to get random subset of exemplars
 const getRandomExemplars = (exemplarsString, count) => {
     if (!exemplarsString) return "";
-    // Split by "### Exemplar"
     const chunks = exemplarsString.split(/### Exemplar/g).filter(chunk => chunk.trim().length > 0);
-    // Shuffle and slice
     const selected = chunks.sort(() => 0.5 - Math.random()).slice(0, count);
-    // Reconstruct
     return selected.map(chunk => `### Exemplar${chunk}`).join('\n---\n');
 };
 
@@ -188,17 +183,18 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 - **Address Two Parts**: Ensure Body 1 and Body 2 address distinct aspects or sides of the prompt (e.g., View 1 vs View 2, Reason 1 vs Reason 2, Pros vs Cons).
                 - **Explicit Opinion**: The outline MUST clearly show the writer's stance (agree/disagree, positive/negative, etc.).
                   - **Luận điểm (Thesis)**: Must clearly state the position.
-                  - **Khẳng định quan điểm (Conclusion)**: Must reaffirm this position decisively.
+                  - **Tóm tắt ý chính và quan điểm (Conclusion)**: Must reaffirm this position decisively.
 
                 **CRITICAL INSTRUCTION FOR INTRODUCTION:**
                 - **Diễn giải đề (Paraphrase)**: The suggestion MUST completely rephrase the prompt using synonyms and different grammatical structures. **Do NOT simply copy or translate the prompt word-for-word.**
                 - **Luận điểm (Thesis Statement)**: Keep it simple, clear, concise, and not too long. Avoid overly complicated sentence structures.
 
                 **CRITICAL INSTRUCTION FOR CONCLUSION:**
-                - **Tóm tắt ý chính**: Briefly summarize the main arguments from Body 1 and Body 2.
-                - **Khẳng định quan điểm**: Clearly restate the writer's opinion or answer the specific question (e.g., explicitly state "This is a positive development").
-                - **DO NOT** provide a generic "Final Thought", "Prediction", or "Lời kết" unless it directly answers the prompt. Keep it concise.
-                - Avoid overly long or complicated sentences.
+                - **Tóm tắt ý chính và quan điểm**: 
+                  - Briefly summarize the main arguments from Body 1 and Body 2.
+                  - Directly answer the question/Restate opinion (e.g., "I completely agree...").
+                  - Keep it concise.
+                - **DO NOT** provide a generic "Final Thought", "Prediction", or "Lời kết".
 
                 **CRITICAL INSTRUCTION FOR VOCABULARY:**
                 - For **ALL SECTIONS (Introduction, Body Paragraphs, Conclusion)**: Insert natural, topic-specific, Band 7+ English collocations or phrases directly next to the relevant Vietnamese concepts, enclosed in square brackets.
@@ -227,8 +223,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 - **Kết quả/Liên kết**: [Conclude or link] [vocabulary]
 
                 4. **Kết bài**:
-                - **Tóm tắt ý chính**: [Summarize main points from Body 1 & 2] [vocabulary]
-                - **Khẳng định quan điểm**: [Directly answer the question/Restate opinion] [vocabulary]
+                - **Tóm tắt ý chính và quan điểm**: [Summarize main points and restate opinion concise] [vocabulary]
 
                 Language: Vietnamese for the outline content. English for the specific Vocabulary items inside square brackets [ ].`;
 
@@ -265,6 +260,65 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
     }
 };
 
+export const generateWritingSuggestions = async (textToAnalyze, apiKey) => {
+    if (!apiKey) throw new Error("API key is missing.");
+    const ai = new GoogleGenAI({ apiKey });
+    
+    try {
+        const apiCall = async () => {
+            const systemInstruction = "You are a helpful IELTS Writing tutor. The user will provide a phrase or sentence (likely in Vietnamese or simple English) from their essay outline. Your task is to suggest EXACTLY ONE way to express this idea in **Direct, Formal, Academic English** suitable for an IELTS Band 7+ essay. Do NOT give multiple options. Focus on clarity, precision, and naturalness. Avoid overly complicated or flowery language.";
+            
+            const promptContent = `
+            Context: The user is writing an IELTS essay.
+            Text to analyze: "${textToAnalyze}"
+
+            Please provide exactly ONE suggestion:
+            1. **English**: The suggested phrase or sentence.
+            2. **Tone**: Brief description (e.g., "Direct & Formal").
+            3. **Explanation**: Brief explanation of why this is good or how to use it.
+            `;
+
+            const contents = { parts: [{ text: promptContent }] };
+            
+            const response = await ai.models.generateContent({
+                model: brainstormingModel,
+                contents,
+                config: {
+                    systemInstruction,
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: Type.OBJECT,
+                        properties: {
+                            suggestions: {
+                                type: Type.ARRAY,
+                                description: "An array containing exactly one writing suggestion.",
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        english: { type: Type.STRING },
+                                        tone: { type: Type.STRING },
+                                        explanation: { type: Type.STRING }
+                                    },
+                                    required: ['english', 'tone', 'explanation']
+                                }
+                            }
+                        },
+                        required: ['suggestions']
+                    }
+                }
+            });
+
+            const jsonText = response.text;
+            const parsed = JSON.parse(jsonText);
+            return parsed.suggestions;
+        };
+        
+        return await callWithRetry(apiCall);
+    } catch (error) {
+        handleApiError(error, 'generate writing suggestions');
+    }
+};
+
 
 export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, apiKey) => {
     if (!apiKey) throw new Error("API key is missing.");
@@ -275,10 +329,8 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, api
         const taskCompletionCriterion = isTask1 ? "Task Achievement" : "Task Response";
         const wordCount = essay.trim() ? essay.trim().split(/\s+/).length : 0;
         
-        // OPTIMIZATION: Use random subset of exemplars to keep prompt size manageable and avoid 503/500 timeouts.
         let exemplarsSection = "";
         if (isTask1) {
-            // Select 3 random exemplars from Task 1 list
             const subset = getRandomExemplars(IELTS_TASK_1_EXEMPLARS, 3);
             exemplarsSection = `
 **Band 9.0 Exemplars for Task 1 (Reference):**
@@ -288,7 +340,6 @@ ${subset}
 ---
 `;
         } else {
-            // Select 3 random exemplars from Task 2 list + the specific Band 6/7 comparison
             const subset = getRandomExemplars(IELTS_TASK_2_EXEMPLARS, 3);
             exemplarsSection = `
 **Band 6.0 vs 7.0 Calibration (CRITICAL):**

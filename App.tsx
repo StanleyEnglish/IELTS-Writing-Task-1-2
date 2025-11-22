@@ -264,6 +264,7 @@ const App: React.FC = () => {
                   onGenerateFromCustomPrompt={handleGenerateFromCustomPrompt}
                   task1Image={activeContext.task1Image}
                   setTask1Image={(val) => setActiveContext(p => ({...p, task1Image: val}))}
+                  apiKey={apiKey}
                 />
             </div>
             <div className="h-full">
