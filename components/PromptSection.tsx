@@ -316,9 +316,19 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                         
                         {ideas.length > 0 ? (
                             <div className="mt-6 animate-fade-in">
-                                <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">
-                                    Brainstorming Ideas & Outline
-                                </h4>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                                        Brainstorming Ideas & Outline
+                                    </h4>
+                                    <button
+                                        onClick={onGenerateIdeas}
+                                        disabled={isLoadingIdeas}
+                                        className="text-slate-400 hover:text-sky-600 transition-colors p-1 rounded-full hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title="Regenerate outline"
+                                    >
+                                        <RefreshIcon className={`h-4 w-4 ${isLoadingIdeas ? 'animate-spin' : ''}`} />
+                                    </button>
+                                </div>
                                 <p className="text-xs text-slate-500 mb-2 italic">Tip: Select any text to get a writing suggestion.</p>
                                 <div className="space-y-4 bg-slate-50 p-4 rounded-md border border-slate-200">
                                     {ideas.map((ideaBlock, index) => (

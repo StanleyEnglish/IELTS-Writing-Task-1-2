@@ -185,6 +185,17 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                   - **Body 1 (40%)**: Discuss the opposing view, the weaker argument, or the concession.
                   - **Body 2 (60%)**: Discuss the writer's opinion, the stronger argument, or the main solution. This paragraph should be slightly more developed to emphasize the standpoint.
 
+                **CRITICAL INSTRUCTION FOR CONCISENESS & EFFICIENCY (Target: ~280 words, 35 mins):**
+                - **Goal**: Enable the student to write a ~280 word essay in 35 minutes.
+                - **Câu chủ đề (Topic Sentences)**: MUST be concise, short, and direct. Avoid wordiness or overly complex structures.
+                - **Ví dụ (Examples)**: Provide EXACTLY ONE specific, realistic example per explanation. DO NOT list multiple examples.
+
+                **CRITICAL INSTRUCTION FOR TASK RESPONSE (Band 8+ Criteria):**
+                - **Sufficiently Addressed**: Ensure ALL parts of the prompt are covered in depth.
+                - **Well-Developed Position**: The opinion must be clear, well-developed, and consistent from the Introduction to the Conclusion.
+                - **Relevant & Extended Ideas**: Arguments must be directly relevant to the prompt. Explanations must be logical, fully extended, and supported. Avoid vague generalizations.
+                - **Consistency**: Ensure the flow of ideas is logical and consistent throughout the outline.
+
                 **CRITICAL INSTRUCTION FOR INTRODUCTION:**
                 - **Diễn giải đề**: Paraphrase the prompt simply, concisely, and directly. **Avoid clichés** (e.g., "In this day and age", "It is undeniable that"). Use direct, natural academic language.
                 - **Luận điểm**: State the standpoint straight away. Be direct. Keep it short and simple.
@@ -209,15 +220,15 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 - **Luận điểm**: [Vietnamese suggestion] [vocabulary]
 
                 2. **Thân bài 1**:
-                - **Câu chủ đề**: [State main idea] [vocabulary]
+                - **Câu chủ đề**: [State main idea - CONCISE] [vocabulary]
                 - **Giải thích**: [Explain] [vocabulary]
-                - **Ví dụ**: [Example] [vocabulary]
+                - **Ví dụ**: [ONE specific example] [vocabulary]
                 - **Kết quả/ liên kết**: [Link] [vocabulary]
 
                 3. **Thân bài 2**:
-                - **Câu chủ đề**: [State main idea] [vocabulary]
+                - **Câu chủ đề**: [State main idea - CONCISE] [vocabulary]
                 - **Giải thích**: [Explain] [vocabulary]
-                - **Ví dụ**: [Example] [vocabulary]
+                - **Ví dụ**: [ONE specific example] [vocabulary]
                 - **Kết quả/ liên kết**: [Link] [vocabulary]
 
                 4. **Kết bài**:
@@ -229,7 +240,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 model: brainstormingModel,
                 contents,
                 config: {
-                    systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Ensure the outline follows a 40/60 structure (Body 1: weaker/opposing, Body 2: stronger/opinion). Ensure Introduction Paraphrase is simple, concise, and cliché-free. Insert English vocabulary suggestions directly into the text using square brackets [ ] for ALL sections.",
+                    systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Ensure the outline follows a 40/60 structure to show a clear standpoint. Ensure Topic Sentences are CONCISE and Examples are limited to ONE per point (Target 280 words). Ensure Introduction Paraphrase is simple, concise, and cliché-free. Insert English vocabulary suggestions directly into the text using square brackets [ ] for ALL sections.",
                     responseMimeType: "application/json",
                     responseSchema: {
                         type: Type.OBJECT,
@@ -264,16 +275,30 @@ export const generateWritingSuggestions = async (textToAnalyze, apiKey) => {
     
     try {
         const apiCall = async () => {
-            const systemInstruction = "You are a helpful IELTS Writing tutor. The user will provide a phrase or sentence from their essay outline (often Vietnamese mixed with English suggestions). Your task is to suggest EXACTLY ONE complete sentence expressing this idea in **Direct, Formal, Academic English** suitable for an IELTS Band 7+ essay.\n\n**CRITICAL RULE:** If the input text contains a specific English vocabulary suggestion (e.g., words in brackets [ ]), you **MUST** use that specific vocabulary in your suggested sentence to demonstrate its correct usage.\n\nDo NOT give multiple options. Focus on clarity, precision, and naturalness. Avoid overly complicated or flowery language.";
+            const systemInstruction = `You are a helpful IELTS Writing tutor. The user has selected a portion of text (a word, phrase, or sentence) from their essay outline.
+
+**YOUR TASK:**
+Suggest the best way to write or use this selected text in a Band 7+ IELTS essay (Formal & Academic).
+
+**CRITICAL RULES:**
+1. **Input Analysis:** 
+   - If Input is a **Word/Collocation**: Provide a complete, natural sentence demonstrating its usage.
+   - If Input is a **Sentence/Idea**: Translate/Refine it into a single, strong academic English sentence.
+2. **Mandatory Vocabulary Usage:** 
+   - If the input text contains specific English vocabulary suggestions (e.g. inside brackets [ ]), you **MUST** use that exact vocabulary in your suggestion.
+3. **Style:** Direct, Formal, Clear. Avoid clichés and overly flowery language.
+4. **Quantity:** Provide EXACTLY ONE best suggestion.`;
             
             const promptContent = `
-            Context: The user is writing an IELTS essay.
-            Text to analyze: "${textToAnalyze}"
+            Context: IELTS Writing Task 2 Brainstorming.
+            Selected Text: "${textToAnalyze}"
 
-            Please provide exactly ONE suggestion:
-            1. **English**: The suggested phrase or sentence.
-            2. **Tone**: Brief description (e.g., "Direct & Formal").
-            3. **Explanation**: Brief explanation of why this is good or how to use it.
+            Provide exactly ONE suggestion in JSON format:
+            {
+              "english": "The complete suggested sentence or phrase.",
+              "tone": "e.g., Formal & Direct",
+              "explanation": "Brief reason for this phrasing or how to use the word."
+            }
             `;
 
             const contents = { parts: [{ text: promptContent }] };
