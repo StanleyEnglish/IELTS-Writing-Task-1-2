@@ -183,6 +183,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 - You MUST adopt a **clear standpoint**. Do not sit on the fence (50/50).
                 - Use a **40/60 structure**:
                   - **Body 1 (40%)**: Discuss the opposing view, the weaker argument, or the concession.
+                    - **IMPORTANT**: Even though this is the concession paragraph, the **Explanation** and **Example** MUST be **fully developed, natural, and coherent**. Avoid brief or choppy sentences. Write them as if they are part of a high-scoring essay to ensure natural flow.
                   - **Body 2 (60%)**: Discuss the writer's opinion, the stronger argument, or the main solution. This paragraph should be slightly more developed to emphasize the standpoint.
 
                 **CRITICAL INSTRUCTION FOR CONCISENESS & EFFICIENCY (Target: ~280 words, 35 mins):**
@@ -240,7 +241,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 model: brainstormingModel,
                 contents,
                 config: {
-                    systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Ensure the outline follows a 40/60 structure to show a clear standpoint. Ensure Topic Sentences are CONCISE and Examples are limited to ONE per point (Target 280 words). Ensure Introduction Paraphrase is simple, concise, and cliché-free. Insert English vocabulary suggestions directly into the text using square brackets [ ] for ALL sections.",
+                    systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Ensure the outline follows a 40/60 structure to show a clear standpoint. Ensure Body 1 Explanations and Examples are FULLY DEVELOPED and NATURAL, not choppy. Ensure Topic Sentences are CONCISE and Examples are limited to ONE per point. Ensure Introduction Paraphrase is simple, concise, and cliché-free. Insert English vocabulary suggestions directly into the text using square brackets [ ] for ALL sections.",
                     responseMimeType: "application/json",
                     responseSchema: {
                         type: Type.OBJECT,
