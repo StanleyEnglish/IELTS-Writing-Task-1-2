@@ -183,56 +183,64 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 - You MUST adopt a **clear standpoint**. Do not sit on the fence (50/50).
                 - Use a **40/60 structure**:
                   - **Body 1 (40%)**: Discuss the opposing view, the weaker argument, or the concession.
-                    - **IMPORTANT**: Even though this is the concession paragraph, the **Explanation** and **Example** MUST be **fully developed, natural, and coherent**. Avoid brief or choppy sentences. Write them as if they are part of a high-scoring essay to ensure natural flow.
-                  - **Body 2 (60%)**: Discuss the writer's opinion, the stronger argument, or the main solution. This paragraph should be slightly more developed to emphasize the standpoint.
+                  - **Body 2 (60%)**: Discuss the writer's opinion, the stronger argument, or the main solution.
+
+                **CRITICAL INSTRUCTION FOR BODY PARAGRAPHS (IDEAS & EXAMPLES):**
+                - **Giải thích (Explanation)**: 
+                  - Suggest **2 simple and comprehensible supporting ideas** for the topic sentence.
+                  - Use logical flow/arrows (e.g., "Idea -> Result" or "Because A -> B").
+                  - Ideas should be developed enough to be natural and persuasive, not just keywords.
+                  - Example style: "Idea 1 -> Consequence 1. Idea 2 -> Consequence 2."
+                - **Ví dụ (Example)**: 
+                  - Provide **ONE short, specific example**. 
+                  - Show the consequence clearly using arrow notation if helpful.
+                  - Example style: "Specific scenario -> specific outcome."
 
                 **CRITICAL INSTRUCTION FOR CONCISENESS & EFFICIENCY (Target: ~280 words, 35 mins):**
                 - **Goal**: Enable the student to write a ~280 word essay in 35 minutes.
-                - **Câu chủ đề (Topic Sentences)**: MUST be concise, short, and direct. Avoid wordiness or overly complex structures.
-                - **Ví dụ (Examples)**: Provide EXACTLY ONE specific, realistic example per explanation. DO NOT list multiple examples.
+                - **Câu chủ đề (Topic Sentences)**: MUST be concise, short, and direct. Avoid wordiness.
+                - **Conciseness**: Keep the outline clear and actionable.
 
                 **CRITICAL INSTRUCTION FOR TASK RESPONSE (Band 8+ Criteria):**
                 - **Sufficiently Addressed**: Ensure ALL parts of the prompt are covered in depth.
-                - **Well-Developed Position**: The opinion must be clear, well-developed, and consistent from the Introduction to the Conclusion.
-                - **Relevant & Extended Ideas**: Arguments must be directly relevant to the prompt. Explanations must be logical, fully extended, and supported. Avoid vague generalizations.
-                - **Consistency**: Ensure the flow of ideas is logical and consistent throughout the outline.
+                - **Well-Developed Position**: The opinion must be clear and consistent.
+                - **Relevant & Extended Ideas**: Arguments must be directly relevant.
 
                 **CRITICAL INSTRUCTION FOR INTRODUCTION:**
-                - **Diễn giải đề**: Paraphrase the prompt simply, concisely, and directly. **Avoid clichés** (e.g., "In this day and age", "It is undeniable that"). Use direct, natural academic language.
-                - **Luận điểm**: State the standpoint straight away. Be direct. Keep it short and simple.
+                - **Diễn giải đề**: Paraphrase simple & concise. No clichés.
+                - **Luận điểm**: Direct standpoint.
 
                 **CRITICAL INSTRUCTION FOR CONCLUSION:**
-                - **Tóm tắt ý chính và quan điểm**: 
-                  - Concise summary of main points.
-                  - Direct answer to the question/restate opinion.
-                  - **Keep it simple**. Do not give too much information.
+                - **Tóm tắt ý chính và quan điểm**: Concise summary & direct opinion. Keep it simple.
 
                 **CRITICAL INSTRUCTION FOR VOCABULARY:**
                 - For **ALL SECTIONS**: Insert natural, topic-specific, Band 7+ English collocations directly next to the relevant Vietnamese concepts, enclosed in square brackets [ ].
-                - **Criteria**: Vocabulary must be **natural, appropriate, clear, and practical**. Avoid overly fancy or obscure words. Focus on collocations that boost Lexical Resource (LR).
+                - **Criteria**: Vocabulary must be **natural, appropriate, clear, and practical**.
 
-                **STRUCTURE & LABELS:**
-                You MUST use the following **VIETNAMESE LABELS** in **Bold** (Markdown style).
+                **STRUCTURE & LABELS (STRICT FORMATTING):**
+                - You MUST use the following **VIETNAMESE LABELS** in **Bold** (Markdown style).
+                - **CRITICAL FORMATTING**: Do NOT write a paragraph. Each label (e.g., **Diễn giải đề**:, **Câu chủ đề**:) must be on its own **SEPARATE LINE** starting with a bullet point (-).
+                - **IMPORTANT**: The main section headers (**Mở bài**, **Thân bài 1**, **Thân bài 2**, **Kết bài**) must NOT have any hyphens, dashes, or numbers in front of them. Just the bold text.
 
                 Structure the response exactly as follows:
 
-                1. **Mở bài**:
+                **Mở bài**:
                 - **Diễn giải đề**: [Vietnamese suggestion] [vocabulary]
                 - **Luận điểm**: [Vietnamese suggestion] [vocabulary]
 
-                2. **Thân bài 1**:
-                - **Câu chủ đề**: [State main idea - CONCISE] [vocabulary]
-                - **Giải thích**: [Explain] [vocabulary]
-                - **Ví dụ**: [ONE specific example] [vocabulary]
+                **Thân bài 1**:
+                - **Câu chủ đề**: [Concise Topic Sentence] [vocabulary]
+                - **Giải thích**: [2 simple ideas with logical flow (->)] [vocabulary]
+                - **Ví dụ**: [ONE short example with consequence (->)] [vocabulary]
                 - **Kết quả/ liên kết**: [Link] [vocabulary]
 
-                3. **Thân bài 2**:
-                - **Câu chủ đề**: [State main idea - CONCISE] [vocabulary]
-                - **Giải thích**: [Explain] [vocabulary]
-                - **Ví dụ**: [ONE specific example] [vocabulary]
+                **Thân bài 2**:
+                - **Câu chủ đề**: [Concise Topic Sentence] [vocabulary]
+                - **Giải thích**: [2 simple ideas with logical flow (->)] [vocabulary]
+                - **Ví dụ**: [ONE short example with consequence (->)] [vocabulary]
                 - **Kết quả/ liên kết**: [Link] [vocabulary]
 
-                4. **Kết bài**:
+                **Kết bài**:
                 - **Tóm tắt ý chính và quan điểm**: [Concise summary & opinion] [vocabulary]
 
                 Language: Vietnamese for the outline content. English for the specific Vocabulary items inside square brackets [ ].`;
@@ -241,14 +249,14 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 model: brainstormingModel,
                 contents,
                 config: {
-                    systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Ensure the outline follows a 40/60 structure to show a clear standpoint. Ensure Body 1 Explanations and Examples are FULLY DEVELOPED and NATURAL, not choppy. Ensure Topic Sentences are CONCISE and Examples are limited to ONE per point. Ensure Introduction Paraphrase is simple, concise, and cliché-free. Insert English vocabulary suggestions directly into the text using square brackets [ ] for ALL sections.",
+                    systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Do NOT merge points into paragraphs; keep each label on a new line starting with a bullet point. For main headers (Mở bài, etc.), do not use dashes or numbers. For 'Giải thích', provide 2 simple ideas using logical flow (A -> B). For 'Ví dụ', provide 1 short example with consequence. Ensure 40/60 balance. Insert English vocabulary suggestions directly into the text using square brackets [ ].",
                     responseMimeType: "application/json",
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {
                             ideas: {
                                 type: Type.ARRAY,
-                                description: "An array of 4 strings representing the 4 sections of the essay outline, formatted with Markdown bolding, bullet points, and inline vocabulary in brackets.",
+                                description: "An array of 4 strings representing the 4 sections of the essay outline, formatted with Markdown bolding, bullet points, and inline vocabulary in brackets. Each bullet point MUST be on a new line.",
                                 items: { type: Type.STRING }
                             }
                         },

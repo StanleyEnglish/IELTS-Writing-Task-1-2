@@ -334,7 +334,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                                     {ideas.map((ideaBlock, index) => (
                                         <div 
                                             key={index} 
-                                            className="text-sm text-slate-700 whitespace-pre-line"
+                                            className="text-sm text-slate-700 whitespace-pre-line text-justify"
                                         >
                                            {formatIdeaText(ideaBlock)}
                                         </div>
