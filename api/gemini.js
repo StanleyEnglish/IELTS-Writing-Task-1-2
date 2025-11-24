@@ -186,8 +186,8 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                   - **Body 2 (60%)**: Discuss the writer's opinion, the stronger argument, or the main solution. This paragraph should be slightly more developed to emphasize the standpoint.
 
                 **CRITICAL INSTRUCTION FOR INTRODUCTION:**
-                - **Diễn giải đề**: Paraphrase the prompt using synonyms and different grammatical structures. **Do NOT simply copy.**
-                - **Luận điểm**: Keep it simple, clear, concise. Clearly state the position.
+                - **Diễn giải đề**: Paraphrase the prompt simply, concisely, and directly. **Avoid clichés** (e.g., "In this day and age", "It is undeniable that"). Use direct, natural academic language.
+                - **Luận điểm**: State the standpoint straight away. Be direct. Keep it short and simple.
 
                 **CRITICAL INSTRUCTION FOR CONCLUSION:**
                 - **Tóm tắt ý chính và quan điểm**: 
@@ -229,7 +229,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 model: brainstormingModel,
                 contents,
                 config: {
-                    systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Ensure the outline follows a 40/60 structure (Body 1: weaker/opposing, Body 2: stronger/opinion). Ensure Introduction Paraphrase is distinct from the prompt. Keep Conclusion concise. Insert English vocabulary suggestions directly into the text using square brackets [ ] for ALL sections.",
+                    systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Ensure the outline follows a 40/60 structure (Body 1: weaker/opposing, Body 2: stronger/opinion). Ensure Introduction Paraphrase is simple, concise, and cliché-free. Insert English vocabulary suggestions directly into the text using square brackets [ ] for ALL sections.",
                     responseMimeType: "application/json",
                     responseSchema: {
                         type: Type.OBJECT,
