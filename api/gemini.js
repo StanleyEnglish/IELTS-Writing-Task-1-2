@@ -179,27 +179,25 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
 
                 The output MUST be an array of exactly 4 strings, representing the 4 main sections of the essay.
                 
-                **CRITICAL INSTRUCTION FOR CONTENT STRATEGY & OPINION:**
-                - **Address Two Parts**: Ensure Body 1 and Body 2 address distinct aspects or sides of the prompt (e.g., View 1 vs View 2, Reason 1 vs Reason 2, Pros vs Cons).
-                - **Explicit Opinion**: The outline MUST clearly show the writer's stance (agree/disagree, positive/negative, etc.).
-                  - **Luận điểm (Thesis)**: Must clearly state the position.
-                  - **Tóm tắt ý chính và quan điểm (Conclusion)**: Must reaffirm this position decisively.
+                **CRITICAL INSTRUCTION FOR CONTENT STRATEGY (40/60 RULE):**
+                - You MUST adopt a **clear standpoint**. Do not sit on the fence (50/50).
+                - Use a **40/60 structure**:
+                  - **Body 1 (40%)**: Discuss the opposing view, the weaker argument, or the concession.
+                  - **Body 2 (60%)**: Discuss the writer's opinion, the stronger argument, or the main solution. This paragraph should be slightly more developed to emphasize the standpoint.
 
                 **CRITICAL INSTRUCTION FOR INTRODUCTION:**
-                - **Diễn giải đề (Paraphrase)**: The suggestion MUST completely rephrase the prompt using synonyms and different grammatical structures. **Do NOT simply copy or translate the prompt word-for-word.**
-                - **Luận điểm (Thesis Statement)**: Keep it simple, clear, concise, and not too long. Avoid overly complicated sentence structures.
+                - **Diễn giải đề**: Paraphrase the prompt using synonyms and different grammatical structures. **Do NOT simply copy.**
+                - **Luận điểm**: Keep it simple, clear, concise. Clearly state the position.
 
                 **CRITICAL INSTRUCTION FOR CONCLUSION:**
                 - **Tóm tắt ý chính và quan điểm**: 
-                  - Briefly summarize the main arguments from Body 1 and Body 2.
-                  - Directly answer the question/Restate opinion (e.g., "I completely agree...").
-                  - Keep it concise.
-                - **DO NOT** provide a generic "Final Thought", "Prediction", or "Lời kết".
+                  - Concise summary of main points.
+                  - Direct answer to the question/restate opinion.
+                  - **Keep it simple**. Do not give too much information.
 
                 **CRITICAL INSTRUCTION FOR VOCABULARY:**
-                - For **ALL SECTIONS (Introduction, Body Paragraphs, Conclusion)**: Insert natural, topic-specific, Band 7+ English collocations or phrases directly next to the relevant Vietnamese concepts, enclosed in square brackets.
+                - For **ALL SECTIONS**: Insert natural, topic-specific, Band 7+ English collocations directly next to the relevant Vietnamese concepts, enclosed in square brackets [ ].
                 - **Criteria**: Vocabulary must be **natural, appropriate, clear, and practical**. Avoid overly fancy or obscure words. Focus on collocations that boost Lexical Resource (LR).
-                - Example format: "Người dân ngày càng phụ thuộc vào công nghệ [increasingly rely on technology] để làm việc..."
 
                 **STRUCTURE & LABELS:**
                 You MUST use the following **VIETNAMESE LABELS** in **Bold** (Markdown style).
@@ -207,23 +205,23 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 Structure the response exactly as follows:
 
                 1. **Mở bài**:
-                - **Diễn giải đề**: [Vietnamese suggestion for paraphrasing] [vocabulary]
-                - **Luận điểm**: [Vietnamese suggestion for position] [vocabulary]
+                - **Diễn giải đề**: [Vietnamese suggestion] [vocabulary]
+                - **Luận điểm**: [Vietnamese suggestion] [vocabulary]
 
                 2. **Thân bài 1**:
-                - **Câu chủ đề**: [State the main idea] [vocabulary]
-                - **Giải thích**: [Explain the idea in detail] [vocabulary]
-                - **Ví dụ**: [Provide a specific, realistic example. e.g. "Ví dụ..."] [vocabulary]
-                - **Kết quả/Liên kết**: [Conclude or link to next point] [vocabulary]
+                - **Câu chủ đề**: [State main idea] [vocabulary]
+                - **Giải thích**: [Explain] [vocabulary]
+                - **Ví dụ**: [Example] [vocabulary]
+                - **Kết quả/ liên kết**: [Link] [vocabulary]
 
                 3. **Thân bài 2**:
-                - **Câu chủ đề**: [State the main idea] [vocabulary]
-                - **Giải thích**: [Explain the idea in detail] [vocabulary]
-                - **Ví dụ**: [Provide a specific, realistic example] [vocabulary]
-                - **Kết quả/Liên kết**: [Conclude or link] [vocabulary]
+                - **Câu chủ đề**: [State main idea] [vocabulary]
+                - **Giải thích**: [Explain] [vocabulary]
+                - **Ví dụ**: [Example] [vocabulary]
+                - **Kết quả/ liên kết**: [Link] [vocabulary]
 
                 4. **Kết bài**:
-                - **Tóm tắt ý chính và quan điểm**: [Summarize main points and restate opinion concise] [vocabulary]
+                - **Tóm tắt ý chính và quan điểm**: [Concise summary & opinion] [vocabulary]
 
                 Language: Vietnamese for the outline content. English for the specific Vocabulary items inside square brackets [ ].`;
 
@@ -231,7 +229,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 model: brainstormingModel,
                 contents,
                 config: {
-                    systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Ensure the outline addresses two parts of the problem/topic and explicitly states an opinion (Agree/Disagree, etc.) in the Introduction and Conclusion. Ensure Introduction Paraphrase is distinct from the prompt. Keep Introduction and Conclusion suggestions simple, concise and clear. Insert English vocabulary suggestions directly into the text using square brackets [ ] for ALL sections. For Vocabulary, strictly prioritize naturalness, appropriateness, and clarity (Band 7+ style).",
+                    systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Ensure the outline follows a 40/60 structure (Body 1: weaker/opposing, Body 2: stronger/opinion). Ensure Introduction Paraphrase is distinct from the prompt. Keep Conclusion concise. Insert English vocabulary suggestions directly into the text using square brackets [ ] for ALL sections.",
                     responseMimeType: "application/json",
                     responseSchema: {
                         type: Type.OBJECT,
@@ -266,7 +264,7 @@ export const generateWritingSuggestions = async (textToAnalyze, apiKey) => {
     
     try {
         const apiCall = async () => {
-            const systemInstruction = "You are a helpful IELTS Writing tutor. The user will provide a phrase or sentence (likely in Vietnamese or simple English) from their essay outline. Your task is to suggest EXACTLY ONE way to express this idea in **Direct, Formal, Academic English** suitable for an IELTS Band 7+ essay. Do NOT give multiple options. Focus on clarity, precision, and naturalness. Avoid overly complicated or flowery language.";
+            const systemInstruction = "You are a helpful IELTS Writing tutor. The user will provide a phrase or sentence from their essay outline (often Vietnamese mixed with English suggestions). Your task is to suggest EXACTLY ONE complete sentence expressing this idea in **Direct, Formal, Academic English** suitable for an IELTS Band 7+ essay.\n\n**CRITICAL RULE:** If the input text contains a specific English vocabulary suggestion (e.g., words in brackets [ ]), you **MUST** use that specific vocabulary in your suggested sentence to demonstrate its correct usage.\n\nDo NOT give multiple options. Focus on clarity, precision, and naturalness. Avoid overly complicated or flowery language.";
             
             const promptContent = `
             Context: The user is writing an IELTS essay.
