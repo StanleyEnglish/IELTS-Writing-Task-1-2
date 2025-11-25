@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import type { Feedback, TaskType, TaskContext } from './types';
+import type { Feedback, TaskType, TaskContext, HighScore } from './types';
 import { IELTS_TASK_2_PROMPTS } from './constants';
 import { generateGuidance, getIeltsFeedback, generateBrainstormingIdeas } from './api/gemini.js';
 import Header from './components/Header';
 import PromptSection from './components/PromptSection';
 import WritingEditor from './components/WritingEditor';
 import FeedbackDisplay from './components/FeedbackDisplay';
+import Leaderboard from './components/Leaderboard';
 
 const getInitialTaskContext = (isLoadingPrompt = false, isInitialized = false): TaskContext => ({
   prompt: '',
@@ -24,6 +25,28 @@ const getInitialTaskContext = (isLoadingPrompt = false, isInitialized = false): 
   isInitialized,
 });
 
+const calculateScoreNumeric = (feedback: Feedback): number => {
+    const scores = [
+        feedback.taskCompletionScore,
+        feedback.coherenceCohesionScore,
+        feedback.lexicalResourceScore,
+        feedback.grammaticalRangeScore,
+    ];
+    const average = scores.reduce((a, b) => a + b, 0) / 4;
+    return average;
+};
+
+const formatScore = (average: number): string => {
+    const decimalPart = average - Math.floor(average);
+    if (decimalPart >= 0.75) {
+        return `${Math.ceil(average)}.0`;
+    }
+    if (decimalPart >= 0.25) {
+        return `${Math.floor(average)}.5`;
+    }
+    return `${Math.floor(average)}.0`;
+};
+
 const App: React.FC = () => {
   const [taskType, setTaskType] = useState<TaskType>('Task 2');
   const [task1Context, setTask1Context] = useState<TaskContext>({
@@ -32,6 +55,13 @@ const App: React.FC = () => {
   });
   const [task2Context, setTask2Context] = useState<TaskContext>(getInitialTaskContext(true, false));
   const [error, setError] = useState<string | null>(null);
+
+  // App Mode (Landing vs Main)
+  const [isAppStarted, setIsAppStarted] = useState(false);
+  const [userNickname, setUserNickname] = useState('');
+
+  // High Scores
+  const [highScores, setHighScores] = useState<HighScore[]>([]);
 
   // API Key State
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -44,15 +74,32 @@ const App: React.FC = () => {
   const activeContext = taskType === 'Task 1' ? task1Context : task2Context;
   const setActiveContext = taskType === 'Task 1' ? setTask1Context : setTask2Context;
   
-  // Load API Key from localStorage on initial render
+  // Load API Key and High Scores on initial render
   useEffect(() => {
     const storedKey = localStorage.getItem('gemini-api-key');
     if (storedKey) {
       setApiKey(storedKey);
-    } else {
-      setApiKeyError("Please enter your Google Gemini API key to begin.");
+    }
+
+    const storedScores = localStorage.getItem('ielts-high-scores');
+    if (storedScores) {
+        try {
+            setHighScores(JSON.parse(storedScores));
+        } catch (e) {
+            console.error("Failed to parse high scores", e);
+        }
     }
   }, []);
+
+  // Save High Score Helper
+  const saveHighScore = (newScore: HighScore) => {
+    const updatedScores = [...highScores, newScore]
+        .sort((a, b) => b.score - a.score) // Sort descending by numeric score
+        .slice(0, 10); // Keep top 10
+
+    setHighScores(updatedScores);
+    localStorage.setItem('ielts-high-scores', JSON.stringify(updatedScores));
+  };
   
   const handleApiError = (e: unknown) => {
     const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
@@ -99,11 +146,12 @@ const App: React.FC = () => {
     setTaskType(newType);
   };
   
+  // Initial prompt generation when entering the app
   useEffect(() => {
-    if (taskType === 'Task 2' && !task2Context.isInitialized && apiKey) {
+    if (isAppStarted && taskType === 'Task 2' && !task2Context.isInitialized && apiKey) {
       handleNewPrompt();
     }
-  }, [taskType, task2Context.isInitialized, handleNewPrompt, apiKey]);
+  }, [isAppStarted, taskType, task2Context.isInitialized, handleNewPrompt, apiKey]);
   
   useEffect(() => {
     if (!isTimerActive) return;
@@ -198,6 +246,24 @@ const App: React.FC = () => {
 
     try {
       const result = await getIeltsFeedback(taskType, activeContext.prompt, activeContext.userEssay, activeContext.task1Image, apiKey);
+      
+      // Calculate and save high score
+      const numericScore = calculateScoreNumeric(result);
+      const displayScore = formatScore(numericScore);
+      
+      const newRecord: HighScore = {
+          id: Date.now().toString(),
+          nickname: userNickname || 'Anonymous',
+          date: new Date().toISOString(),
+          score: numericScore,
+          displayScore: displayScore,
+          prompt: activeContext.prompt,
+          essay: activeContext.userEssay,
+          taskType: taskType
+      };
+      
+      saveHighScore(newRecord);
+      
       setActiveContext(prev => ({ ...prev, feedback: result, isLoadingFeedback: false }));
     } catch (e) {
       handleApiError(e);
@@ -225,8 +291,24 @@ const App: React.FC = () => {
       setTimeRemaining(3600);
       setIsTimerActive(false);
   };
+
+  const handleStartPractice = (nickname: string) => {
+      setUserNickname(nickname);
+      setIsAppStarted(true);
+  };
   
   const isLoading = activeContext.isLoadingPrompt || activeContext.isLoadingFeedback;
+
+  if (!isAppStarted) {
+      return (
+          <Leaderboard 
+            highScores={highScores}
+            apiKey={apiKey}
+            onSaveApiKey={handleSaveApiKey}
+            onStartPractice={handleStartPractice}
+          />
+      );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -244,6 +326,18 @@ const App: React.FC = () => {
       />
       <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
         <div className="flex flex-col gap-8">
+            <div className="flex justify-between items-center">
+                <button 
+                    onClick={() => setIsAppStarted(false)}
+                    className="self-start text-sm text-sky-600 hover:text-sky-800 flex items-center gap-1 font-medium"
+                >
+                    &larr; Back to Hall of Fame
+                </button>
+                <div className="text-sm text-slate-500">
+                    Writing as: <span className="font-semibold text-slate-700">{userNickname || 'Anonymous'}</span>
+                </div>
+            </div>
+
           {/* Prompt and Editor Section: Grid Layout for Large Screens */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
             <div className="h-full">

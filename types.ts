@@ -48,6 +48,17 @@ export interface WritingSuggestion {
     explanation: string;
 }
 
+export interface HighScore {
+    id: string;
+    nickname: string;
+    date: string;
+    score: number;
+    displayScore: string; // e.g. "7.5"
+    prompt: string;
+    essay: string;
+    taskType: TaskType;
+}
+
 export interface TaskContext {
   prompt: string;
   customPromptInput: string;
