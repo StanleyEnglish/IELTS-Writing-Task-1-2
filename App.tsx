@@ -7,7 +7,7 @@ import Header from './components/Header';
 import PromptSection from './components/PromptSection';
 import WritingEditor from './components/WritingEditor';
 import FeedbackDisplay from './components/FeedbackDisplay';
-import Leaderboard from './components/Leaderboard';
+import Dashboard from './components/Dashboard';
 
 const getInitialTaskContext = (isLoadingPrompt = false, isInitialized = false): TaskContext => ({
   prompt: '',
@@ -56,12 +56,11 @@ const App: React.FC = () => {
   const [task2Context, setTask2Context] = useState<TaskContext>(getInitialTaskContext(true, false));
   const [error, setError] = useState<string | null>(null);
 
-  // App Mode (Landing vs Main)
+  // App Mode (Dashboard vs Main)
   const [isAppStarted, setIsAppStarted] = useState(false);
-  const [userNickname, setUserNickname] = useState('');
 
-  // High Scores
-  const [highScores, setHighScores] = useState<HighScore[]>([]);
+  // Score History
+  const [history, setHistory] = useState<HighScore[]>([]);
 
   // API Key State
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -74,37 +73,27 @@ const App: React.FC = () => {
   const activeContext = taskType === 'Task 1' ? task1Context : task2Context;
   const setActiveContext = taskType === 'Task 1' ? setTask1Context : setTask2Context;
   
-  // Load API Key, High Scores, and Nickname on initial render
   useEffect(() => {
     const storedKey = localStorage.getItem('gemini-api-key');
     if (storedKey) {
       setApiKey(storedKey);
     }
 
-    const storedScores = localStorage.getItem('ielts-high-scores');
-    if (storedScores) {
+    const storedHistory = localStorage.getItem('ielts-score-history');
+    if (storedHistory) {
         try {
-            setHighScores(JSON.parse(storedScores));
+            setHistory(JSON.parse(storedHistory));
         } catch (e) {
-            console.error("Failed to parse high scores", e);
+            console.error("Failed to parse history", e);
         }
-    }
-
-    const storedNickname = localStorage.getItem('ielts-user-nickname');
-    if (storedNickname) {
-        setUserNickname(storedNickname);
     }
   }, []);
 
-  // Save High Score Helper - Robust Functional Update
-  const saveHighScore = (newScore: HighScore) => {
-    setHighScores(prevScores => {
-        const updatedScores = [...prevScores, newScore]
-            .sort((a, b) => b.score - a.score) // Sort descending by numeric score
-            .slice(0, 10); // Keep top 10
-
-        localStorage.setItem('ielts-high-scores', JSON.stringify(updatedScores));
-        return updatedScores;
+  const saveHistory = (newRecord: HighScore) => {
+    setHistory(prev => {
+        const updated = [newRecord, ...prev]; // Newest first
+        localStorage.setItem('ielts-score-history', JSON.stringify(updated));
+        return updated;
     });
   };
   
@@ -254,13 +243,12 @@ const App: React.FC = () => {
     try {
       const result = await getIeltsFeedback(taskType, activeContext.prompt, activeContext.userEssay, activeContext.task1Image, apiKey);
       
-      // Calculate and save high score
       const numericScore = calculateScoreNumeric(result);
       const displayScore = formatScore(numericScore);
       
       const newRecord: HighScore = {
           id: Date.now().toString(),
-          nickname: userNickname || 'Anonymous',
+          nickname: 'User', // Generic name since we removed nickname tracking
           date: new Date().toISOString(),
           score: numericScore,
           displayScore: displayScore,
@@ -269,7 +257,7 @@ const App: React.FC = () => {
           taskType: taskType
       };
       
-      saveHighScore(newRecord);
+      saveHistory(newRecord);
       
       setActiveContext(prev => ({ ...prev, feedback: result, isLoadingFeedback: false }));
     } catch (e) {
@@ -279,7 +267,6 @@ const App: React.FC = () => {
   };
   
   const handleSaveApiKey = (key: string) => {
-    // A very basic check. Real validation happens on API call.
     if (!key.startsWith('AIza')) {
         setApiKeyError("This doesn't look like a valid Gemini API key. Please check it.");
         return;
@@ -299,22 +286,131 @@ const App: React.FC = () => {
       setIsTimerActive(false);
   };
 
-  const handleStartPractice = (nickname: string) => {
-      setUserNickname(nickname);
-      localStorage.setItem('ielts-user-nickname', nickname); // Save nickname
+  const handleStartPractice = () => {
       setIsAppStarted(true);
+  };
+
+  const handleExportToWord = () => {
+    const feedback = activeContext.feedback;
+    const essay = activeContext.userEssay;
+    const prompt = activeContext.prompt;
+
+    if (!feedback) return;
+
+    const overallScore = formatScore(calculateScoreNumeric(feedback));
+    
+    // Create HTML content for the Word document
+    const htmlContent = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+            <meta charset="utf-8">
+            <title>IELTS Writing Feedback</title>
+            <style>
+                body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.5; }
+                h1 { font-size: 18pt; font-weight: bold; text-align: center; margin-bottom: 20px; }
+                h2 { font-size: 14pt; font-weight: bold; margin-top: 15px; margin-bottom: 10px; color: #2c3e50; }
+                .essay-section { margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 20px; }
+                .score-box { font-size: 16pt; font-weight: bold; color: #e74c3c; margin-bottom: 20px; text-align: center; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #000; padding: 10px; vertical-align: top; }
+                th { background-color: #f2f2f2; font-weight: bold; }
+                .criteria-name { font-weight: bold; color: #2980b9; }
+                .score-cell { font-weight: bold; text-align: center; }
+            </style>
+        </head>
+        <body>
+            <h1>IELTS Writing Feedback Report</h1>
+            
+            <div class="score-box">
+                Overall Band Score: ${overallScore}
+            </div>
+
+            <div class="essay-section">
+                <h2>Prompt</h2>
+                <p><i>${prompt}</i></p>
+                
+                <h2>Your Essay</h2>
+                <p>${essay.replace(/\n/g, '<br>')}</p>
+            </div>
+
+            <h2>Detailed Evaluation</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%">Criteria</th>
+                        <th style="width: 10%">Score</th>
+                        <th style="width: 35%">Strengths</th>
+                        <th style="width: 35%">Weaknesses</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="criteria-name">${taskType === 'Task 1' ? 'Task Achievement' : 'Task Response'}</td>
+                        <td class="score-cell">${feedback.taskCompletionScore}</td>
+                        <td>${feedback.taskCompletion.strengths}</td>
+                        <td>${feedback.taskCompletion.weaknesses}</td>
+                    </tr>
+                    <tr>
+                        <td class="criteria-name">Coherence & Cohesion</td>
+                        <td class="score-cell">${feedback.coherenceCohesionScore}</td>
+                        <td>${feedback.coherenceCohesion.strengths}</td>
+                        <td>${feedback.coherenceCohesion.weaknesses}</td>
+                    </tr>
+                    <tr>
+                        <td class="criteria-name">Lexical Resource</td>
+                        <td class="score-cell">${feedback.lexicalResourceScore}</td>
+                        <td>${feedback.lexicalResource.strengths}</td>
+                        <td>
+                            ${feedback.lexicalResource.weaknesses}
+                            ${feedback.lexicalResource.mistakes && feedback.lexicalResource.mistakes.length > 0 ? 
+                                '<br><b>Mistakes:</b><br>' + feedback.lexicalResource.mistakes.map(m => `"${m.originalPhrase}" -> "${m.suggestedCorrection}"`).join('<br>') 
+                                : ''}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="criteria-name">Grammatical Range & Accuracy</td>
+                        <td class="score-cell">${feedback.grammaticalRangeScore}</td>
+                        <td>${feedback.grammaticalRange.strengths}</td>
+                        <td>
+                            ${feedback.grammaticalRange.weaknesses}
+                             ${feedback.grammaticalRange.mistakes && feedback.grammaticalRange.mistakes.length > 0 ? 
+                                '<br><b>Mistakes:</b><br>' + feedback.grammaticalRange.mistakes.map(m => `"${m.originalPhrase}" -> "${m.suggestedCorrection}"`).join('<br>') 
+                                : ''}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <br>
+            <p><i>Generated by IELTS Writing Master AI</i></p>
+        </body>
+        </html>
+    `;
+
+    // Create a Blob and trigger download
+    const blob = new Blob(['\ufeff', htmlContent], {
+        type: 'application/msword'
+    });
+    
+    // Create link and simulate click
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `IELTS_Feedback_${new Date().toISOString().slice(0,10)}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
   
   const isLoading = activeContext.isLoadingPrompt || activeContext.isLoadingFeedback;
 
   if (!isAppStarted) {
       return (
-          <Leaderboard 
-            highScores={highScores}
+          <Dashboard 
+            history={history}
             apiKey={apiKey}
             onSaveApiKey={handleSaveApiKey}
             onStartPractice={handleStartPractice}
-            savedNickname={userNickname}
+            apiKeyError={apiKeyError}
           />
       );
   }
@@ -340,14 +436,11 @@ const App: React.FC = () => {
                     onClick={() => setIsAppStarted(false)}
                     className="self-start text-sm text-sky-600 hover:text-sky-800 flex items-center gap-1 font-medium"
                 >
-                    &larr; Back to Hall of Fame
+                    &larr; Back to Dashboard
                 </button>
-                <div className="text-sm text-slate-500">
-                    Writing as: <span className="font-semibold text-slate-700">{userNickname || 'Anonymous'}</span>
-                </div>
             </div>
 
-          {/* Prompt and Editor Section: Grid Layout for Large Screens */}
+          {/* Prompt and Editor Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
             <div className="h-full">
                 <PromptSection
@@ -377,11 +470,13 @@ const App: React.FC = () => {
                   setEssay={(val) => setActiveContext(p => ({...p, userEssay: val}))}
                   onSubmit={handleSubmitEssay}
                   isLoading={activeContext.isLoadingFeedback}
+                  onExportWord={handleExportToWord}
+                  hasFeedback={!!activeContext.feedback}
                 />
             </div>
           </div>
 
-          {/* Feedback Section - Full Width at Bottom */}
+          {/* Feedback Section */}
           <div className="w-full">
              <FeedbackDisplay 
                 taskType={taskType} 
