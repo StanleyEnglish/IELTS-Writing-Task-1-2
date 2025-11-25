@@ -74,7 +74,7 @@ const App: React.FC = () => {
   const activeContext = taskType === 'Task 1' ? task1Context : task2Context;
   const setActiveContext = taskType === 'Task 1' ? setTask1Context : setTask2Context;
   
-  // Load API Key and High Scores on initial render
+  // Load API Key, High Scores, and Nickname on initial render
   useEffect(() => {
     const storedKey = localStorage.getItem('gemini-api-key');
     if (storedKey) {
@@ -88,6 +88,11 @@ const App: React.FC = () => {
         } catch (e) {
             console.error("Failed to parse high scores", e);
         }
+    }
+
+    const storedNickname = localStorage.getItem('ielts-user-nickname');
+    if (storedNickname) {
+        setUserNickname(storedNickname);
     }
   }, []);
 
@@ -294,6 +299,7 @@ const App: React.FC = () => {
 
   const handleStartPractice = (nickname: string) => {
       setUserNickname(nickname);
+      localStorage.setItem('ielts-user-nickname', nickname); // Save nickname
       setIsAppStarted(true);
   };
   
@@ -306,6 +312,7 @@ const App: React.FC = () => {
             apiKey={apiKey}
             onSaveApiKey={handleSaveApiKey}
             onStartPractice={handleStartPractice}
+            savedNickname={userNickname}
           />
       );
   }

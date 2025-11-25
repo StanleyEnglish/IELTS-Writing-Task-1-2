@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { HighScore } from '../types';
 import { BookOpenIcon, CheckCircleIcon, SparklesIcon, XCircleIcon } from './icons';
 
@@ -8,15 +8,23 @@ interface LeaderboardProps {
     apiKey: string | null;
     onSaveApiKey: (key: string) => void;
     onStartPractice: (nickname: string) => void;
+    savedNickname: string;
 }
 
 const BAD_WORDS = ['admin', 'root', 'shit', 'fuck', 'damn', 'bitch', 'crap', 'piss', 'dick', 'darn', 'cock', 'pussy', 'ass', 'asshole', 'fag', 'bastard', 'slut', 'douche', 'cunt', 'whore'];
 
-const Leaderboard: React.FC<LeaderboardProps> = ({ highScores, apiKey, onSaveApiKey, onStartPractice }) => {
+const Leaderboard: React.FC<LeaderboardProps> = ({ highScores, apiKey, onSaveApiKey, onStartPractice, savedNickname }) => {
     const [localApiKey, setLocalApiKey] = useState(apiKey || '');
-    const [nickname, setNickname] = useState('');
+    const [nickname, setNickname] = useState(savedNickname || '');
     const [nicknameError, setNicknameError] = useState<string | null>(null);
     const [selectedEssay, setSelectedEssay] = useState<HighScore | null>(null);
+
+    // Sync local nickname state if the savedNickname prop loads/changes (e.g. from localStorage)
+    useEffect(() => {
+        if (savedNickname) {
+            setNickname(savedNickname);
+        }
+    }, [savedNickname]);
 
     const handleStart = () => {
         if (!nickname.trim()) {
