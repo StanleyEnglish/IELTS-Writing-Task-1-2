@@ -96,14 +96,16 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Save High Score Helper
+  // Save High Score Helper - Robust Functional Update
   const saveHighScore = (newScore: HighScore) => {
-    const updatedScores = [...highScores, newScore]
-        .sort((a, b) => b.score - a.score) // Sort descending by numeric score
-        .slice(0, 10); // Keep top 10
+    setHighScores(prevScores => {
+        const updatedScores = [...prevScores, newScore]
+            .sort((a, b) => b.score - a.score) // Sort descending by numeric score
+            .slice(0, 10); // Keep top 10
 
-    setHighScores(updatedScores);
-    localStorage.setItem('ielts-high-scores', JSON.stringify(updatedScores));
+        localStorage.setItem('ielts-high-scores', JSON.stringify(updatedScores));
+        return updatedScores;
+    });
   };
   
   const handleApiError = (e: unknown) => {
