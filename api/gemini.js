@@ -7,27 +7,54 @@ const feedbackModel = 'gemini-2.5-flash';
 
 const handleApiError = (error, context) => {
     console.error(`Error during ${context}:`, error);
+    
+    let errorMessage = 'An unknown error occurred';
+    
+    // Attempt to extract the actual error message from various structures
     if (error instanceof Error) {
-        if (error.message.includes('API key not valid')) {
-            throw new Error("Your API key is not valid. Please check it and try again.");
+        errorMessage = error.message;
+    } else if (typeof error === 'object' && error !== null) {
+        // Handle raw JSON error objects like { error: { code: 429, message: ... } }
+        if (error.error && error.error.message) {
+            errorMessage = error.error.message;
+        } else {
+            try {
+                errorMessage = JSON.stringify(error);
+            } catch (e) {
+                errorMessage = String(error);
+            }
         }
-        if (error.message.toLowerCase().includes('quota')) {
-            throw new Error("You have likely exceeded your API key's usage quota. Please check your account on Google AI Studio.");
-        }
-        if (error.message.includes('schema')) {
-            throw new Error("The AI had trouble formatting its response. This is often a temporary issue. Please try submitting again.");
-        }
-        if (error.message.includes('[400]')) {
-            throw new Error("The request to the AI was invalid, which could be due to the prompt's content. Please try modifying your essay or prompt.");
-        }
-        if (error.message.includes('503') || error.message.includes('500')) {
-            throw new Error("The AI service is currently unavailable or experiencing high traffic. Please wait a few moments and try again.");
-        }
-        if (error.message.toLowerCase().includes('safety')) {
-            throw new Error("The response was blocked due to safety concerns. Please modify your prompt or essay content.");
-        }
+    } else {
+        errorMessage = String(error);
     }
-    throw new Error(`Failed to ${context}. This may be a temporary issue with the AI service. If the problem persists, please check your API key.`);
+
+    // specific checks
+    if (errorMessage.includes('API key not valid') || errorMessage.includes('API_KEY_INVALID')) {
+        throw new Error("Your API key is not valid. Please check it and try again.");
+    }
+    
+    // Explicitly handle Quota/Rate Limit errors (429)
+    if (errorMessage.includes('429') || 
+        errorMessage.includes('RESOURCE_EXHAUSTED') || 
+        errorMessage.toLowerCase().includes('quota') ||
+        (error?.error?.code === 429)) {
+        throw new Error("Your API key has exceeded its usage quota (Error 429). Please use a different API key or check your billing details on Google AI Studio.");
+    }
+    
+    if (errorMessage.includes('schema')) {
+        throw new Error("The AI had trouble formatting its response. This is often a temporary issue. Please try submitting again.");
+    }
+    if (errorMessage.includes('[400]')) {
+        throw new Error("The request to the AI was invalid. Please try modifying your essay or prompt.");
+    }
+    if (errorMessage.includes('503') || errorMessage.includes('500')) {
+        throw new Error("The AI service is currently unavailable. Please wait a few moments and try again.");
+    }
+    if (errorMessage.toLowerCase().includes('safety')) {
+        throw new Error("The response was blocked due to safety concerns. Please modify your prompt or essay content.");
+    }
+    
+    throw new Error(errorMessage);
 };
 
 // Helper to retry API calls on 503/500 errors
@@ -36,12 +63,16 @@ const callWithRetry = async (apiCallFn, retries = 5, initialDelay = 2000) => {
         try {
             return await apiCallFn();
         } catch (error) {
-            const isServerError = error.message.includes('503') || error.message.includes('500');
+            // Re-use logic to detect status code if possible, otherwise rely on message
+            const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+            const isServerError = errorMessage.includes('503') || errorMessage.includes('500');
+            const isQuotaError = errorMessage.includes('429') || errorMessage.includes('RESOURCE_EXHAUSTED');
             const isLastAttempt = i === retries - 1;
 
-            if (isServerError && !isLastAttempt) {
+            // Do NOT retry on quota errors (429), only temporary server errors (5xx)
+            if (isServerError && !isQuotaError && !isLastAttempt) {
                 const delay = initialDelay * Math.pow(2, i);
-                console.warn(`API Error (Attempt ${i + 1}/${retries}). Retrying in ${delay}ms...`, error.message);
+                console.warn(`API Error (Attempt ${i + 1}/${retries}). Retrying in ${delay}ms...`, errorMessage);
                 await new Promise(resolve => setTimeout(resolve, delay));
                 continue;
             }
@@ -386,9 +417,10 @@ ${subset}
 `;
         }
 
-        const systemInstruction = `You are an expert IELTS examiner providing feedback on an IELTS Writing ${taskType} essay.
+        const systemInstruction = `You are a STRICT and RIGOROUS IELTS examiner providing feedback on an IELTS Writing ${taskType} essay.
 
-        **Examiner's Marking Method (Strict Adherence Required):**
+        **Examiner's Marking Method (STRICT ADHERENCE REQUIRED):**
+        - **RIGOROUS GRADING:** Do not inflate scores. Be harsh on unnatural phrasing, awkward collocations, and grammatical slips.
         - **Process:** Start with ${taskCompletionCriterion}, then Coherence & Cohesion (CC), Lexical Resource (LR), and Grammatical Range (GRA).
         - **Matching:** For each criterion, find the band descriptor statement that best matches the essay features. Check positive features of that band and ensure no negative features from lower bands are present.
         
@@ -408,6 +440,10 @@ ${subset}
         2. **Task 1:** Missing key features = Band 4 TA. No/unclear overview = Band 5 TA. No data = Band 5 TA.
         3. **Format:** Bullet points/lists = Band 4/5. Must be paragraphs.
         4. **Task 2 Evidence:** Fabricated statistics (e.g. "80% of people...") are a weakness. Reward real-world examples/experience.
+        5. **Task Response Logic & Examples (CRITICAL):** 
+           - If you identify **logical fallacies**, **undeveloped ideas**, or **fabricated examples**:
+           - You **MUST** provide a specific **"Corrected Example"** or **"Logical Fix"** in the 'weaknesses' section.
+           - Do not just criticize; show the user exactly **HOW** to fix the logic or example to be Band 7+.
 
         **Output Requirements:**
         1. Evaluate against Band 5-9 descriptors.
@@ -469,7 +505,10 @@ ${subset}
                         properties: {
                             taskCompletion: { 
                                 type: Type.OBJECT,
-                                properties: baseFeedbackProperties,
+                                properties: {
+                                    strengths: { type: Type.STRING, description: "Positive feedback on the criterion, citing specific band descriptor phrases." },
+                                    weaknesses: { type: Type.STRING, description: "Actionable areas for improvement. **IMPORTANT**: For Task Response/Achievement, if there are logical/example issues, you MUST provide a concrete 'Suggested Improvement' here." }
+                                },
                                 required: ['strengths', 'weaknesses']
                             },
                             taskCompletionScore: { type: Type.INTEGER, description: `An integer band score from 5-9 for ${taskCompletionCriterion}.` },

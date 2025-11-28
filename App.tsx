@@ -99,12 +99,13 @@ const App: React.FC = () => {
   
   const handleApiError = (e: unknown) => {
     const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
-    const isApiKeyError = /API key not valid|permission denied|API key is missing/i.test(errorMessage);
+    // Update regex to include quota and 429 errors so the user can reset their key
+    const isApiKeyError = /API key not valid|permission denied|API key is missing|quota|429/i.test(errorMessage);
 
     if (isApiKeyError) {
       localStorage.removeItem('gemini-api-key');
       setApiKey(null);
-      setApiKeyError("Your API key seems invalid. Please check it or get a new one from Google AI Studio.");
+      setApiKeyError("Your API key has issues (Invalid or Quota Exceeded). Please provide a new one.");
     } else {
       setError(errorMessage);
     }
@@ -248,7 +249,7 @@ const App: React.FC = () => {
       
       const newRecord: HighScore = {
           id: Date.now().toString(),
-          nickname: 'User', // Generic name since we removed nickname tracking
+          nickname: 'User',
           date: new Date().toISOString(),
           score: numericScore,
           displayScore: displayScore,
@@ -471,7 +472,7 @@ const App: React.FC = () => {
                   onSubmit={handleSubmitEssay}
                   isLoading={activeContext.isLoadingFeedback}
                   onExportWord={handleExportToWord}
-                  hasFeedback={!!activeContext.feedback}
+                  feedback={activeContext.feedback}
                 />
             </div>
           </div>
