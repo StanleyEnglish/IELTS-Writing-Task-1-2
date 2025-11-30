@@ -36,7 +36,7 @@ const formatIdeaText = (text: string) => {
       return (
         <span 
             key={index} 
-            className="text-orange-500 font-bold ml-1"
+            className="text-emerald-600 font-bold ml-1"
         >
             {part}
         </span>
@@ -57,10 +57,10 @@ const SuggestionsModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 p-4 animate-fade-in">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col border-t-4 border-rose-500">
                 <div className="flex justify-between items-center p-4 border-b border-slate-200">
                     <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                        <SparklesIcon className="h-5 w-5 text-violet-500" />
+                        <SparklesIcon className="h-5 w-5 text-amber-500" />
                         Writing Suggestion
                     </h3>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
@@ -75,16 +75,16 @@ const SuggestionsModal: React.FC<{
 
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-8">
-                            <LoadingSpinner className="h-8 w-8 text-violet-500 mb-3" />
+                            <LoadingSpinner className="h-8 w-8 text-rose-500 mb-3" />
                             <p className="text-slate-500 text-sm">Asking AI for the best way to write this...</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
                             {suggestions.map((sug, idx) => (
-                                <div key={idx} className="border-l-4 border-violet-400 bg-violet-50 p-3 rounded-r-md">
+                                <div key={idx} className="border-l-4 border-emerald-500 bg-emerald-50 p-3 rounded-r-md">
                                     <p className="font-bold text-slate-800 text-lg mb-1">{sug.english}</p>
                                     <div className="flex gap-2 items-center text-xs mb-2">
-                                        <span className="px-2 py-0.5 bg-violet-200 text-violet-800 rounded-full font-medium">{sug.tone}</span>
+                                        <span className="px-2 py-0.5 bg-emerald-200 text-emerald-800 rounded-full font-medium">{sug.tone}</span>
                                     </div>
                                     <p className="text-sm text-slate-600">{sug.explanation}</p>
                                 </div>
@@ -200,7 +200,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
 
   return (
     <>
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 h-full overflow-y-auto max-h-[600px] custom-scrollbar relative" ref={contentRef}>
+    <div className="bg-white p-6 rounded-lg shadow-sm border border-rose-100 h-full overflow-y-auto max-h-[600px] custom-scrollbar relative" ref={contentRef}>
       <div className="flex justify-between items-start mb-4 gap-2">
         <h2 className="text-lg font-semibold text-slate-700 pt-1.5">Writing Prompt</h2>
         <div className="flex gap-2 flex-wrap justify-end">
@@ -208,7 +208,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
               <button
                 onClick={onNewPrompt}
                 disabled={isLoadingPrompt}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-sky-700 bg-sky-100 rounded-md hover:bg-sky-200 transition-colors duration-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-100 rounded-md hover:bg-emerald-200 transition-colors duration-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
               >
                 <RefreshIcon className="h-4 w-4" />
                 New Prompt
@@ -217,7 +217,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
             <button
             onClick={onSetCustomPromptMode}
             disabled={isLoadingPrompt}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-violet-700 bg-violet-100 rounded-md hover:bg-violet-200 transition-colors duration-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-rose-700 bg-rose-100 rounded-md hover:bg-rose-200 transition-colors duration-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
             >
             <PencilIcon className="h-4 w-4" />
             Insert Your Prompt
@@ -231,7 +231,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                 value={customPromptInput}
                 onChange={(e) => setCustomPromptInput(e.target.value)}
                 placeholder={`Paste or type your IELTS Writing ${taskType} prompt here...`}
-                className="w-full h-28 p-3 border border-slate-300 rounded-md resize-y focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-shadow duration-200"
+                className="w-full h-28 p-3 border border-slate-300 rounded-md resize-y focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-shadow duration-200"
                 disabled={isLoadingPrompt}
             />
             {taskType === 'Task 1' && (
@@ -240,7 +240,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
             <button
                 onClick={onGenerateFromCustomPrompt}
                 disabled={isLoadingPrompt || !customPromptInput.trim()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors duration-200 disabled:bg-slate-400 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-rose-600 rounded-md hover:bg-rose-700 transition-colors duration-200 disabled:bg-slate-400 disabled:cursor-not-allowed"
             >
                 {isLoadingPrompt ? <LoadingSpinner className="h-5 w-5" /> : <LightbulbIcon className="h-5 w-5" />}
                 Generate Guide
@@ -323,7 +323,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                                     <button
                                         onClick={onGenerateIdeas}
                                         disabled={isLoadingIdeas}
-                                        className="text-slate-400 hover:text-sky-600 transition-colors p-1 rounded-full hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="text-slate-400 hover:text-emerald-600 transition-colors p-1 rounded-full hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="Regenerate outline"
                                     >
                                         <RefreshIcon className={`h-4 w-4 ${isLoadingIdeas ? 'animate-spin' : ''}`} />
@@ -378,13 +378,13 @@ const PromptSection: React.FC<PromptSectionProps> = ({
           >
               <button
                 onClick={handleGetSuggestions}
-                className="flex items-center gap-2 bg-violet-600 text-white px-3 py-1.5 rounded-full shadow-lg hover:bg-violet-700 transition-transform hover:scale-105 font-medium text-xs"
+                className="flex items-center gap-2 bg-emerald-600 text-white px-3 py-1.5 rounded-full shadow-lg hover:bg-emerald-700 transition-transform hover:scale-105 font-medium text-xs"
               >
                   <SparklesIcon className="h-4 w-4" />
                   How to write this?
               </button>
               {/* Little arrow */}
-              <div className="w-3 h-3 bg-violet-600 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2 -z-10"></div>
+              <div className="w-3 h-3 bg-emerald-600 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2 -z-10"></div>
           </div>
       )}
     </div>

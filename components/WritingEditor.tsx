@@ -87,7 +87,7 @@ const WritingEditor: React.FC<WritingEditorProps> = ({
   }, [essay, feedback]);
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 h-full flex flex-col">
+    <div className="bg-white p-6 rounded-lg shadow-sm border border-rose-100 h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-slate-700">Your Essay</h2>
         
@@ -122,7 +122,7 @@ const WritingEditor: React.FC<WritingEditorProps> = ({
                 value={essay}
                 onChange={(e) => setEssay(e.target.value)}
                 placeholder={`Start writing your response here... (Aim for at least ${wordTarget} words)`}
-                className="w-full h-full p-4 border border-slate-300 rounded-md resize-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-shadow duration-200 font-sans text-base leading-relaxed"
+                className="w-full h-full p-4 border border-slate-300 rounded-md resize-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow duration-200 font-sans text-base leading-relaxed"
                 disabled={isLoading}
             />
         ) : (
@@ -132,7 +132,7 @@ const WritingEditor: React.FC<WritingEditorProps> = ({
             />
         )}
         
-        <div className={`absolute bottom-3 right-3 text-sm font-medium px-2 py-1 rounded shadow-sm border ${wordCount >= wordTarget ? 'text-green-700 bg-green-50 border-green-200' : 'text-slate-500 bg-slate-50 border-slate-200'}`}>
+        <div className={`absolute bottom-3 right-3 text-sm font-medium px-2 py-1 rounded shadow-sm border ${wordCount >= wordTarget ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-slate-500 bg-slate-50 border-slate-200'}`}>
           {wordCount} words
         </div>
       </div>
@@ -141,7 +141,7 @@ const WritingEditor: React.FC<WritingEditorProps> = ({
         {feedback && onExportWord && (
              <button
                 onClick={onExportWord}
-                className="flex items-center justify-center gap-2 px-4 py-3 text-base font-semibold text-indigo-700 bg-indigo-100 rounded-lg shadow-sm hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
+                className="flex items-center justify-center gap-2 px-4 py-3 text-base font-semibold text-rose-700 bg-rose-100 rounded-lg shadow-sm hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition-all duration-200"
                 title="Export feedback to Word"
             >
                 <DocumentIcon className="h-5 w-5" />
@@ -151,7 +151,7 @@ const WritingEditor: React.FC<WritingEditorProps> = ({
         <button
           onClick={onSubmit}
           disabled={isLoading || wordCount === 0}
-          className="flex items-center justify-center gap-2 px-6 py-3 text-base font-semibold text-white bg-sky-600 rounded-lg shadow-md hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-all duration-200 disabled:bg-slate-400 disabled:cursor-not-allowed"
+          className="flex items-center justify-center gap-2 px-6 py-3 text-base font-semibold text-white bg-emerald-600 rounded-lg shadow-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-200 disabled:bg-slate-400 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <>

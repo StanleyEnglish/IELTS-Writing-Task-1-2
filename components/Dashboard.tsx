@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import type { HighScore } from '../types';
-import { SparklesIcon, BookOpenIcon } from './icons';
+import { SparklesIcon, BookOpenIcon, SnowflakeIcon } from './icons';
 
 interface DashboardProps {
     history: HighScore[];
@@ -20,7 +20,7 @@ const ChartIcon: React.FC<{ className?: string }> = (props) => (
 const SimpleLineChart: React.FC<{ data: { label: string; score: number }[] }> = ({ data }) => {
     if (data.length === 0) {
         return (
-            <div className="h-64 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-lg">
+            <div className="h-64 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50">
                 <ChartIcon className="h-10 w-10 mb-2 opacity-50" />
                 <p>No data for this period</p>
             </div>
@@ -29,7 +29,7 @@ const SimpleLineChart: React.FC<{ data: { label: string; score: number }[] }> = 
 
     const height = 250;
     const width = 600;
-    const padding = 40;
+    const padding = 60; // Increased padding to prevent label obstruction
     
     const maxScore = 9;
     const minScore = 0;
@@ -60,12 +60,12 @@ const SimpleLineChart: React.FC<{ data: { label: string; score: number }[] }> = 
                     );
                 })}
 
-                {/* Chart Line */}
-                <path d={pathD} fill="none" stroke="#0ea5e9" strokeWidth="3" />
+                {/* Chart Line - Changed to Emerald Green */}
+                <path d={pathD} fill="none" stroke="#059669" strokeWidth="3" />
 
-                {/* Dots */}
+                {/* Dots - Changed to Emerald */}
                 {points.map((p, i) => (
-                    <circle key={i} cx={p.x} cy={p.y} r="4" fill="#fff" stroke="#0284c7" strokeWidth="2" />
+                    <circle key={i} cx={p.x} cy={p.y} r="4" fill="#fff" stroke="#047857" strokeWidth="2" />
                 ))}
 
                 {/* Tooltips/Labels */}
@@ -147,18 +147,25 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center p-4 md:p-8">
-            <div className="max-w-5xl w-full space-y-8">
+            <div className="max-w-5xl w-full space-y-8 relative">
+                {/* Decorative Elements */}
+                <div className="absolute top-0 right-0 -mt-10 opacity-20 pointer-events-none">
+                     <SnowflakeIcon className="h-32 w-32 text-rose-500" />
+                </div>
+                
                 <div className="text-center space-y-2 mb-8">
-                    <h1 className="text-4xl font-bold text-slate-800 tracking-tight">IELTS Writing Master</h1>
-                    <p className="text-slate-600 text-lg">Your Personal AI Writing Assistant</p>
+                    <h1 className="text-4xl font-bold text-rose-800 tracking-tight flex justify-center items-center gap-3">
+                        <span className="text-emerald-600">🎄</span> IELTS Winter Master <span className="text-emerald-600">🎄</span>
+                    </h1>
+                    <p className="text-slate-600 text-lg">Your Personal AI Writing Assistant for the Holidays</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Left Col: Start & Settings */}
                     <div className="md:col-span-1 space-y-6">
-                        <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6">
-                            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                <SparklesIcon className="h-5 w-5 text-sky-600" />
+                        <div className="bg-white rounded-xl shadow-md border border-rose-100 p-6">
+                            <h3 className="text-lg font-bold text-rose-700 mb-4 flex items-center gap-2">
+                                <SparklesIcon className="h-5 w-5 text-amber-500" />
                                 Start Practicing
                             </h3>
                             <div className="space-y-4">
@@ -171,7 +178,7 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
                                         placeholder="AIzaSy..."
                                         value={localApiKey}
                                         onChange={(e) => setLocalApiKey(e.target.value)}
-                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500 outline-none text-sm ${
+                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm ${
                                             apiKeyError ? 'border-red-500' : 'border-slate-300'
                                         }`}
                                     />
@@ -180,7 +187,7 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
                                 <button
                                     onClick={() => { handleSave(); onStartPractice(); }}
                                     disabled={!localApiKey.trim()}
-                                    className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg shadow transition-all disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-md transition-all disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     Enter Practice Mode &rarr;
                                 </button>
@@ -189,7 +196,7 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
                                         href="https://aistudio.google.com/app/apikey" 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="text-xs text-sky-600 font-semibold hover:underline"
+                                        className="text-xs text-emerald-600 font-semibold hover:underline"
                                     >
                                         Get a free API Key
                                     </a>
@@ -200,10 +207,10 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
 
                     {/* Right Col: Performance Chart */}
                     <div className="md:col-span-2">
-                         <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6 h-full">
+                         <div className="bg-white rounded-xl shadow-md border border-rose-100 p-6 h-full">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                    <BookOpenIcon className="h-5 w-5 text-indigo-600" />
+                                    <BookOpenIcon className="h-5 w-5 text-rose-600" />
                                     Performance History
                                 </h3>
                                 <div className="flex bg-slate-100 p-1 rounded-lg">
@@ -213,7 +220,7 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
                                             onClick={() => setPeriod(p)}
                                             className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
                                                 period === p 
-                                                ? 'bg-white text-sky-700 shadow-sm' 
+                                                ? 'bg-white text-emerald-700 shadow-sm' 
                                                 : 'text-slate-500 hover:text-slate-700'
                                             }`}
                                         >

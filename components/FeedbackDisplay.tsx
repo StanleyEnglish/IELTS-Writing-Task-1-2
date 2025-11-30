@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Feedback, CriterionFeedback, SentenceImprovementSuggestion, TaskType, MistakeCorrection } from '../types';
 import { BookOpenIcon, CheckCircleIcon, PuzzlePieceIcon, UsersIcon, CheckIcon, ExclamationTriangleIcon, SparklesIcon, WrenchScrewdriverIcon } from './icons';
@@ -93,24 +94,24 @@ const MistakeCorrectionList: React.FC<{ mistakes: MistakeCorrection[] }> = ({ mi
 
 
 const FeedbackCard: React.FC<{ title: string; feedbackItem: CriterionFeedback; icon: React.ReactNode; score: number }> = ({ title, feedbackItem, icon, score }) => (
-    <div className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm transition-shadow hover:shadow-md duration-300">
+    <div className="bg-white p-5 rounded-lg border border-rose-100 shadow-sm transition-shadow hover:shadow-md duration-300">
         <div className="flex justify-between items-start mb-2">
             <h4 className="text-md font-bold text-slate-700 flex items-center gap-3">
                 {icon}
                 {title}
             </h4>
-            <span className="text-2xl font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-md" aria-label={`Score: ${score}`}>
+            <span className="text-2xl font-bold text-rose-700 bg-rose-50 px-3 py-1 rounded-md" aria-label={`Score: ${score}`}>
                 {score}
             </span>
         </div>
         <div className="mt-4 space-y-4">
             {feedbackItem.strengths && (
                 <div>
-                    <h5 className="font-semibold text-sm text-green-800 bg-green-100/70 inline-flex items-center gap-2 px-2 py-1 rounded-full">
+                    <h5 className="font-semibold text-sm text-emerald-800 bg-emerald-100/70 inline-flex items-center gap-2 px-2 py-1 rounded-full">
                         <CheckIcon className="h-4 w-4" />
                         Strengths
                     </h5>
-                    <p className="text-slate-600 whitespace-pre-wrap leading-relaxed text-sm pt-2 pl-2 border-l-2 border-green-200 ml-3">{feedbackItem.strengths}</p>
+                    <p className="text-slate-600 whitespace-pre-wrap leading-relaxed text-sm pt-2 pl-2 border-l-2 border-emerald-200 ml-3">{feedbackItem.strengths}</p>
                 </div>
             )}
             {feedbackItem.weaknesses && (
@@ -136,21 +137,21 @@ const FeedbackCard: React.FC<{ title: string; feedbackItem: CriterionFeedback; i
 );
 
 const SentenceImprovementCard: React.FC<{ improvements: SentenceImprovementSuggestion[] }> = ({ improvements }) => (
-    <div className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm transition-shadow hover:shadow-md duration-300">
+    <div className="bg-white p-5 rounded-lg border border-emerald-100 shadow-sm transition-shadow hover:shadow-md duration-300">
         <h4 className="text-md font-bold text-slate-700 flex items-center gap-3 mb-4">
-            <SparklesIcon className="h-6 w-6 text-teal-500" />
+            <SparklesIcon className="h-6 w-6 text-emerald-500" />
             Sentence Improvements
         </h4>
         <ul className="space-y-5">
             {improvements.map((item, index) => (
-                <li key={index} className="border-l-4 border-teal-100 pl-4 py-1">
+                <li key={index} className="border-l-4 border-emerald-100 pl-4 py-1">
                     <p className="text-slate-500 text-sm italic">
                         <span className="font-semibold text-slate-600 not-italic">Your sentence:</span>{' '}
                         "{item.originalSentence}"
                     </p>
                     <p className="mt-2 text-sm">
-                        <span className="font-semibold text-teal-700">Suggestion:</span>{' → '}
-                        <span className="font-semibold text-teal-800">
+                        <span className="font-semibold text-emerald-700">Suggestion:</span>{' → '}
+                        <span className="font-semibold text-emerald-800">
                            "{item.suggestedSentence}"
                         </span>
                     </p>
@@ -181,9 +182,9 @@ const calculateOverallBandScore = (feedback: Feedback): string => {
 };
 
 const OverallScore: React.FC<{ score: string }> = ({ score }) => (
-    <div className="mb-6 bg-sky-100/60 border-2 border-dashed border-sky-300 p-4 rounded-lg text-center">
-        <p className="text-base font-medium text-sky-800">Approximate Overall Band Score</p>
-        <p className="text-5xl font-bold text-sky-700 tracking-tight">{score}</p>
+    <div className="mb-6 bg-rose-50 border-2 border-dashed border-rose-300 p-4 rounded-lg text-center">
+        <p className="text-base font-medium text-rose-800">Approximate Overall Band Score</p>
+        <p className="text-5xl font-bold text-rose-700 tracking-tight">{score}</p>
     </div>
 );
 
@@ -208,25 +209,25 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ taskType, feedback, i
             title={taskCompletionTitle} 
             feedbackItem={feedback.taskCompletion} 
             score={feedback.taskCompletionScore}
-            icon={<CheckCircleIcon className="h-6 w-6 text-green-500" />}
+            icon={<CheckCircleIcon className="h-6 w-6 text-emerald-500" />}
         />
         <FeedbackCard 
             title="Coherence & Cohesion" 
             feedbackItem={feedback.coherenceCohesion} 
             score={feedback.coherenceCohesionScore}
-            icon={<UsersIcon className="h-6 w-6 text-blue-500" />}
+            icon={<UsersIcon className="h-6 w-6 text-amber-500" />}
         />
         <FeedbackCard 
             title="Lexical Resource" 
             feedbackItem={feedback.lexicalResource}
             score={feedback.lexicalResourceScore}
-            icon={<BookOpenIcon className="h-6 w-6 text-indigo-500" />}
+            icon={<BookOpenIcon className="h-6 w-6 text-rose-500" />}
         />
         <FeedbackCard 
             title="Grammatical Range & Accuracy" 
             feedbackItem={feedback.grammaticalRange}
             score={feedback.grammaticalRangeScore}
-            icon={<PuzzlePieceIcon className="h-6 w-6 text-rose-500" />}
+            icon={<PuzzlePieceIcon className="h-6 w-6 text-purple-500" />}
         />
         {feedback.sentenceImprovements && feedback.sentenceImprovements.length > 0 && (
             <SentenceImprovementCard improvements={feedback.sentenceImprovements} />

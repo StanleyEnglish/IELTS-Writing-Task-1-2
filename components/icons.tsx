@@ -103,3 +103,9 @@ export const EyeIcon: React.FC<{ className?: string }> = (props) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
   </svg>
 );
+
+export const SnowflakeIcon: React.FC<{ className?: string }> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25v19.5M4.17 4.17l15.66 15.66M4.17 19.83L19.83 4.17M12 6.75a5.25 5.25 0 1 0 0 10.5 5.25 5.25 0 0 0 0-10.5Zm0 0-2.25-2.25M12 6.75l2.25-2.25M12 17.25l-2.25 2.25M12 17.25l2.25 2.25M6.75 12l-2.25-2.25M6.75 12l-2.25 2.25M17.25 12l2.25-2.25M17.25 12l2.25 2.25" />
+  </svg>
+);

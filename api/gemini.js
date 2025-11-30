@@ -315,19 +315,24 @@ export const generateWritingSuggestions = async (textToAnalyze, apiKey) => {
     
     try {
         const apiCall = async () => {
-            const systemInstruction = `You are a helpful IELTS Writing tutor. The user has selected a portion of text (a word, phrase, or sentence) from their essay outline.
+            const systemInstruction = `You are a helpful IELTS Writing tutor. The user has selected a portion of text from their essay outline.
 
 **YOUR TASK:**
-Suggest the best way to write or use this selected text in a Band 7+ IELTS essay (Formal & Academic).
+Suggest the best way to write or use this selected text in a Band 7+ IELTS essay.
 
-**CRITICAL RULES:**
+**CRITICAL RULES FOR VOCABULARY:**
+1. **Simplicity & Authenticity:** You MUST suggest **simple, clear, and high-frequency academic vocabulary**.
+2. **Avoid Obscurity:** Do NOT use complex, archaic, or overly "fancy" words.
+3. **Naturalness:** Prioritize natural collocations used by native speakers over "big words".
+4. **Logic:** The suggestion must be appropriate for the context.
+
+**OTHER RULES:**
 1. **Input Analysis:** 
-   - If Input is a **Word/Collocation**: Provide a complete, natural sentence demonstrating its usage.
-   - If Input is a **Sentence/Idea**: Translate/Refine it into a single, strong academic English sentence.
+   - If Input is a **Word/Collocation**: Provide a complete, natural sentence.
+   - If Input is a **Sentence/Idea**: Translate/Refine it into a single, strong academic English sentence using simple but precise words.
 2. **Mandatory Vocabulary Usage:** 
-   - If the input text contains specific English vocabulary suggestions (e.g. inside brackets [ ]), you **MUST** use that exact vocabulary in your suggestion.
-3. **Style:** Direct, Formal, Clear. Avoid clichés and overly flowery language.
-4. **Quantity:** Provide EXACTLY ONE best suggestion.`;
+   - If the input text contains specific English vocabulary suggestions (e.g. inside brackets [ ]), you **MUST** use that exact vocabulary.
+3. **Quantity:** Provide EXACTLY ONE best suggestion.`;
             
             const promptContent = `
             Context: IELTS Writing Task 2 Brainstorming.
@@ -336,8 +341,8 @@ Suggest the best way to write or use this selected text in a Band 7+ IELTS essay
             Provide exactly ONE suggestion in JSON format:
             {
               "english": "The complete suggested sentence or phrase.",
-              "tone": "e.g., Formal & Direct",
-              "explanation": "Brief reason for this phrasing or how to use the word."
+              "tone": "e.g., Natural & Academic",
+              "explanation": "Brief reason for this phrasing."
             }
             `;
 
@@ -392,32 +397,30 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, api
         const taskCompletionCriterion = isTask1 ? "Task Achievement" : "Task Response";
         const wordCount = essay.trim() ? essay.trim().split(/\s+/).length : 0;
         
+        // OPTIMIZATION: Reduced exemplar count from 3 to 1 to significantly save tokens and speed up processing
         let exemplarsSection = "";
         if (isTask1) {
-            const subset = getRandomExemplars(IELTS_TASK_1_EXEMPLARS, 3);
+            const subset = getRandomExemplars(IELTS_TASK_1_EXEMPLARS, 1);
             exemplarsSection = `
-**Band 9.0 Exemplars for Task 1 (Reference):**
-Use these Band 9.0 examples to calibrate your scoring for structure and task achievement.
----
+**Band 9.0 Exemplar (Reference):**
 ${subset}
----
 `;
         } else {
-            const subset = getRandomExemplars(IELTS_TASK_2_EXEMPLARS, 3);
+            const subset = getRandomExemplars(IELTS_TASK_2_EXEMPLARS, 1);
             exemplarsSection = `
-**Band 6.0 vs 7.0 Calibration (CRITICAL):**
-Study these examples to distinguish between Band 6 and Band 7 performance.
+**Band 6.0 vs 7.0 Calibration:**
 ${IELTS_TASK_2_BAND_6_7_EXEMPLARS}
 ---
-**High-Scoring Exemplars for Task 2 (Reference):**
-Use these high-scoring examples to calibrate your evaluation.
----
+**High-Scoring Exemplar (Reference):**
 ${subset}
----
 `;
         }
 
         const systemInstruction = `You are a STRICT and RIGOROUS IELTS examiner providing feedback on an IELTS Writing ${taskType} essay.
+
+        **LANGUAGE INSTRUCTION (CRITICAL):**
+        - **PRIMARY LANGUAGE:** VIETNAMESE. You must provide all explanations, analysis (strengths, weaknesses), and feedback in **Vietnamese**.
+        - **EXCEPTION:** You must keep all quoted phrases from the student's essay, specific vocabulary terms, and suggested English corrections/examples in **ENGLISH**. Do not translate the specific English examples or essay quotes.
 
         **Examiner's Marking Method (STRICT ADHERENCE REQUIRED):**
         - **RIGOROUS GRADING:** Do not inflate scores. Be harsh on unnatural phrasing, awkward collocations, and grammatical slips.
@@ -479,16 +482,16 @@ ${subset}
         const contents = { parts };
         
         const baseFeedbackProperties = {
-            strengths: { type: Type.STRING, description: "Positive feedback on the criterion, citing specific band descriptor phrases." },
-            weaknesses: { type: Type.STRING, description: "Actionable areas for improvement on the criterion, citing specific band descriptor phrases." }
+            strengths: { type: Type.STRING, description: "Positive feedback on the criterion in VIETNAMESE, citing specific band descriptor phrases." },
+            weaknesses: { type: Type.STRING, description: "Actionable areas for improvement on the criterion in VIETNAMESE, citing specific band descriptor phrases." }
         };
 
         const mistakeSchema = {
             type: Type.OBJECT,
             properties: {
-                originalPhrase: { type: Type.STRING, description: "The incorrect phrase from the essay." },
-                suggestedCorrection: { type: Type.STRING, description: "The corrected version of the phrase." },
-                explanation: { type: Type.STRING, description: "A brief explanation of the mistake." }
+                originalPhrase: { type: Type.STRING, description: "The incorrect phrase from the essay (in English)." },
+                suggestedCorrection: { type: Type.STRING, description: "The corrected version of the phrase (in English)." },
+                explanation: { type: Type.STRING, description: "A brief explanation of the mistake in VIETNAMESE." }
             },
             required: ['originalPhrase', 'suggestedCorrection', 'explanation']
         };
@@ -506,8 +509,8 @@ ${subset}
                             taskCompletion: { 
                                 type: Type.OBJECT,
                                 properties: {
-                                    strengths: { type: Type.STRING, description: "Positive feedback on the criterion, citing specific band descriptor phrases." },
-                                    weaknesses: { type: Type.STRING, description: "Actionable areas for improvement. **IMPORTANT**: For Task Response/Achievement, if there are logical/example issues, you MUST provide a concrete 'Suggested Improvement' here." }
+                                    strengths: { type: Type.STRING, description: "Positive feedback on the criterion in VIETNAMESE, citing specific band descriptor phrases." },
+                                    weaknesses: { type: Type.STRING, description: "Actionable areas for improvement in VIETNAMESE. **IMPORTANT**: For Task Response/Achievement, if there are logical/example issues, you MUST provide a concrete 'Suggested Improvement' here." }
                                 },
                                 required: ['strengths', 'weaknesses']
                             },
@@ -516,7 +519,7 @@ ${subset}
                                 type: Type.OBJECT,
                                 properties: {
                                     ...baseFeedbackProperties,
-                                    referencingAndSubstitution: { type: Type.STRING, description: "Specific feedback on referencing and substitution." }
+                                    referencingAndSubstitution: { type: Type.STRING, description: "Specific feedback on referencing and substitution in VIETNAMESE." }
                                 },
                                 required: ['strengths', 'weaknesses', 'referencingAndSubstitution']
                             },
@@ -553,8 +556,8 @@ ${subset}
                                 items: {
                                     type: Type.OBJECT,
                                         properties: {
-                                        originalSentence: { type: Type.STRING, description: "The original sentence from the user's essay." },
-                                        suggestedSentence: { type: Type.STRING, description: "The rewritten, more natural-sounding sentence." }
+                                        originalSentence: { type: Type.STRING, description: "The original sentence from the user's essay (English)." },
+                                        suggestedSentence: { type: Type.STRING, description: "The rewritten, more natural-sounding sentence (English)." }
                                     },
                                     required: ['originalSentence', 'suggestedSentence']
                                 }
