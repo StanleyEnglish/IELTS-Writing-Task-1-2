@@ -423,7 +423,13 @@ ${subset}
         - **EXCEPTION:** You must keep all quoted phrases from the student's essay, specific vocabulary terms, and suggested English corrections/examples in **ENGLISH**. Do not translate the specific English examples or essay quotes.
 
         **Examiner's Marking Method (STRICT ADHERENCE REQUIRED):**
-        - **RIGOROUS GRADING:** Do not inflate scores. Be harsh on unnatural phrasing, awkward collocations, and grammatical slips.
+        - **OBJECTIVE GRADING:** Do not inflate scores, but **be flexible** with vocabulary and phrasing. 
+        - **Understandability vs Naturalness:** You can accept terms and phrasing that are understandable and clear, even if they sound slightly unnatural or not perfectly "native-like". Only penalize phrasing that significantly impedes communication or causes confusion.
+        - **Grammar Sensitivity (CRITICAL):** 
+           - Be extremely careful with **Subject-Verb Agreement** involving **Gerund Phrases**.
+           - **Example:** "Increasing penalties acts..." -> "Increasing penalties" is a singular subject (Gerund phrase), so the singular verb "acts" is CORRECT. Do NOT correct this to "act".
+           - Ensure you identify the true subject of the sentence before flagging agreement errors.
+
         - **Process:** Start with ${taskCompletionCriterion}, then Coherence & Cohesion (CC), Lexical Resource (LR), and Grammatical Range (GRA).
         - **Matching:** For each criterion, find the band descriptor statement that best matches the essay features. Check positive features of that band and ensure no negative features from lower bands are present.
         
