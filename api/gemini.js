@@ -216,26 +216,27 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                   - **Body 1 (40%)**: Discuss the opposing view, the weaker argument, or the concession.
                   - **Body 2 (60%)**: Discuss the writer's opinion, the stronger argument, or the main solution.
 
+                **CRITICAL INSTRUCTION FOR IDEA GENERATION (SIMPLE & MEMORABLE):**
+                - **Simplicity**: Ideas must be straightforward and easy to explain in English. Avoid overly complex or abstract philosophical arguments.
+                - **Memorability**: Use common, relatable concepts (e.g., family, money, health, convenience, work, education) that students can easily recall.
+                - **Friendly Tone**: The ideas should feel natural and not forced.
+                - **Standard IELTS Themes**: Prioritize high-frequency arguments (e.g., "saves money", "better for health", "broadens horizons", "causes stress").
+
                 **CRITICAL INSTRUCTION FOR BODY PARAGRAPHS (IDEAS & EXAMPLES):**
                 - **Giải thích (Explanation)**: 
                   - Suggest **2 simple and comprehensible supporting ideas** for the topic sentence.
-                  - Use logical flow/arrows (e.g., "Idea -> Result" or "Because A -> B").
-                  - Ideas should be developed enough to be natural and persuasive, not just keywords.
+                  - Use logical flow/arrows (e.g., "Idea -> Result").
+                  - Ideas should be simple enough to be translated easily.
                   - Example style: "Idea 1 -> Consequence 1. Idea 2 -> Consequence 2."
                 - **Ví dụ (Example)**: 
-                  - Provide **ONE short, specific example**. 
-                  - Show the consequence clearly using arrow notation if helpful.
+                  - Provide **ONE simple, real-life example**. 
+                  - Show the consequence clearly.
                   - Example style: "Specific scenario -> specific outcome."
 
                 **CRITICAL INSTRUCTION FOR CONCISENESS & EFFICIENCY (Target: ~280 words, 35 mins):**
                 - **Goal**: Enable the student to write a ~280 word essay in 35 minutes.
                 - **Câu chủ đề (Topic Sentences)**: MUST be concise, short, and direct. Avoid wordiness.
                 - **Conciseness**: Keep the outline clear and actionable.
-
-                **CRITICAL INSTRUCTION FOR TASK RESPONSE (Band 8+ Criteria):**
-                - **Sufficiently Addressed**: Ensure ALL parts of the prompt are covered in depth.
-                - **Well-Developed Position**: The opinion must be clear and consistent.
-                - **Relevant & Extended Ideas**: Arguments must be directly relevant.
 
                 **CRITICAL INSTRUCTION FOR INTRODUCTION:**
                 - **Diễn giải đề**: Paraphrase simple & concise. No clichés.
@@ -246,7 +247,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
 
                 **CRITICAL INSTRUCTION FOR VOCABULARY:**
                 - For **ALL SECTIONS**: Insert natural, topic-specific, Band 7+ English collocations directly next to the relevant Vietnamese concepts, enclosed in square brackets [ ].
-                - **Criteria**: Vocabulary must be **natural, appropriate, clear, and practical**.
+                - **Criteria**: Vocabulary must be **common, natural, and practical** (not obscure).
 
                 **STRUCTURE & LABELS (STRICT FORMATTING):**
                 - You MUST use the following **VIETNAMESE LABELS** in **Bold** (Markdown style).
