@@ -146,7 +146,7 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center p-4 md:p-8">
+        <div className="min-h-screen flex flex-col items-center p-4 md:p-8">
             <div className="max-w-5xl w-full space-y-8 relative">
                 {/* Decorative Elements */}
                 <div className="absolute top-0 right-0 -mt-10 opacity-20 pointer-events-none">
@@ -154,7 +154,7 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
                 </div>
                 
                 <div className="text-center space-y-2 mb-8">
-                    <h1 className="text-4xl font-bold text-rose-800 tracking-tight flex justify-center items-center gap-3">
+                    <h1 className="text-4xl font-bold text-rose-700 tracking-tight flex justify-center items-center gap-3">
                         <span className="text-emerald-600">🎄</span> IELTS Winter Master <span className="text-emerald-600">🎄</span>
                     </h1>
                     <p className="text-slate-600 text-lg">Your Personal AI Writing Assistant for the Holidays</p>

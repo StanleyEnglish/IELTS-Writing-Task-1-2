@@ -336,7 +336,8 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                                             key={index} 
                                             className="text-sm text-slate-700 whitespace-pre-line text-justify"
                                         >
-                                           {formatIdeaText(ideaBlock)}
+                                           {/* Safety replacement: Ensure any bullet point preceded by non-newline gets a newline */}
+                                           {formatIdeaText(ideaBlock.replace(/([^\n])\s*-\s*\*\*/g, '$1\n- **'))}
                                         </div>
                                     ))}
                                 </div>

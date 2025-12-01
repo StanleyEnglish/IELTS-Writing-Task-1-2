@@ -254,20 +254,20 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 - **CRITICAL FORMATTING**: Do NOT write a paragraph. Each label (e.g., **Diễn giải đề**:, **Câu chủ đề**:) must be on its own **SEPARATE LINE** starting with a bullet point (-).
                 - **IMPORTANT**: The main section headers (**Mở bài**, **Thân bài 1**, **Thân bài 2**, **Kết bài**) must NOT have any hyphens, dashes, or numbers in front of them. Just the bold text.
 
-                Structure the response exactly as follows:
+                Structure the response exactly as follows (ENSURE EACH BULLET POINT IS ON A NEW LINE):
 
                 **Mở bài**:
                 - **Diễn giải đề**: [Vietnamese suggestion] [vocabulary]
                 - **Luận điểm**: [Vietnamese suggestion] [vocabulary]
 
                 **Thân bài 1**:
-                - **Câu chủ đề**: [Concise Topic Sentence] [vocabulary]
+                - **Câu chủ đề**: Một mặt, [Concise Topic Sentence] [vocabulary]
                 - **Giải thích**: [2 simple ideas with logical flow (->)] [vocabulary]
                 - **Ví dụ**: [ONE short example with consequence (->)] [vocabulary]
                 - **Kết quả/ liên kết**: [Link] [vocabulary]
 
                 **Thân bài 2**:
-                - **Câu chủ đề**: [Concise Topic Sentence] [vocabulary]
+                - **Câu chủ đề**: Mặt khác, [Concise Topic Sentence] [vocabulary]
                 - **Giải thích**: [2 simple ideas with logical flow (->)] [vocabulary]
                 - **Ví dụ**: [ONE short example with consequence (->)] [vocabulary]
                 - **Kết quả/ liên kết**: [Link] [vocabulary]
@@ -281,7 +281,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 model: brainstormingModel,
                 contents,
                 config: {
-                    systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Do NOT merge points into paragraphs; keep each label on a new line starting with a bullet point. For main headers (Mở bài, etc.), do not use dashes or numbers. For 'Giải thích', provide 2 simple ideas using logical flow (A -> B). For 'Ví dụ', provide 1 short example with consequence. Ensure 40/60 balance. Insert English vocabulary suggestions directly into the text using square brackets [ ].",
+                    systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Do NOT merge points into paragraphs; keep each label on a new line starting with a bullet point. For main headers (Mở bài, etc.), do not use dashes or numbers. For 'Giải thích', provide 2 simple ideas using logical flow (A -> B). For 'Ví dụ', provide 1 short example with consequence. Ensure 40/60 balance. Start Body 1 topic sentence with 'Một mặt,'. Start Body 2 topic sentence with 'Mặt khác,'. Insert English vocabulary suggestions directly into the text using square brackets [ ].",
                     responseMimeType: "application/json",
                     responseSchema: {
                         type: Type.OBJECT,
