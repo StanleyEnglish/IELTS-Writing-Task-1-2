@@ -31,13 +31,13 @@
       
       /* Christmas Snow Animation */
       .snowflake {
-        color: #fff;
-        font-size: 1em;
+        color: #60a5fa; /* Blue color */
+        font-size: 3em; /* Bigger size */
         font-family: Arial;
         text-shadow: 0 0 1px #000;
         position: fixed;
         top: -10%;
-        z-index: 9999;
+        z-index: 0; /* Behind content, but visible on background */
         user-select: none;
         cursor: default;
         animation-name: snowflakes-fall, snowflakes-shake;
@@ -82,7 +82,8 @@
       <div class="snowflake">❆</div>
       <div class="snowflake">❄</div>
     </div>
-    <div id="root"></div>
+    <!-- Added z-index to root to keep content above snowflakes -->
+    <div id="root" style="position: relative; z-index: 1;"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
