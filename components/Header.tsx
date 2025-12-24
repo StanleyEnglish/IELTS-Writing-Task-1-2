@@ -74,8 +74,7 @@ const Header: React.FC<HeaderProps> = ({
       <div className="container mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4 flex-wrap">
             <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-                <HorseIcon className="h-6 w-6 text-amber-400 animate-bounce" />
-                IELTS Tet Master
+                IELTS Instructor
             </h1>
             {(!apiKey || apiKeyError) && (
                 <div className="flex items-center gap-2 animate-fade-in">

@@ -206,7 +206,7 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ taskType, feedback, i
         )}
       </div>
       <div className="mt-8 p-4 bg-amber-100 rounded-lg border border-amber-200 text-center">
-          <p className="text-red-900 font-bold italic">Wishing you great prosperity and success in your IELTS journey this Year of the Horse! 🧧🐎</p>
+          <p className="text-red-900 font-bold italic">Wishing you great prosperity and success in your IELTS journey! 🌸</p>
       </div>
     </div>
   );

@@ -304,7 +304,7 @@ const App: React.FC = () => {
         <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
         <head>
             <meta charset="utf-8">
-            <title>IELTS Tet Feedback Report</title>
+            <title>IELTS Feedback Report</title>
             <style>
                 body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.5; }
                 h1 { font-size: 18pt; font-weight: bold; text-align: center; margin-bottom: 20px; color: #b91c1c; }
@@ -319,7 +319,7 @@ const App: React.FC = () => {
             </style>
         </head>
         <body>
-            <h1>IELTS Tet Master Feedback Report</h1>
+            <h1>IELTS Instructor Feedback Report</h1>
             
             <div class="score-box">
                 Overall Band Score: ${overallScore}
@@ -381,7 +381,7 @@ const App: React.FC = () => {
                 </tbody>
             </table>
             <br>
-            <p><i>Wishing you a prosperous Year of the Horse and high scores!</i></p>
+            <p><i>Wishing you high scores and success!</i></p>
         </body>
         </html>
     `;
@@ -395,7 +395,7 @@ const App: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `IELTS_Tet_Feedback_${new Date().toISOString().slice(0,10)}.doc`;
+    link.download = `IELTS_Instructor_Feedback_${new Date().toISOString().slice(0,10)}.doc`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -436,7 +436,7 @@ const App: React.FC = () => {
                     onClick={() => setIsAppStarted(false)}
                     className="self-start text-sm text-red-700 hover:text-red-900 flex items-center gap-1 font-semibold"
                 >
-                    &larr; Return to Palace
+                    &larr; Return to Main
                 </button>
             </div>
 

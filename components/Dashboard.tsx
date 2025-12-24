@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import type { HighScore } from '../types';
-import { SparklesIcon, BookOpenIcon, HorseIcon, BlossomIcon } from './icons';
+import { SparklesIcon, BookOpenIcon, HorseIcon, BlossomIcon, StickyRiceCakeIcon } from './icons';
 
 interface DashboardProps {
     history: HighScore[];
@@ -137,15 +137,15 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
     return (
         <div className="min-h-screen flex flex-col items-center p-4 md:p-8">
             <div className="max-w-5xl w-full space-y-8 relative">
-                <div className="absolute top-0 right-0 -mt-10 opacity-20 pointer-events-none">
-                     <BlossomIcon className="h-32 w-32 text-red-500" />
+                <div className="absolute top-0 right-0 -mt-10 opacity-30 pointer-events-none">
+                     <StickyRiceCakeIcon className="h-40 w-40" />
                 </div>
                 
                 <div className="text-center space-y-2 mb-8">
                     <h1 className="text-4xl font-bold text-red-700 tracking-tight flex justify-center items-center gap-3">
-                        <span className="text-amber-500">🧧</span> IELTS Tet Master <span className="text-amber-500">🐎</span>
+                        IELTS Instructor
                     </h1>
-                    <p className="text-red-900 text-lg font-medium italic">Sowing Success in the Year of the Horse 2026</p>
+                    <p className="text-red-900 text-lg font-medium italic">Sowing Success in your IELTS Journey</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -176,7 +176,7 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
                                     disabled={!localApiKey.trim()}
                                     className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-md transition-all disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
-                                    Enter Tet Training &rarr;
+                                    Enter Training &rarr;
                                 </button>
                                 <div className="pt-4 border-t border-red-50 border-t-red-100 text-center">
                                     <a 

@@ -9,7 +9,7 @@ export const RefreshIcon: React.FC<{ className?: string }> = (props) => (
 
 export const SparklesIcon: React.FC<{ className?: string }> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.562L16.25 22.5l-.648-1.938a3.375 3.375 0 00-2.672-2.672L11.25 18l1.938-.648a3.375 3.375 0 002.672-2.672L16.25 13.5l.648 1.938a3.375 3.375 0 002.672 2.672L21 18l-1.938.648a3.375 3.375 0 00-2.672 2.672z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09-3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.562L16.25 22.5l-.648-1.938a3.375 3.375 0 00-2.672-2.672L11.25 18l1.938-.648a3.375 3.375 0 00-2.672-2.672L16.25 13.5l.648 1.938a3.375 3.375 0 002.672-2.672L21 18l-1.938.648a3.375 3.375 0 00-2.672-2.672z" />
   </svg>
 );
 
@@ -117,6 +117,32 @@ export const HorseIcon: React.FC<{ className?: string }> = (props) => (
 export const BlossomIcon: React.FC<{ className?: string }> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 12m-2 0a2 2 0 104 0 2 2 0 10-4 0M12 6v2M12 16v2M6 12h2M16 12h2M7.75 7.75l1.5 1.5M14.75 14.75l1.5 1.5M7.75 16.25l1.5-1.5M16.25 7.75l-1.5 1.5" />
+  </svg>
+);
+
+export const StickyRiceCakeIcon: React.FC<{ className?: string }> = (props) => (
+  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    {/* Second Cake (offset and slightly behind) */}
+    <rect x="35" y="10" width="55" height="55" rx="4" fill="#15803d" stroke="#064e3b" strokeWidth="1.5" />
+    <line x1="35" y1="28" x2="90" y2="28" stroke="#fef3c7" strokeWidth="1.5" />
+    <line x1="35" y1="46" x2="90" y2="46" stroke="#fef3c7" strokeWidth="1.5" />
+    <line x1="53" y1="10" x2="53" y2="65" stroke="#fef3c7" strokeWidth="1.5" />
+    <line x1="71" y1="10" x2="71" y2="65" stroke="#fef3c7" strokeWidth="1.5" />
+    <rect x="48" y="25" width="28" height="28" rx="2" fill="#dc2626" />
+    <text x="62" y="44" fill="#facc15" fontSize="11" fontWeight="bold" textAnchor="middle" style={{fontFamily: 'sans-serif'}}>TẾT</text>
+    <circle cx="90" cy="15" r="4" fill="#facc15" opacity="0.8" />
+    <circle cx="40" cy="20" r="3" fill="#facc15" opacity="0.6" />
+
+    {/* First Cake */}
+    <rect x="10" y="30" width="60" height="60" rx="4" fill="#166534" stroke="#064e3b" strokeWidth="1.5" />
+    <line x1="10" y1="50" x2="70" y2="50" stroke="#fef3c7" strokeWidth="1.5" />
+    <line x1="10" y1="70" x2="70" y2="70" stroke="#fef3c7" strokeWidth="1.5" />
+    <line x1="30" y1="30" x2="30" y2="90" stroke="#fef3c7" strokeWidth="1.5" />
+    <line x1="50" y1="30" x2="50" y2="90" stroke="#fef3c7" strokeWidth="1.5" />
+    <rect x="25" y="45" width="30" height="30" rx="2" fill="#dc2626" />
+    <text x="40" y="65" fill="#facc15" fontSize="11" fontWeight="bold" textAnchor="middle" style={{fontFamily: 'sans-serif'}}>2026</text>
+    <circle cx="15" cy="85" r="4" fill="#facc15" opacity="0.8" />
+    <circle cx="65" cy="35" r="3" fill="#facc15" opacity="0.6" />
   </svg>
 );
 
