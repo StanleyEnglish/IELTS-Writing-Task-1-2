@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import type { HighScore } from '../types';
-import { SparklesIcon, BookOpenIcon, SnowflakeIcon } from './icons';
+import { SparklesIcon, BookOpenIcon, HorseIcon, BlossomIcon } from './icons';
 
 interface DashboardProps {
     history: HighScore[];
@@ -20,7 +20,7 @@ const ChartIcon: React.FC<{ className?: string }> = (props) => (
 const SimpleLineChart: React.FC<{ data: { label: string; score: number }[] }> = ({ data }) => {
     if (data.length === 0) {
         return (
-            <div className="h-64 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50">
+            <div className="h-64 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-lg bg-white/50">
                 <ChartIcon className="h-10 w-10 mb-2 opacity-50" />
                 <p>No data for this period</p>
             </div>
@@ -29,48 +29,42 @@ const SimpleLineChart: React.FC<{ data: { label: string; score: number }[] }> = 
 
     const height = 250;
     const width = 600;
-    const padding = 60; // Increased padding to prevent label obstruction
+    const padding = 60; 
     
     const maxScore = 9;
     const minScore = 0;
 
-    // Calculate points
     const points = data.map((point, index) => {
         const x = padding + (index / (data.length - 1 || 1)) * (width - padding * 2);
         const y = height - padding - ((point.score - minScore) / (maxScore - minScore)) * (height - padding * 2);
         return { x, y, ...point };
     });
 
-    // Create path
     const pathD = points.length > 1 
         ? `M ${points[0].x} ${points[0].y} ` + points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')
-        : `M ${points[0].x} ${points[0].y} L ${points[0].x + 10} ${points[0].y}`; // Draw a dot if only 1 point
+        : `M ${points[0].x} ${points[0].y} L ${points[0].x + 10} ${points[0].y}`; 
 
     return (
         <div className="w-full overflow-x-auto">
             <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-w-[600px]">
-                {/* Grid Lines */}
                 {[0, 3, 5, 7, 9].map((s) => {
                     const y = height - padding - ((s - minScore) / (maxScore - minScore)) * (height - padding * 2);
                     return (
                         <g key={s}>
-                            <line x1={padding} y1={y} x2={width - padding} y2={y} stroke="#e2e8f0" strokeWidth="1" />
-                            <text x={padding - 10} y={y + 4} textAnchor="end" fontSize="10" fill="#64748b">Band {s}</text>
+                            <line x1={padding} y1={y} x2={width - padding} y2={y} stroke="#fecaca" strokeWidth="1" />
+                            <text x={padding - 10} y={y + 4} textAnchor="end" fontSize="10" fill="#991b1b">Band {s}</text>
                         </g>
                     );
                 })}
 
-                {/* Chart Line - Changed to Emerald Green */}
-                <path d={pathD} fill="none" stroke="#059669" strokeWidth="3" />
+                <path d={pathD} fill="none" stroke="#d97706" strokeWidth="3" />
 
-                {/* Dots - Changed to Emerald */}
                 {points.map((p, i) => (
-                    <circle key={i} cx={p.x} cy={p.y} r="4" fill="#fff" stroke="#047857" strokeWidth="2" />
+                    <circle key={i} cx={p.x} cy={p.y} r="4" fill="#fff" stroke="#92400e" strokeWidth="2" />
                 ))}
 
-                {/* Tooltips/Labels */}
                 {points.map((p, i) => (
-                    <text key={i} x={p.x} y={height - 10} textAnchor="middle" fontSize="10" fill="#64748b">
+                    <text key={i} x={p.x} y={height - 10} textAnchor="middle" fontSize="10" fill="#991b1b">
                         {p.label}
                     </text>
                 ))}
@@ -83,13 +77,11 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
     const [localApiKey, setLocalApiKey] = useState(apiKey || '');
     const [period, setPeriod] = useState<'Day' | 'Month' | 'Year'>('Day');
 
-    // Filter Logic
     const chartData = useMemo(() => {
         const now = new Date();
         let filtered = [];
 
         if (period === 'Day') {
-            // Last 24 hours, show individual attempts
             filtered = history.filter(h => {
                 const date = new Date(h.date);
                 return (now.getTime() - date.getTime()) < 24 * 60 * 60 * 1000;
@@ -98,7 +90,6 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
                 score: h.score
             }));
         } else if (period === 'Month') {
-            // Last 30 days, average by day
             const last30Days = new Date();
             last30Days.setDate(now.getDate() - 30);
             
@@ -116,7 +107,6 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
                 score: grouped[key].reduce((a, b) => a + b, 0) / grouped[key].length
             }));
         } else {
-            // Last 12 months, average by month
             const lastYear = new Date();
             lastYear.setFullYear(now.getFullYear() - 1);
             
@@ -135,8 +125,7 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
             }));
         }
         
-        // Ensure chronological order
-        return filtered.reverse(); // Assuming history is typically newest first
+        return filtered.reverse(); 
     }, [history, period]);
 
     const handleSave = () => {
@@ -148,23 +137,21 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
     return (
         <div className="min-h-screen flex flex-col items-center p-4 md:p-8">
             <div className="max-w-5xl w-full space-y-8 relative">
-                {/* Decorative Elements */}
                 <div className="absolute top-0 right-0 -mt-10 opacity-20 pointer-events-none">
-                     <SnowflakeIcon className="h-32 w-32 text-rose-500" />
+                     <BlossomIcon className="h-32 w-32 text-red-500" />
                 </div>
                 
                 <div className="text-center space-y-2 mb-8">
-                    <h1 className="text-4xl font-bold text-rose-700 tracking-tight flex justify-center items-center gap-3">
-                        <span className="text-emerald-600">🎄</span> IELTS Winter Master <span className="text-emerald-600">🎄</span>
+                    <h1 className="text-4xl font-bold text-red-700 tracking-tight flex justify-center items-center gap-3">
+                        <span className="text-amber-500">🧧</span> IELTS Tet Master <span className="text-amber-500">🐎</span>
                     </h1>
-                    <p className="text-slate-600 text-lg">Your Personal AI Writing Assistant for the Holidays</p>
+                    <p className="text-red-900 text-lg font-medium italic">Sowing Success in the Year of the Horse 2026</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {/* Left Col: Start & Settings */}
                     <div className="md:col-span-1 space-y-6">
-                        <div className="bg-white rounded-xl shadow-md border border-rose-100 p-6">
-                            <h3 className="text-lg font-bold text-rose-700 mb-4 flex items-center gap-2">
+                        <div className="bg-white rounded-xl shadow-md border border-amber-200 p-6">
+                            <h3 className="text-lg font-bold text-red-700 mb-4 flex items-center gap-2">
                                 <SparklesIcon className="h-5 w-5 text-amber-500" />
                                 Start Practicing
                             </h3>
@@ -178,7 +165,7 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
                                         placeholder="AIzaSy..."
                                         value={localApiKey}
                                         onChange={(e) => setLocalApiKey(e.target.value)}
-                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm ${
+                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm ${
                                             apiKeyError ? 'border-red-500' : 'border-slate-300'
                                         }`}
                                     />
@@ -187,16 +174,16 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
                                 <button
                                     onClick={() => { handleSave(); onStartPractice(); }}
                                     disabled={!localApiKey.trim()}
-                                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-md transition-all disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-md transition-all disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
-                                    Enter Practice Mode &rarr;
+                                    Enter Tet Training &rarr;
                                 </button>
-                                <div className="pt-4 border-t border-slate-100 text-center">
+                                <div className="pt-4 border-t border-red-50 border-t-red-100 text-center">
                                     <a 
                                         href="https://aistudio.google.com/app/apikey" 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="text-xs text-emerald-600 font-semibold hover:underline"
+                                        className="text-xs text-red-600 font-semibold hover:underline"
                                     >
                                         Get a free API Key
                                     </a>
@@ -205,23 +192,22 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
                         </div>
                     </div>
 
-                    {/* Right Col: Performance Chart */}
                     <div className="md:col-span-2">
-                         <div className="bg-white rounded-xl shadow-md border border-rose-100 p-6 h-full">
+                         <div className="bg-white rounded-xl shadow-md border border-amber-200 p-6 h-full">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                    <BookOpenIcon className="h-5 w-5 text-rose-600" />
-                                    Performance History
+                                <h3 className="text-lg font-bold text-red-900 flex items-center gap-2">
+                                    <BookOpenIcon className="h-5 w-5 text-amber-600" />
+                                    Performance Journey
                                 </h3>
-                                <div className="flex bg-slate-100 p-1 rounded-lg">
+                                <div className="flex bg-red-50 p-1 rounded-lg border border-red-100">
                                     {(['Day', 'Month', 'Year'] as const).map((p) => (
                                         <button
                                             key={p}
                                             onClick={() => setPeriod(p)}
                                             className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
                                                 period === p 
-                                                ? 'bg-white text-emerald-700 shadow-sm' 
-                                                : 'text-slate-500 hover:text-slate-700'
+                                                ? 'bg-red-600 text-white shadow-sm' 
+                                                : 'text-red-800 hover:text-red-900'
                                             }`}
                                         >
                                             {p}
@@ -230,7 +216,7 @@ const Dashboard: React.FC<DashboardProps> = ({ history, apiKey, onSaveApiKey, on
                                 </div>
                             </div>
                             
-                            <div className="bg-slate-50 rounded-lg p-4 border border-slate-100 min-h-[300px] flex items-center justify-center">
+                            <div className="bg-amber-50/30 rounded-lg p-4 border border-amber-100 min-h-[300px] flex items-center justify-center">
                                 <SimpleLineChart data={chartData} />
                             </div>
                          </div>
