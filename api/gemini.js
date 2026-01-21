@@ -398,7 +398,6 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, api
         const taskCompletionCriterion = isTask1 ? "Task Achievement" : "Task Response";
         const wordCount = essay.trim() ? essay.trim().split(/\s+/).length : 0;
         
-        // OPTIMIZATION: Reduced exemplar count from 3 to 1 to significantly save tokens and speed up processing
         let exemplarsSection = "";
         if (isTask1) {
             const subset = getRandomExemplars(IELTS_TASK_1_EXEMPLARS, 1);
@@ -421,54 +420,34 @@ ${subset}
 
         **LANGUAGE INSTRUCTION (CRITICAL):**
         - **PRIMARY LANGUAGE:** VIETNAMESE. You must provide all explanations, analysis (strengths, weaknesses), and feedback in **Vietnamese**.
-        - **EXCEPTION:** You must keep all quoted phrases from the student's essay, specific vocabulary terms, and suggested English corrections/examples in **ENGLISH**. Do not translate the specific English examples or essay quotes.
+        - **EXCEPTION:** You must keep all quoted phrases from the student's essay, specific vocabulary terms, and suggested English corrections/examples in **ENGLISH**.
 
-        **Examiner's Marking Method (STRICT ADHERENCE REQUIRED):**
-        - **OBJECTIVE GRADING:** Do not inflate scores, but **be flexible** with vocabulary and phrasing. 
-        - **Understandability vs Naturalness:** You can accept terms and phrasing that are understandable and clear, even if they sound slightly unnatural or not perfectly "native-like". Only penalize phrasing that significantly impedes communication or causes confusion.
-        - **Grammar Sensitivity (CRITICAL):** 
-           - Be extremely careful with **Subject-Verb Agreement** involving **Gerund Phrases**.
-           - **Example:** "Increasing penalties acts..." -> "Increasing penalties" is a singular subject (Gerund phrase), so the singular verb "acts" is CORRECT. Do NOT correct this to "act".
-           - Ensure you identify the true subject of the sentence before flagging agreement errors.
-
-        - **Process:** Start with ${taskCompletionCriterion}, then Coherence & Cohesion (CC), Lexical Resource (LR), and Grammatical Range (GRA).
-        - **Matching:** For each criterion, find the band descriptor statement that best matches the essay features. Check positive features of that band and ensure no negative features from lower bands are present.
+        **MARKING RIGOR & REASONING (ENHANCED):**
+        1. **Task 1 - Data Accuracy:**
+           - Compare essay data points with the provided image.
+           - Rule: Use decimal dots (e.g., 7.5%, 8.5%).
+           - **SUPERLATIVES IN OVERALL:** If a student correctly identifies trends like "the highest" or "the lowest", DO NOT suggest an identical correction. Only correct if factually or grammatically wrong.
         
-        **Academic Tone:**
-        - Formal, objective, non-emotional. No slang/contractions.
-        - Band 8-9: Natural, precise, clear. NOT overly ornate/fancy.
+        2. **REPETITION DETECTION (CRITICAL):**
+           - Carefully analyze the essay for word or phrase repetition.
+           - If any specific phrase or term (e.g., "percentage of Australians") appears **MORE THAN 4 TIMES**, you MUST identify this in the **Coherence & Cohesion** section under 'referencingAndSubstitution'.
+           - For each overly repeated phrase, you MUST provide at least **2-3 specific synonyms or alternative structures (referencing/substitution)** that fit the context of the essay.
+
+        3. **Task 2 - Logical Consistency:**
+           - Critically analyze logical development and cause-effect relationships.
+
+        **Examiner's Marking Method:**
+        - **REDUNDANCY CHECK:** Before adding a correction, ensure 'suggestedCorrection' is significantly different and better.
+        - **Process:** Evaluate ${taskCompletionCriterion}, then CC, LR, and GRA.
         
-        **Band 8-9 Principles:**
-        - **Slips:** Band 9 allows for "extremely rare" minor errors. Do NOT penalize slips that don't impede communication.
-        - **Vocabulary:** Focus on precision and naturalness, NOT rarity.
-        - **No Comparison:** Grade strictly against descriptors, not other essays.
-        - **Justify:** YOU MUST QUOTE SPECIFIC DESCRIPTOR PHRASES to justify scores in 'strengths'/'weaknesses'.
-
-        **Critical Scoring Rules:**
-        1. **Word Count:** Task 1 target: 150. Task 2 target: 250. 
-           - **Do NOT severely penalize** slight under-length if quality/development is high. Only penalize significant under-length that affects content.
-        2. **Task 1:** Missing key features = Band 4 TA. No/unclear overview = Band 5 TA. No data = Band 5 TA.
-        3. **Format:** Bullet points/lists = Band 4/5. Must be paragraphs.
-        4. **Task 2 Evidence:** Fabricated statistics (e.g. "80% of people...") are a weakness. Reward real-world examples/experience.
-        5. **Task Response Logic & Examples (CRITICAL):** 
-           - If you identify **logical fallacies**, **undeveloped ideas**, or **fabricated examples**:
-           - You **MUST** provide a specific **"Corrected Example"** or **"Logical Fix"** in the 'weaknesses' section.
-           - Do not just criticize; show the user exactly **HOW** to fix the logic or example to be Band 7+.
-
+        **Academic Tone:** Formal and objective.
+        
         **Output Requirements:**
-        1. Evaluate against Band 5-9 descriptors.
-        2. **Consistency:** Scores for identical text must be identical.
-        3. **Mistakes:** List specific LR/GRA errors. Suggested correction must differ from original.
-        4. **Improvement:** Rewrite ALL awkward/unnatural sentences.
-        
-        **Evaluation Criteria:**
-        ---
-        ${bandDescriptors}
-        ---
-        ${exemplarsSection}
+        - **Mistakes:** List specific LR/GRA errors.
+        - **Improvement:** Rewrite awkward sentences into clear academic English.
         `;
 
-        const essayContent = `Please analyze the following essay based on the instructions.
+        const essayContent = `Please analyze the following essay.
 
         **Essay Prompt:** "${prompt}"
         **Word Count:** ${wordCount} words
@@ -489,16 +468,16 @@ ${subset}
         const contents = { parts };
         
         const baseFeedbackProperties = {
-            strengths: { type: Type.STRING, description: "Positive feedback on the criterion in VIETNAMESE, citing specific band descriptor phrases." },
-            weaknesses: { type: Type.STRING, description: "Actionable areas for improvement on the criterion in VIETNAMESE, citing specific band descriptor phrases." }
+            strengths: { type: Type.STRING },
+            weaknesses: { type: Type.STRING }
         };
 
         const mistakeSchema = {
             type: Type.OBJECT,
             properties: {
-                originalPhrase: { type: Type.STRING, description: "The incorrect phrase from the essay (in English)." },
-                suggestedCorrection: { type: Type.STRING, description: "The corrected version of the phrase (in English)." },
-                explanation: { type: Type.STRING, description: "A brief explanation of the mistake in VIETNAMESE." }
+                originalPhrase: { type: Type.STRING },
+                suggestedCorrection: { type: Type.STRING },
+                explanation: { type: Type.STRING }
             },
             required: ['originalPhrase', 'suggestedCorrection', 'explanation']
         };
@@ -516,55 +495,52 @@ ${subset}
                             taskCompletion: { 
                                 type: Type.OBJECT,
                                 properties: {
-                                    strengths: { type: Type.STRING, description: "Positive feedback on the criterion in VIETNAMESE, citing specific band descriptor phrases." },
-                                    weaknesses: { type: Type.STRING, description: "Actionable areas for improvement in VIETNAMESE. **IMPORTANT**: For Task Response/Achievement, if there are logical/example issues, you MUST provide a concrete 'Suggested Improvement' here." }
+                                    strengths: { type: Type.STRING },
+                                    weaknesses: { type: Type.STRING }
                                 },
                                 required: ['strengths', 'weaknesses']
                             },
-                            taskCompletionScore: { type: Type.INTEGER, description: `An integer band score from 5-9 for ${taskCompletionCriterion}.` },
+                            taskCompletionScore: { type: Type.INTEGER },
                             coherenceCohesion: {
                                 type: Type.OBJECT,
                                 properties: {
                                     ...baseFeedbackProperties,
-                                    referencingAndSubstitution: { type: Type.STRING, description: "Specific feedback on referencing and substitution in VIETNAMESE." }
+                                    referencingAndSubstitution: { type: Type.STRING, description: "Feedback on referencing, substitution, and REPETITION check (>4 times) in VIETNAMESE." }
                                 },
                                 required: ['strengths', 'weaknesses', 'referencingAndSubstitution']
                             },
-                            coherenceCohesionScore: { type: Type.INTEGER, description: "An integer band score from 5-9 for Coherence & Cohesion." },
+                            coherenceCohesionScore: { type: Type.INTEGER },
                             lexicalResource: {
                                 type: Type.OBJECT,
                                 properties: {
                                     ...baseFeedbackProperties,
                                     mistakes: {
                                         type: Type.ARRAY,
-                                        description: "List of specific lexical mistakes and corrections. Returns empty array if none.",
                                         items: mistakeSchema
                                     }
                                 },
                                 required: ['strengths', 'weaknesses', 'mistakes']
                             },
-                            lexicalResourceScore: { type: Type.INTEGER, description: "An integer band score from 5-9 for Lexical Resource." },
+                            lexicalResourceScore: { type: Type.INTEGER },
                             grammaticalRange: {
                                 type: Type.OBJECT,
                                 properties: {
                                     ...baseFeedbackProperties,
                                     mistakes: {
                                         type: Type.ARRAY,
-                                        description: "List of specific grammatical mistakes and corrections. Returns empty array if none.",
                                         items: mistakeSchema
                                     }
                                 },
                                 required: ['strengths', 'weaknesses', 'mistakes']
                             },
-                            grammaticalRangeScore: { type: Type.INTEGER, description: "An integer band score from 5-9 for Grammatical Range & Accuracy." },
+                            grammaticalRangeScore: { type: Type.INTEGER },
                             sentenceImprovements: {
                                 type: Type.ARRAY,
-                                description: "A list of suggestions for ALL sentences that are awkward or unnatural.",
                                 items: {
                                     type: Type.OBJECT,
                                         properties: {
-                                        originalSentence: { type: Type.STRING, description: "The original sentence from the user's essay (English)." },
-                                        suggestedSentence: { type: Type.STRING, description: "The rewritten, more natural-sounding sentence (English)." }
+                                        originalSentence: { type: Type.STRING },
+                                        suggestedSentence: { type: Type.STRING }
                                     },
                                     required: ['originalSentence', 'suggestedSentence']
                                 }

@@ -104,25 +104,23 @@ export const EyeIcon: React.FC<{ className?: string }> = (props) => (
   </svg>
 );
 
+export const GrammarIcon: React.FC<{ className?: string }> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253" />
+  </svg>
+);
+
 export const HorseIcon: React.FC<{ className?: string }> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l-4 4m0 0l-4-4m4 4V4M4 18h16" />
     <path d="M12 21c4.418 0 8-1.79 8-4s-3.582-4-8-4-8 1.79-8 4 3.582 4 8 4z" />
-    {/* Simplified Horse Head Silhouette */}
     <path d="M7 10c0-3.866 3.134-7 7-7s7 3.134 7 7v2H7v-2z" />
     <path d="M10 12v6m4-6v6" />
   </svg>
 );
 
-export const BlossomIcon: React.FC<{ className?: string }> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 12m-2 0a2 2 0 104 0 2 2 0 10-4 0M12 6v2M12 16v2M6 12h2M16 12h2M7.75 7.75l1.5 1.5M14.75 14.75l1.5 1.5M7.75 16.25l1.5-1.5M16.25 7.75l-1.5 1.5" />
-  </svg>
-);
-
 export const StickyRiceCakeIcon: React.FC<{ className?: string }> = (props) => (
   <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-    {/* Second Cake (offset and slightly behind) */}
     <rect x="35" y="10" width="55" height="55" rx="4" fill="#15803d" stroke="#064e3b" strokeWidth="1.5" />
     <line x1="35" y1="28" x2="90" y2="28" stroke="#fef3c7" strokeWidth="1.5" />
     <line x1="35" y1="46" x2="90" y2="46" stroke="#fef3c7" strokeWidth="1.5" />
@@ -133,7 +131,6 @@ export const StickyRiceCakeIcon: React.FC<{ className?: string }> = (props) => (
     <circle cx="90" cy="15" r="4" fill="#facc15" opacity="0.8" />
     <circle cx="40" cy="20" r="3" fill="#facc15" opacity="0.6" />
 
-    {/* First Cake */}
     <rect x="10" y="30" width="60" height="60" rx="4" fill="#166534" stroke="#064e3b" strokeWidth="1.5" />
     <line x1="10" y1="50" x2="70" y2="50" stroke="#fef3c7" strokeWidth="1.5" />
     <line x1="10" y1="70" x2="70" y2="70" stroke="#fef3c7" strokeWidth="1.5" />
@@ -143,11 +140,5 @@ export const StickyRiceCakeIcon: React.FC<{ className?: string }> = (props) => (
     <text x="40" y="65" fill="#facc15" fontSize="11" fontWeight="bold" textAnchor="middle" style={{fontFamily: 'sans-serif'}}>2026</text>
     <circle cx="15" cy="85" r="4" fill="#facc15" opacity="0.8" />
     <circle cx="65" cy="35" r="3" fill="#facc15" opacity="0.6" />
-  </svg>
-);
-
-export const SnowflakeIcon: React.FC<{ className?: string }> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25v19.5M4.17 4.17l15.66 15.66M4.17 19.83L19.83 4.17M12 6.75a5.25 5.25 0 1 0 0 10.5 5.25 5.25 0 0 0 0-10.5Zm0 0-2.25-2.25M12 6.75l2.25-2.25M12 17.25l-2.25 2.25M12 17.25l2.25 2.25M6.75 12l-2.25-2.25M6.75 12l-2.25 2.25M17.25 12l2.25-2.25M17.25 12l2.25 2.25" />
   </svg>
 );

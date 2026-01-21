@@ -196,7 +196,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
     <>
     <div className="bg-white p-6 rounded-lg shadow-sm border border-amber-100 h-full overflow-y-auto max-h-[600px] custom-scrollbar relative" ref={contentRef}>
       <div className="flex justify-between items-start mb-4 gap-2">
-        <h2 className="text-lg font-bold text-red-800 pt-1.5">Imperial Prompt</h2>
+        <h2 className="text-lg font-bold text-red-800 pt-1.5">Your Prompt</h2>
         <div className="flex gap-2 flex-wrap justify-end">
             {taskType === 'Task 2' && (
               <button

@@ -1,7 +1,8 @@
 
 import React, { useState, useMemo } from 'react';
 import type { HighScore } from '../types';
-import { SparklesIcon, BookOpenIcon, HorseIcon, BlossomIcon, StickyRiceCakeIcon } from './icons';
+// Removed BlossomIcon (not in icons.tsx) and HorseIcon (unused in this component)
+import { SparklesIcon, BookOpenIcon, StickyRiceCakeIcon } from './icons';
 
 interface DashboardProps {
     history: HighScore[];

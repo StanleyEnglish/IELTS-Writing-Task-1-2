@@ -1,6 +1,4 @@
 
-
-
 export const IELTS_TASK_2_PROMPTS = [
   "Some people think that children should have the freedom to make mistakes, while other people believe that adults should prevent children from making mistakes. Discuss both views and give your own opinion.",
   "In some countries, young people are encouraged to work or travel for a year between finishing high school and starting university studies. Discuss the advantages and disadvantages for young people who decide to do this.",
@@ -75,10 +73,10 @@ export const IELTS_TASK_1_BAND_DESCRIPTORS = `
 ### Band 7.0 Descriptors
 - **Task Achievement:**
     - The response covers the requirements of the task.
-    - Key features which are selected are covered and clearly highlighted but could be more fully or more appropriately illustrated or extended.
+    - Key features which are selected are covered and clearly highlighted but could be more fully illustrated or extended.
     - It presents a clear overview, the data are appropriately categorised, and main trends or differences are identified.
 - **Coherence & Cohesion:**
-    - Information and ideas are logically organised and there is a clear progression throughout the response. A few lapses may occur.
+    - Information and ideas are logically organised and there is a clear progression throughout the response.
     - A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies or some over/under use.
 - **Lexical Resource:**
     - The resource is sufficient to allow some flexibility and precision.
@@ -106,7 +104,7 @@ export const IELTS_TASK_1_BAND_DESCRIPTORS = `
 - **Task Achievement:**
     - The response generally addresses the requirements of the task. The format may be inappropriate in places.
     - Key features which are selected are not adequately covered. The recounting of detail is mainly mechanical. There may be no data to support the description.
-    - There may be a tendency to focus on details (without referring to the bigger picture).
+    - There may be a tendency to focus on details.
     - The inclusion of irrelevant, inappropriate or inaccurate material in key areas detracts from the task achievement.
     - There is limited detail when extending and illustrating the main points.
 - **Coherence & Cohesion:**
@@ -172,9 +170,9 @@ export const IELTS_TASK_2_BAND_DESCRIPTORS = `
 - **Task Response:**
     - The main parts of the prompt are appropriately addressed.
     - A clear and developed position is presented.
-    - Main ideas are extended and supported but there may be a tendency to over-generalise or there may be a lack of focus and precision in supporting ideas/material.
+    - Main ideas are extended and supported but there may be a tendency to over-generalise or there may be a lack of focus and precision in supporting ideas.
 - **Coherence & Cohesion:**
-    - Information and ideas are logically organised, and there is a clear progression throughout the response. (A few lapses may occur, but these are minor.)
+    - Information and ideas are logically organised, and there is a clear progression throughout the response.
     - A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies or some over/under use.
     - Paragraphing is generally used effectively to support overall coherence, and the sequencing of ideas within a paragraph is generally logical.
 - **Lexical Resource:**
@@ -189,14 +187,14 @@ export const IELTS_TASK_2_BAND_DESCRIPTORS = `
 
 ### Band 6.0 Descriptors
 - **Task Response:**
-    - The main parts of the prompt are addressed (though some may be more fully covered than others). An appropriate format is used.
+    - The main parts of the prompt are addressed. An appropriate format is used.
     - A position is presented that is directly relevant to the prompt, although the conclusions drawn may be unclear, unjustified or repetitive.
     - Main ideas are relevant, but some may be insufficiently developed or may lack clarity, while some supporting arguments and evidence may be less relevant or inadequate.
 - **Coherence & Cohesion:**
     - Information and ideas are generally arranged coherently and there is a clear overall progression.
     - Cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or mechanical due to misuse, overuse or omission.
     - The use of reference and substitution may lack flexibility or clarity and result in some repetition or error.
-    - Paragraphing may not always be logical and/or the central topic may not always be clear.
+    - Paragraphing may not always be logical or the central topic may not always be clear.
 - **Lexical Resource:**
     - The resource is generally adequate and appropriate for the task.
     - The meaning is generally clear in spite of a rather restricted range or a lack of precision in word choice.
@@ -211,7 +209,7 @@ export const IELTS_TASK_2_BAND_DESCRIPTORS = `
 - **Task Response:**
     - The main parts of the prompt are incompletely addressed. The format may be inappropriate in places.
     - The writer expresses a position, but the development is not always clear.
-    - Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail.
+    - Some main ideas are put forward, but they are limited and are not sufficiently developed or there may be irrelevant detail.
     - There may be some repetition.
 - **Coherence & Cohesion:**
     - Organisation is evident but is not wholly logical and there may be a lack of overall progression. Nevertheless, there is a sense of underlying coherence to the response.
@@ -460,8 +458,8 @@ In conclusion, the effective way to control the traffic and pollution issue is n
 **Examiner Commentary (Band 6.0):**
 - **TR:** The test taker presents ideas that support both parts of the prompt and there is a clear position. The response focuses more on dealing with traffic problems than pollution problems and this prevents a higher rating as some parts of the prompt are more fully covered than others.
 - **CC:** The progression of ideas is logical throughout and paragraphing is very clear. A range of cohesive devices are used, and substitution and referencing are generally well managed. The range presented and the clear overall progression of ideas means the positive features of a Band 7 are met.
-- **LR:** The test taker attempts to use a wider range of vocabulary to allow some flexibility and precision. There are some good examples of appropriate collocation and some lower frequency lexis [effectiveness | big issue | restricting waste products | accomplish the aim]. However, more than occasional errors are made in word choice and spelling, and this limits the rating to a Band 6.
-- **GRA:** A mix of simple and complex sentence structures are used but errors in grammar and punctuation occur and indicate limitations in control [If the people does not have a long journey, they may not choose taking public transport].
+- **LR:** The test taker attempts to use a wider range of vocabulary to allow some flexibility and precision. There are some good examples of appropriate collocation and some lower frequency lexis. However, more than occasional errors are made in word choice and spelling, and this limits the rating to a Band 6.
+- **GRA:** A mix of simple and complex sentence structures are used but errors in grammar and punctuation occur and indicate limitations in control.
 
 ---
 ### Exemplar Band 7.0
@@ -478,7 +476,7 @@ Overall, controlling the price of petrol can reduce traffic congestion and air p
 
 **Examiner Commentary (Band 7.0):**
 - **TR:** The writer addresses both aspects of the task and presents a clear position throughout the response. Main ideas are generally clear, though the second part of the prompt could have more supporting detail.
-- **CC:** Ideas are generally well organised and there is a clear overall progression. A range of cohesive devices is used effectively, but there is some underuse (in the penultimate paragraph) and a tendency to place the linker at the beginning of sentences.
-- **LR:** A sufficient range of vocabulary is used with some flexibility and there are examples of less common lexical items and appropriate collocation [gas emission | environmental impact | greenhouse gases | easily solved | exhaust pipe]. There are some awkward expressions or inappropriacies in word choice, but they do not limit the rating for this criterion [driven on the way | air ticket | number of population].
-- **GRA:** A variety of complex structures is used with some accuracy [overall, controlling the price of petrol can reduce traffic congestion and air pollution to a certain extent, but it is not the best way and cannot thoroughly solve these problems]. Punctuation is generally well controlled and errors do not impede communication.
+- **CC:** Ideas are generally well organised and there is a clear overall progression. A range of cohesive devices is used effectively, but there is some underuse and a tendency to place the linker at the beginning of sentences.
+- **LR:** A sufficient range of vocabulary is used with some flexibility and there are examples of less common lexical items and appropriate collocation. There are some awkward expressions or inappropriacies in word choice, but they do not limit the rating for this criterion.
+- **GRA:** A variety of complex structures is used with some accuracy. Punctuation is generally well controlled and errors do not impede communication.
 `;

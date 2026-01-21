@@ -1,7 +1,7 @@
 
 import React from 'react';
 import type { Feedback, CriterionFeedback, SentenceImprovementSuggestion, TaskType, MistakeCorrection } from '../types';
-import { BookOpenIcon, CheckCircleIcon, PuzzlePieceIcon, UsersIcon, CheckIcon, ExclamationTriangleIcon, SparklesIcon, WrenchScrewdriverIcon } from './icons';
+import { BookOpenIcon, CheckCircleIcon, GrammarIcon, UsersIcon, CheckIcon, ExclamationTriangleIcon, SparklesIcon, WrenchScrewdriverIcon } from './icons';
 
 interface FeedbackDisplayProps {
   taskType: TaskType;
@@ -110,7 +110,7 @@ const SentenceImprovementCard: React.FC<{ improvements: SentenceImprovementSugge
     <div className="bg-white p-5 rounded-lg border border-amber-300 shadow-sm transition-shadow hover:shadow-md duration-300 bg-gradient-to-r from-white to-amber-50">
         <h4 className="text-md font-bold text-red-900 flex items-center gap-3 mb-4">
             <SparklesIcon className="h-6 w-6 text-amber-500" />
-            Imperial Rewrites
+            Suggested Rewrites
         </h4>
         <ul className="space-y-5">
             {improvements.map((item, index) => (
@@ -199,7 +199,7 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ taskType, feedback, i
             title="Grammatical Range & Accuracy" 
             feedbackItem={feedback.grammaticalRange}
             score={feedback.grammaticalRangeScore}
-            icon={<PuzzlePieceIcon className="h-6 w-6 text-purple-600" />}
+            icon={<GrammarIcon className="h-6 w-6 text-purple-600" />}
         />
         {feedback.sentenceImprovements && feedback.sentenceImprovements.length > 0 && (
             <SentenceImprovementCard improvements={feedback.sentenceImprovements} />
