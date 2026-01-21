@@ -232,6 +232,20 @@ const App: React.FC = () => {
       setApiKeyError("Please save a valid API key to get feedback.");
       return;
     }
+    
+    // Auto-detect prompt if it's missing but we have a custom input
+    let promptToUse = activeContext.prompt;
+    if (!promptToUse && activeContext.isCustomPromptMode && activeContext.customPromptInput.trim()) {
+        promptToUse = activeContext.customPromptInput.trim();
+        // Update context so the UI reflects the prompt being graded
+        setActiveContext(prev => ({ ...prev, prompt: promptToUse }));
+    }
+
+    if (!promptToUse) {
+      setError("Vui lòng chọn hoặc nhập đề bài trước khi chấm.");
+      return;
+    }
+
     if (!activeContext.userEssay.trim()) {
       setError("Please write an essay before requesting feedback.");
       return;
@@ -241,7 +255,7 @@ const App: React.FC = () => {
     setActiveContext(prev => ({ ...prev, isLoadingFeedback: true, feedback: null }));
 
     try {
-      const result = await getIeltsFeedback(taskType, activeContext.prompt, activeContext.userEssay, activeContext.task1Image, apiKey);
+      const result = await getIeltsFeedback(taskType, promptToUse, activeContext.userEssay, activeContext.task1Image, apiKey);
       
       const numericScore = calculateScoreNumeric(result);
       const displayScore = formatScore(numericScore);
@@ -252,7 +266,7 @@ const App: React.FC = () => {
           date: new Date().toISOString(),
           score: numericScore,
           displayScore: displayScore,
-          prompt: activeContext.prompt,
+          prompt: promptToUse,
           essay: activeContext.userEssay,
           taskType: taskType
       };

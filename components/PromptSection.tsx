@@ -61,7 +61,7 @@ const SuggestionsModal: React.FC<{
                 <div className="flex justify-between items-center p-4 border-b border-slate-200">
                     <h3 className="text-lg font-semibold text-red-800 flex items-center gap-2">
                         <SparklesIcon className="h-5 w-5 text-amber-500" />
-                        Imperial Writing Suggestion
+                        Writing Suggestion
                     </h3>
                     <button onClick={onClose} className="text-slate-400 hover:text-red-600">
                         <XCircleIcon className="h-6 w-6" />
@@ -188,7 +188,6 @@ const PromptSection: React.FC<PromptSectionProps> = ({
       }
   };
 
-  const guideTitle = taskType === 'Task 1' ? 'Chiến thuật gợi ý' : 'Tet Strategy Guide';
   const hasTask1Guidance = taskType === 'Task 1' && task1Guidance;
   const hasTask2Guidance = taskType === 'Task 2' && guidancePoints.length > 0;
 
@@ -237,7 +236,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors duration-200 disabled:bg-slate-400 disabled:cursor-not-allowed shadow-md"
             >
                 {isLoadingPrompt ? <LoadingSpinner className="h-5 w-5" /> : <LightbulbIcon className="h-5 w-5" />}
-                Reveal Strategy
+                How to Brainstorm
             </button>
         </div>
       ) : isLoadingPrompt ? (
@@ -253,10 +252,6 @@ const PromptSection: React.FC<PromptSectionProps> = ({
 
       {(hasTask1Guidance || hasTask2Guidance || (isLoadingPrompt && isCustomPromptMode)) && (
         <div className="mt-6 pt-4 border-t border-amber-200">
-             <h3 className="text-md font-bold text-red-800 flex items-center gap-2 mb-3">
-                <LightbulbIcon className="h-5 w-5 text-amber-500" />
-                {guideTitle}
-            </h3>
             {isLoadingPrompt && !isCustomPromptMode ? (
                 <div className="animate-pulse space-y-3">
                     <div className="h-4 bg-red-50 rounded w-full"></div>
@@ -312,7 +307,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                             <div className="mt-6 animate-fade-in">
                                 <div className="flex items-center gap-2 mb-3">
                                     <h4 className="text-sm font-bold text-red-800 uppercase tracking-wide">
-                                        Golden Outline & Vocabulary
+                                        Outline & Vocabulary
                                     </h4>
                                     <button
                                         onClick={onGenerateIdeas}
@@ -323,7 +318,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                                         <RefreshIcon className={`h-4 w-4 ${isLoadingIdeas ? 'animate-spin' : ''}`} />
                                     </button>
                                 </div>
-                                <p className="text-xs text-red-500 mb-2 font-bold italic">💡 Mẹo: Chọn một cụm từ bất kỳ để xem gợi ý viết chuẩn Hoàng Gia.</p>
+                                <p className="text-xs text-red-500 mb-2 font-bold italic">💡 Mẹo: Chọn một cụm từ bất kỳ để xem gợi ý viết chính xác.</p>
                                 <div className="space-y-4 bg-amber-50/40 p-4 rounded-md border border-amber-200 shadow-inner">
                                     {ideas.map((ideaBlock, index) => (
                                         <div 
@@ -351,7 +346,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                                         ) : (
                                             <>
                                                 <SparklesIcon className="h-4 w-4" />
-                                                Generate Golden Outline
+                                                Generate Outline
                                             </>
                                         )}
                                     </button>

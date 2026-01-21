@@ -10,11 +10,9 @@ const handleApiError = (error, context) => {
     
     let errorMessage = 'An unknown error occurred';
     
-    // Attempt to extract the actual error message from various structures
     if (error instanceof Error) {
         errorMessage = error.message;
     } else if (typeof error === 'object' && error !== null) {
-        // Handle raw JSON error objects like { error: { code: 429, message: ... } }
         if (error.error && error.error.message) {
             errorMessage = error.error.message;
         } else {
@@ -28,12 +26,10 @@ const handleApiError = (error, context) => {
         errorMessage = String(error);
     }
 
-    // specific checks
     if (errorMessage.includes('API key not valid') || errorMessage.includes('API_KEY_INVALID')) {
         throw new Error("Your API key is not valid. Please check it and try again.");
     }
     
-    // Explicitly handle Quota/Rate Limit errors (429)
     if (errorMessage.includes('429') || 
         errorMessage.includes('RESOURCE_EXHAUSTED') || 
         errorMessage.toLowerCase().includes('quota') ||
@@ -57,19 +53,16 @@ const handleApiError = (error, context) => {
     throw new Error(errorMessage);
 };
 
-// Helper to retry API calls on 503/500 errors
 const callWithRetry = async (apiCallFn, retries = 5, initialDelay = 2000) => {
     for (let i = 0; i < retries; i++) {
         try {
             return await apiCallFn();
         } catch (error) {
-            // Re-use logic to detect status code if possible, otherwise rely on message
             const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
             const isServerError = errorMessage.includes('503') || errorMessage.includes('500');
             const isQuotaError = errorMessage.includes('429') || errorMessage.includes('RESOURCE_EXHAUSTED');
             const isLastAttempt = i === retries - 1;
 
-            // Do NOT retry on quota errors (429), only temporary server errors (5xx)
             if (isServerError && !isQuotaError && !isLastAttempt) {
                 const delay = initialDelay * Math.pow(2, i);
                 console.warn(`API Error (Attempt ${i + 1}/${retries}). Retrying in ${delay}ms...`, errorMessage);
@@ -81,7 +74,6 @@ const callWithRetry = async (apiCallFn, retries = 5, initialDelay = 2000) => {
     }
 };
 
-// Helper to get random subset of exemplars
 const getRandomExemplars = (exemplarsString, count) => {
     if (!exemplarsString) return "";
     const chunks = exemplarsString.split(/### Exemplar/g).filter(chunk => chunk.trim().length > 0);
@@ -153,7 +145,6 @@ Essay Prompt: "${prompt}"`;
             return JSON.parse(jsonText);
         }
 
-        // Task 2 Logic
         const systemInstruction = "You are an expert IELTS writing instructor. Your task is to help a student brainstorm for an IELTS Writing Task 2 essay.";
         const promptText = `Generate two simple, open-ended brainstorming questions in **Vietnamese** for the following IELTS essay prompt. The questions should guide the student in structuring their essay.`;
         const fullContent = `${promptText}\n\nEssay Prompt: "${prompt}"`;
@@ -394,65 +385,62 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, api
     const ai = new GoogleGenAI({ apiKey });
     try {
         const isTask1 = taskType === 'Task 1';
-        const bandDescriptors = isTask1 ? IELTS_TASK_1_BAND_DESCRIPTORS : IELTS_TASK_2_BAND_DESCRIPTORS;
-        const taskCompletionCriterion = isTask1 ? "Task Achievement" : "Task Response";
         const wordCount = essay.trim() ? essay.trim().split(/\s+/).length : 0;
-        
-        let exemplarsSection = "";
-        if (isTask1) {
-            const subset = getRandomExemplars(IELTS_TASK_1_EXEMPLARS, 1);
-            exemplarsSection = `
-**Band 9.0 Exemplar (Reference):**
-${subset}
-`;
-        } else {
-            const subset = getRandomExemplars(IELTS_TASK_2_EXEMPLARS, 1);
-            exemplarsSection = `
-**Band 6.0 vs 7.0 Calibration:**
-${IELTS_TASK_2_BAND_6_7_EXEMPLARS}
----
-**High-Scoring Exemplar (Reference):**
-${subset}
-`;
-        }
+        const taskCriterion = isTask1 ? "Task Achievement" : "Task Response";
 
-        const systemInstruction = `You are a STRICT and RIGOROUS IELTS examiner providing feedback on an IELTS Writing ${taskType} essay.
+        const systemInstruction = `You are a Fair and Balanced IELTS examiner providing feedback on an IELTS Writing ${taskType} essay. You adhere strictly to the official public band descriptors but maintain a flexible and encouraging approach.
 
         **LANGUAGE INSTRUCTION (CRITICAL):**
-        - **PRIMARY LANGUAGE:** VIETNAMESE. You must provide all explanations, analysis (strengths, weaknesses), and feedback in **Vietnamese**.
-        - **EXCEPTION:** You must keep all quoted phrases from the student's essay, specific vocabulary terms, and suggested English corrections/examples in **ENGLISH**.
+        - **PRIMARY FEEDBACK LANGUAGE:** VIETNAMESE. All analysis and explanations must be in Vietnamese.
+        - **ENGLISH USAGE:** Keep quoted phrases, vocabulary terms, and 'Suggested Rewrites' in **ENGLISH**.
+        - **PERSONA & TONE (MANDATORY):** Trong các phần nhận xét bằng tiếng Việt, hãy xưng hô là "thầy" và gọi người viết là "em". Tạo sự gần gũi, truyền cảm hứng nhưng vẫn giữ được sự chuyên nghiệp của một giám khảo.
+        - **IMPORTANT:** ALL 'suggestedSentence' entries MUST be in ACADEMIC ENGLISH. Do not translate them to Vietnamese.
 
-        **MARKING RIGOR & REASONING (ENHANCED):**
-        1. **Task 1 - Data Accuracy:**
-           - Compare essay data points with the provided image.
-           - Rule: Use decimal dots (e.g., 7.5%, 8.5%).
-           - **SUPERLATIVES IN OVERALL:** If a student correctly identifies trends like "the highest" or "the lowest", DO NOT suggest an identical correction. Only correct if factually or grammatically wrong.
-        
-        2. **REPETITION DETECTION (CRITICAL):**
-           - Carefully analyze the essay for word or phrase repetition.
-           - If any specific phrase or term (e.g., "percentage of Australians") appears **MORE THAN 4 TIMES**, you MUST identify this in the **Coherence & Cohesion** section under 'referencingAndSubstitution'.
-           - For each overly repeated phrase, you MUST provide at least **2-3 specific synonyms or alternative structures (referencing/substitution)** that fit the context of the essay.
+        **ACCURACY & TEXT EXTRACTION (EXTREMELY CRITICAL):**
+        - You MUST ensure the 'originalPhrase' field in 'mistakes' is a LITERALLY EXACT sequence of words found in the student's essay.
+        - **DO NOT** misquote the student. **DO NOT** change their words, verb tenses, or punctuation when quoting.
+        - If you cannot find the exact phrase in the provided manuscript, DO NOT list it as a mistake.
+        - EXAMPLE ERROR TO AVOID: If the student writes "prioritize", do not claim they wrote "priority".
+        - Verify every single identified mistake against the actual manuscript text before outputting.
 
-        3. **Task 2 - Logical Consistency:**
-           - Critically analyze logical development and cause-effect relationships.
+        **SCORING PHILOSOPHY & FLEXIBILITY (CRITICAL):**
+        You should be fair and not overly punitive. Focus on whether the writing effectively communicates ideas and meets task goals.
+
+        **SCORING RULES (STRICT):**
+        - Chỉ chấm điểm CHẴN (số nguyên: 6, 7, 8, 9...) cho 4 tiêu chí thành phần. KHÔNG chấm điểm lẻ như .5 cho từng tiêu chí này.
+
+        1. **${taskCriterion} (FLEXIBLE GRADING):**
+           - Nếu bài viết có thể trả lời được yêu cầu đề bài, có phát triển ý và có ví dụ minh hoạ thì tiêu chí này đã có thể đạt ít nhất **Band 7.0**.
+           - Do not be overly critical of minor omissions if the core argument is well-sustained.
+
+        2. **Coherence & Cohesion (REPETITION vs. COLLOCATION):**
+           - Đừng chỉ chăm chăm trừ điểm lặp từ. Lặp từ được cho phép trong IELTS miễn là các từ lặp đi theo các cụm collocations hay idiomatic language (ví dụ: "medical guidance", "medical checkup").
+           - Chỉ chỉ gợi ý nếu như có lặp từ quá nhiều gây ảnh hưởng mạch lạc.
+           - Nếu một cụm từ xuất hiện quá 4 lần một cách không cần thiết, hãy nhận xét trong 'referencingAndSubstitution' và gợi ý 2-3 từ đồng nghĩa phù hợp.
+           - Reward the flexible use of referencing, substitution, and cohesive devices.
+
+        3. **Lexical Resource (AUTHENTICITY over COMPLEXITY):**
+           - Chấm thoáng hơn. Ở Band 7.0, khi dùng được vài cụm idiomatic language (kể cả đơn giản) thì cũng đã đạt được điểm số này. 
+           - Một số lỗi nhỏ được chấp nhận, không tính là lỗi hệ thống (systematic errors).
+           - Nếu bài viết không sai sót nhiều, dùng được collocations và idiomatic language chính xác thì có thể chấm **Band 8.0 trở lên**.
+
+        4. **Grammatical Range & Accuracy (ERROR TOLERANCE):**
+           - Một số lỗi ngữ pháp cơ bản với tần suất thấp (1-2 lần) không phải lỗi hệ thống thì vẫn có thể được **Band 7.0**.
+           - Khuyến khích và cộng điểm cho các cấu trúc khó như đảo ngữ, mệnh đề phân từ, câu phức.
 
         **Examiner's Marking Method:**
-        - **REDUNDANCY CHECK:** Before adding a correction, ensure 'suggestedCorrection' is significantly different and better.
-        - **Process:** Evaluate ${taskCompletionCriterion}, then CC, LR, and GRA.
-        
-        **Academic Tone:** Formal and objective.
-        
+        - **Process:** Evaluate ${taskCriterion}, then CC, LR, and GRA.
+        - **Academic Tone:** Formal, objective, yet constructive.
+
         **Output Requirements:**
-        - **Mistakes:** List specific LR/GRA errors.
-        - **Improvement:** Rewrite awkward sentences into clear academic English.
+        - **Mistakes:** Identify specific errors.
+        - **Suggested Rewrites:** Rewrite sentences into clear academic English (NEVER in Vietnamese).
         `;
 
-        const essayContent = `Please analyze the following essay.
-
-        **Essay Prompt:** "${prompt}"
-        **Word Count:** ${wordCount} words
-        
-        **Student's Essay:**
+        const essayContent = `Analyze this essay:
+        **Prompt:** "${prompt}"
+        **Word Count:** ${wordCount}
+        **Essay:**
         ---
         ${essay}
         ---
@@ -467,11 +455,6 @@ ${subset}
         parts.push({ text: essayContent });
         const contents = { parts };
         
-        const baseFeedbackProperties = {
-            strengths: { type: Type.STRING },
-            weaknesses: { type: Type.STRING }
-        };
-
         const mistakeSchema = {
             type: Type.OBJECT,
             properties: {
@@ -494,42 +477,36 @@ ${subset}
                         properties: {
                             taskCompletion: { 
                                 type: Type.OBJECT,
-                                properties: {
-                                    strengths: { type: Type.STRING },
-                                    weaknesses: { type: Type.STRING }
-                                },
+                                properties: { strengths: { type: Type.STRING }, weaknesses: { type: Type.STRING } },
                                 required: ['strengths', 'weaknesses']
                             },
                             taskCompletionScore: { type: Type.INTEGER },
                             coherenceCohesion: {
                                 type: Type.OBJECT,
-                                properties: {
-                                    ...baseFeedbackProperties,
-                                    referencingAndSubstitution: { type: Type.STRING, description: "Feedback on referencing, substitution, and REPETITION check (>4 times) in VIETNAMESE." }
+                                properties: { 
+                                    strengths: { type: Type.STRING }, 
+                                    weaknesses: { type: Type.STRING },
+                                    referencingAndSubstitution: { type: Type.STRING } 
                                 },
                                 required: ['strengths', 'weaknesses', 'referencingAndSubstitution']
                             },
                             coherenceCohesionScore: { type: Type.INTEGER },
                             lexicalResource: {
                                 type: Type.OBJECT,
-                                properties: {
-                                    ...baseFeedbackProperties,
-                                    mistakes: {
-                                        type: Type.ARRAY,
-                                        items: mistakeSchema
-                                    }
+                                properties: { 
+                                    strengths: { type: Type.STRING }, 
+                                    weaknesses: { type: Type.STRING },
+                                    mistakes: { type: Type.ARRAY, items: mistakeSchema }
                                 },
                                 required: ['strengths', 'weaknesses', 'mistakes']
                             },
                             lexicalResourceScore: { type: Type.INTEGER },
                             grammaticalRange: {
                                 type: Type.OBJECT,
-                                properties: {
-                                    ...baseFeedbackProperties,
-                                    mistakes: {
-                                        type: Type.ARRAY,
-                                        items: mistakeSchema
-                                    }
+                                properties: { 
+                                    strengths: { type: Type.STRING }, 
+                                    weaknesses: { type: Type.STRING },
+                                    mistakes: { type: Type.ARRAY, items: mistakeSchema }
                                 },
                                 required: ['strengths', 'weaknesses', 'mistakes']
                             },
@@ -538,7 +515,7 @@ ${subset}
                                 type: Type.ARRAY,
                                 items: {
                                     type: Type.OBJECT,
-                                        properties: {
+                                    properties: {
                                         originalSentence: { type: Type.STRING },
                                         suggestedSentence: { type: Type.STRING }
                                     },
@@ -551,8 +528,7 @@ ${subset}
                 },
             });
 
-            const jsonText = response.text;
-            return JSON.parse(jsonText);
+            return JSON.parse(response.text);
         };
 
         return await callWithRetry(apiCall);

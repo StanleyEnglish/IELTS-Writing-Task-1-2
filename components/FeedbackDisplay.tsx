@@ -14,7 +14,7 @@ const FeedbackPlaceholder: React.FC = () => (
         <BookOpenIcon className="h-16 w-16 text-amber-400 mb-4"/>
         <h3 className="text-xl font-bold text-red-800">Your Evaluation Awaits</h3>
         <p className="mt-2 text-red-900 font-medium max-w-sm">
-            Submit your manuscript to receive detailed feedback and imperial band scores.
+            Submit your manuscript to receive detailed feedback and approximate band scores.
         </p>
     </div>
 );
@@ -153,7 +153,7 @@ const calculateOverallBandScore = (feedback: Feedback): string => {
 
 const OverallScore: React.FC<{ score: string }> = ({ score }) => (
     <div className="mb-6 bg-red-700 border-b-4 border-amber-500 p-6 rounded-lg text-center shadow-lg transform hover:scale-105 transition-transform">
-        <p className="text-base font-bold text-amber-400 uppercase tracking-widest">Imperial Band Score</p>
+        <p className="text-base font-bold text-amber-400 uppercase tracking-widest">Approximate Band Score</p>
         <p className="text-6xl font-black text-white tracking-tighter drop-shadow-md">{score}</p>
     </div>
 );
@@ -197,7 +197,7 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ taskType, feedback, i
         />
         <FeedbackCard 
             title="Grammatical Range & Accuracy" 
-            feedbackItem={feedback.grammaticalRange}
+            feedbackItem={feedback.grammaticalRange} 
             score={feedback.grammaticalRangeScore}
             icon={<GrammarIcon className="h-6 w-6 text-purple-600" />}
         />
