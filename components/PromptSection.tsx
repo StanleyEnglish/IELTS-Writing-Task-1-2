@@ -259,42 +259,30 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                 </div>
             ) : (
                 taskType === 'Task 1' && task1Guidance ? (
-                    <>
-                      {!isGuidanceVisible ? (
-                        <button
-                          onClick={() => setIsGuidanceVisible(true)}
-                          className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-amber-900 bg-amber-400 rounded-md hover:bg-amber-500 transition-colors duration-200 shadow-sm"
-                        >
-                          <LightbulbIcon className="h-5 w-5" />
-                          Xem dàn bài Hoàng Gia
-                        </button>
-                      ) : (
-                        <div className="space-y-4 text-slate-600 animate-fade-in bg-amber-50/30 p-4 rounded-lg border border-amber-100">
-                          <div>
-                            <h4 className="font-bold text-red-800">Mở bài (Introduction):</h4>
-                            <p className="pl-4 text-sm font-medium">{task1Guidance.introduction}</p>
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-red-800">Đoạn tổng quan (Overall):</h4>
-                            <ul className="pl-8 list-disc space-y-1 text-sm text-slate-600 font-medium">
-                              {task1Guidance.overall.map((point, index) => <li key={index}>{point}</li>)}
-                            </ul>
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-red-800">Thân bài 1 (Body 1):</h4>
-                            <ul className="pl-8 list-disc space-y-1 text-sm text-slate-600 font-medium">
-                              {task1Guidance.body1.map((point, index) => <li key={index}>{point}</li>)}
-                            </ul>
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-red-800">Thân bài 2 (Body 2):</h4>
-                            <ul className="pl-8 list-disc space-y-1 text-sm text-slate-600 font-medium">
-                              {task1Guidance.body2.map((point, index) => <li key={index}>{point}</li>)}
-                            </ul>
-                          </div>
-                        </div>
-                      )}
-                    </>
+                    <div className="space-y-4 text-slate-600 animate-fade-in bg-amber-50/30 p-4 rounded-lg border border-amber-100">
+                      <div>
+                        <h4 className="font-bold text-red-800">Mở bài (Introduction):</h4>
+                        <p className="pl-4 text-sm font-medium">{task1Guidance.introduction}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-red-800">Đoạn tổng quan (Overall):</h4>
+                        <ul className="pl-8 list-disc space-y-1 text-sm text-slate-600 font-medium">
+                          {task1Guidance.overall.map((point, index) => <li key={index}>{point}</li>)}
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-red-800">Thân bài 1 (Body 1):</h4>
+                        <ul className="pl-8 list-disc space-y-1 text-sm text-slate-600 font-medium">
+                          {task1Guidance.body1.map((point, index) => <li key={index}>{point}</li>)}
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-red-800">Thân bài 2 (Body 2):</h4>
+                        <ul className="pl-8 list-disc space-y-1 text-sm text-slate-600 font-medium">
+                          {task1Guidance.body2.map((point, index) => <li key={index}>{point}</li>)}
+                        </ul>
+                      </div>
+                    </div>
                 ) : (
                     <>
                         <ul className="space-y-2 list-disc list-inside text-slate-700 font-medium">
@@ -369,7 +357,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                 className="flex items-center gap-2 bg-red-600 text-white px-3 py-1.5 rounded-full shadow-lg hover:bg-red-700 transition-transform hover:scale-105 font-bold text-xs border border-amber-300"
               >
                   <SparklesIcon className="h-4 w-4 text-amber-300" />
-                  Write Imperial?
+                  Viết Mẫu?
               </button>
               <div className="w-3 h-3 bg-red-600 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2 -z-10 border-r border-b border-amber-300"></div>
           </div>

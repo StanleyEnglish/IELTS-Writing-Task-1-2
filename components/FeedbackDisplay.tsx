@@ -79,7 +79,7 @@ const FeedbackCard: React.FC<{ title: string; feedbackItem: CriterionFeedback; i
                 <div>
                     <h5 className="font-bold text-sm text-green-800 bg-green-100/70 inline-flex items-center gap-2 px-2 py-1 rounded-full">
                         <CheckIcon className="h-4 w-4" />
-                        Virtues
+                        Key strengths
                     </h5>
                     <p className="text-slate-600 whitespace-pre-wrap leading-relaxed text-sm pt-2 pl-2 border-l-2 border-green-200 ml-3 font-medium">{feedbackItem.strengths}</p>
                 </div>
@@ -88,7 +88,7 @@ const FeedbackCard: React.FC<{ title: string; feedbackItem: CriterionFeedback; i
                 <div>
                      <h5 className="font-bold text-sm text-red-800 bg-red-100/70 inline-flex items-center gap-2 px-2 py-1 rounded-full">
                         <ExclamationTriangleIcon className="h-4 w-4" />
-                        Omissions
+                        Areas for improvement
                     </h5>
                     <p className="text-slate-600 whitespace-pre-wrap leading-relaxed text-sm pt-2 pl-2 border-l-2 border-red-200 ml-3 font-medium">{feedbackItem.weaknesses}</p>
                     {feedbackItem.referencingAndSubstitution && (

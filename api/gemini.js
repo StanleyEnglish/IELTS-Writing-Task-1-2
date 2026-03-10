@@ -1,9 +1,9 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 import { IELTS_TASK_1_BAND_DESCRIPTORS, IELTS_TASK_2_BAND_DESCRIPTORS, IELTS_TASK_1_EXEMPLARS, IELTS_TASK_2_EXEMPLARS, IELTS_TASK_2_BAND_6_7_EXEMPLARS } from '../constants';
 
-const brainstormingModel = 'gemini-2.5-flash';
-const feedbackModel = 'gemini-2.5-flash';
+const brainstormingModel = 'gemini-3-flash-preview';
+const feedbackModel = 'gemini-3-flash-preview';
 
 const handleApiError = (error, context) => {
     console.error(`Error during ${context}:`, error);
@@ -88,13 +88,13 @@ export const generateGuidance = async (taskType, prompt, imageBase64, apiKey) =>
   try {
     const apiCall = async () => {
         if (taskType === 'Task 1') {
-            const systemInstruction = "You are an expert IELTS writing instructor. Your task is to provide a structured guide in Vietnamese for an IELTS Writing Task 1 essay based on the user's prompt and image. The guide must follow a specific four-part structure: Introduction, Overall, Body 1, and Body 2.";
+            const systemInstruction = "You are an expert IELTS writing instructor. Your task is to provide a structured guide in Vietnamese for an IELTS Writing Task 1 essay based on the user's prompt and image. The guide must follow a specific four-part structure: Introduction, Overall, Body 1, and Body 2. **CRITICAL:** Ensure the division of information between Body 1 and Body 2 is highly logical to maximize Coherence & Cohesion.";
             const promptText = `Analyze the following IELTS Writing Task 1 prompt and the provided image. Based on your analysis, generate a structured guide in Vietnamese that a student can follow to write their essay. The output must be a JSON object with the following structure:
 
 1.  **introduction**: A string suggestion on how to paraphrase the prompt for the introduction.
 2.  **overall**: An array of strings, where each string is a bullet point identifying a main trend or key feature for the 'Overall' paragraph. This should be 2-3 points.
-3.  **body1**: An array of strings, where each string is a bullet point suggesting what information to group and describe in the first body paragraph.
-4.  **body2**: An array of strings, where each string is a bullet point suggesting what information to group and describe in the second body paragraph.
+3.  **body1**: An array of strings, where each string is a bullet point suggesting what information to group and describe in the first body paragraph. **Logic:** Group related data points together.
+4.  **body2**: An array of strings, where each string is a bullet point suggesting what information to group and describe in the second body paragraph. **Logic:** Group the remaining data points logically.
 
 Essay Prompt: "${prompt}"`;
 
@@ -116,6 +116,7 @@ Essay Prompt: "${prompt}"`;
                 config: {
                     systemInstruction,
                     responseMimeType: "application/json",
+                    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {
@@ -157,6 +158,7 @@ Essay Prompt: "${prompt}"`;
           config: {
             systemInstruction,
             responseMimeType: "application/json",
+            thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
@@ -208,6 +210,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                   - **Body 2 (60%)**: Discuss the writer's opinion, the stronger argument, or the main solution.
 
                 **CRITICAL INSTRUCTION FOR IDEA GENERATION (SIMPLE & MEMORABLE):**
+                - **Logic & Flow:** Ensure the logical progression of ideas within and between paragraphs to maximize Coherence & Cohesion (CC).
                 - **Simplicity**: Ideas must be straightforward and easy to explain in English. Avoid overly complex or abstract philosophical arguments.
                 - **Memorability**: Use common, relatable concepts (e.g., family, money, health, convenience, work, education) that students can easily recall.
                 - **Friendly Tone**: The ideas should feel natural and not forced.
@@ -237,8 +240,8 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 - **Tóm tắt ý chính và quan điểm**: Concise summary & direct opinion. Keep it simple.
 
                 **CRITICAL INSTRUCTION FOR VOCABULARY:**
-                - For **ALL SECTIONS**: Insert natural, topic-specific, Band 7+ English collocations directly next to the relevant Vietnamese concepts, enclosed in square brackets [ ].
-                - **Criteria**: Vocabulary must be **common, natural, and practical** (not obscure).
+                - For **ALL SECTIONS**: Insert natural, topic-specific, B2 - C1 level English collocations directly next to the relevant Vietnamese concepts, enclosed in square brackets [ ].
+                - **Criteria**: Vocabulary must be **common, natural, and practical** (not obscure, complex, or overly academic). Focus on topic-specific language.
 
                 **STRUCTURE & LABELS (STRICT FORMATTING):**
                 - You MUST use the following **VIETNAMESE LABELS** in **Bold** (Markdown style).
@@ -274,6 +277,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 config: {
                     systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Do NOT merge points into paragraphs; keep each label on a new line starting with a bullet point. For main headers (Mở bài, etc.), do not use dashes or numbers. For 'Giải thích', provide 2 simple ideas using logical flow (A -> B). For 'Ví dụ', provide 1 short example with consequence. Ensure 40/60 balance. Start Body 1 topic sentence with 'Một mặt,'. Start Body 2 topic sentence with 'Mặt khác,'. Insert English vocabulary suggestions directly into the text using square brackets [ ].",
                     responseMimeType: "application/json",
+                    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {
@@ -313,10 +317,10 @@ export const generateWritingSuggestions = async (textToAnalyze, apiKey) => {
 Suggest the best way to write or use this selected text in a Band 7+ IELTS essay.
 
 **CRITICAL RULES FOR VOCABULARY:**
-1. **Simplicity & Authenticity:** You MUST suggest **simple, clear, and high-frequency academic vocabulary**.
-2. **Avoid Obscurity:** Do NOT use complex, archaic, or overly "fancy" words.
-3. **Naturalness:** Prioritize natural collocations used by native speakers over "big words".
-4. **Logic:** The suggestion must be appropriate for the context.
+1. **B2 - C1 Level & Authenticity:** You MUST suggest **natural, topic-specific vocabulary at B2 - C1 level**.
+2. **Avoid Obscurity:** Do NOT use complex, archaic, or overly "fancy" words that feel unnatural.
+3. **Naturalness:** Prioritize natural collocations used by native speakers.
+4. **Logic:** The suggestion must be appropriate for the context and topic.
 
 **OTHER RULES:**
 1. **Input Analysis:** 
@@ -346,6 +350,7 @@ Suggest the best way to write or use this selected text in a Band 7+ IELTS essay
                 config: {
                     systemInstruction,
                     responseMimeType: "application/json",
+                    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {
@@ -400,7 +405,7 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, api
         - You MUST ensure the 'originalPhrase' field in 'mistakes' is a LITERALLY EXACT sequence of words found in the student's essay.
         - **DO NOT** misquote the student. **DO NOT** change their words, verb tenses, or punctuation when quoting.
         - If you cannot find the exact phrase in the provided manuscript, DO NOT list it as a mistake.
-        - EXAMPLE ERROR TO AVOID: If the student writes "prioritize", do not claim they wrote "priority".
+        - **IMPORTANT:** KHÔNG ĐƯỢC tách các chữ đuôi số nhiều "s", "es" sau danh từ để sửa lại. Luôn nhất quán nhất trong việc sửa lỗi chính tả, ngữ pháp, từ vựng.
         - Verify every single identified mistake against the actual manuscript text before outputting.
 
         **SCORING PHILOSOPHY & FLEXIBILITY (CRITICAL):**
@@ -413,13 +418,16 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, api
            - Nếu bài viết có thể trả lời được yêu cầu đề bài, có phát triển ý và có ví dụ minh hoạ thì tiêu chí này đã có thể đạt ít nhất **Band 7.0**.
            - Do not be overly critical of minor omissions if the core argument is well-sustained.
 
-        2. **Coherence & Cohesion (REPETITION vs. COLLOCATION):**
-           - Đừng chỉ chăm chăm trừ điểm lặp từ. Lặp từ được cho phép trong IELTS miễn là các từ lặp đi theo các cụm collocations hay idiomatic language (ví dụ: "medical guidance", "medical checkup").
+        2. **Coherence & Cohesion (CC):**
+           - **CRITICAL:** Xem xét kỹ ý tưởng/ cách chia body trong task 1 và logic bài viết trong task 2 để tối ưu hóa điểm CC.
+           - Đừng chỉ chăm chăm trừ điểm lặp từ. Lặp từ được cho phép trong IELTS miễn là các từ lặp đi theo các cụm collocations hay idiomatic language.
            - Chỉ chỉ gợi ý nếu như có lặp từ quá nhiều gây ảnh hưởng mạch lạc.
            - Nếu một cụm từ xuất hiện quá 4 lần một cách không cần thiết, hãy nhận xét trong 'referencingAndSubstitution' và gợi ý 2-3 từ đồng nghĩa phù hợp.
            - Reward the flexible use of referencing, substitution, and cohesive devices.
 
-        3. **Lexical Resource (AUTHENTICITY over COMPLEXITY):**
+        3. **Lexical Resource (B2-C1 LEVEL & NATURALNESS):**
+           - Ưu tiên sử dụng các mẫu câu và từ vựng ở mức level B2 - C1, và theo chủ đề.
+           - KHÔNG dùng từ khó, phức tạp hay thiếu tự nhiên.
            - Chấm thoáng hơn. Ở Band 7.0, khi dùng được vài cụm idiomatic language (kể cả đơn giản) thì cũng đã đạt được điểm số này. 
            - Một số lỗi nhỏ được chấp nhận, không tính là lỗi hệ thống (systematic errors).
            - Nếu bài viết không sai sót nhiều, dùng được collocations và idiomatic language chính xác thì có thể chấm **Band 8.0 trở lên**.
@@ -472,6 +480,7 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, api
                 config: {
                     systemInstruction,
                     responseMimeType: "application/json",
+                    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {

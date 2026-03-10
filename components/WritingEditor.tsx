@@ -146,7 +146,7 @@ const WritingEditor: React.FC<WritingEditorProps> = ({
           {isLoading ? (
             <>
               <LoadingSpinner className="h-5 w-5" />
-              Judging...
+              Evaluating...
             </>
           ) : (
             <>

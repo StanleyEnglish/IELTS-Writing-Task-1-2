@@ -28,44 +28,6 @@
       .animate-fade-in {
         animation: fadeIn 0.5s ease-out forwards;
       }
-      
-      /* Tet Blossom Animation */
-      .tet-blossom {
-        color: #f59e0b; /* Amber/Gold color */
-        font-size: 2.5em;
-        font-family: Arial;
-        position: fixed;
-        top: -10%;
-        z-index: 0; 
-        user-select: none;
-        cursor: default;
-        animation-name: blossoms-fall, blossoms-shake;
-        animation-duration: 12s, 4s;
-        animation-timing-function: linear, ease-in-out;
-        animation-iteration-count: infinite, infinite;
-        animation-play-state: running, running;
-        opacity: 0.4;
-      }
-      
-      .tet-blossom.pink {
-        color: #fb7185; /* Rose/Pink color */
-      }
-
-      @keyframes blossoms-fall {
-        0% { top: -10%; }
-        100% { top: 100%; }
-      }
-      
-      @keyframes blossoms-shake {
-        0% { transform: translateX(0px) rotate(0deg); }
-        50% { transform: translateX(100px) rotate(180deg); }
-        100% { transform: translateX(0px) rotate(360deg); }
-      }
-      
-      .tet-blossom:nth-of-type(1) { left: 10%; animation-delay: 0s, 0s; }
-      .tet-blossom:nth-of-type(2) { left: 30%; animation-delay: 4s, 1s; }
-      .tet-blossom:nth-of-type(3) { left: 60%; animation-delay: 2s, 2s; }
-      .tet-blossom:nth-of-type(4) { left: 85%; animation-delay: 7s, 0.5s; }
     </style>
   <script type="importmap">
 {
@@ -77,15 +39,9 @@
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
   <body class="bg-red-50 text-slate-800 antialiased">
-    <!-- Tet Decorations Container -->
-    <div aria-hidden="true">
-      <div class="tet-blossom">🌸</div>
-      <div class="tet-blossom pink">🌸</div>
-      <div class="tet-blossom">🏮</div>
-      <div class="tet-blossom pink">🌸</div>
-    </div>
     <div id="root" style="position: relative; z-index: 1;"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
