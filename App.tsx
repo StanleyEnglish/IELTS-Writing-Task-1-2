@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Feedback, TaskType, TaskContext, HighScore } from './types';
 import { IELTS_TASK_2_PROMPTS } from './constants';
-import { generateGuidance, getIeltsFeedback, generateBrainstormingIdeas } from './api/gemini.js';
+import { generateGuidance, getIeltsFeedback, generateBrainstormingIdeas, generateModelEssay } from './api/gemini.js';
 import Header from './components/Header';
 import PromptSection from './components/PromptSection';
 import WritingEditor from './components/WritingEditor';
@@ -19,9 +19,11 @@ const getInitialTaskContext = (isLoadingPrompt = false, isInitialized = false): 
   task1Image: null,
   userEssay: '',
   feedback: null,
+  modelEssay: null,
   isLoadingPrompt,
   isLoadingIdeas: false,
   isLoadingFeedback: false,
+  isLoadingModelEssay: false,
   isInitialized,
 });
 
@@ -252,7 +254,7 @@ const App: React.FC = () => {
     }
     setError(null);
     setApiKeyError(null);
-    setActiveContext(prev => ({ ...prev, isLoadingFeedback: true, feedback: null }));
+    setActiveContext(prev => ({ ...prev, isLoadingFeedback: true, feedback: null, modelEssay: null }));
 
     try {
       const result = await getIeltsFeedback(taskType, promptToUse, activeContext.userEssay, activeContext.task1Image, apiKey);
@@ -277,6 +279,32 @@ const App: React.FC = () => {
     } catch (e) {
       handleApiError(e);
       setActiveContext(prev => ({ ...prev, isLoadingFeedback: false }));
+    }
+  };
+
+  const handleGenerateModelEssay = async () => {
+    if (!apiKey) {
+      setApiKeyError("Please save a valid API key to generate a model essay.");
+      return;
+    }
+    if (!activeContext.feedback || !activeContext.userEssay) return;
+
+    setError(null);
+    setApiKeyError(null);
+    setActiveContext(prev => ({ ...prev, isLoadingModelEssay: true }));
+
+    try {
+      const result = await generateModelEssay(
+        taskType,
+        activeContext.prompt,
+        activeContext.userEssay,
+        activeContext.feedback,
+        apiKey
+      );
+      setActiveContext(prev => ({ ...prev, modelEssay: result, isLoadingModelEssay: false }));
+    } catch (e) {
+      handleApiError(e);
+      setActiveContext(prev => ({ ...prev, isLoadingModelEssay: false }));
     }
   };
   
@@ -496,6 +524,9 @@ const App: React.FC = () => {
                 taskType={taskType} 
                 feedback={activeContext.feedback} 
                 isLoading={activeContext.isLoadingFeedback} 
+                onGenerateModelEssay={handleGenerateModelEssay}
+                isLoadingModelEssay={activeContext.isLoadingModelEssay}
+                modelEssay={activeContext.modelEssay}
             />
           </div>
         </div>

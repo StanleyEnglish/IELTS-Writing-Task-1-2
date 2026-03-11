@@ -1,5 +1,6 @@
 
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import type { Feedback, CriterionFeedback, SentenceImprovementSuggestion, TaskType, MistakeCorrection } from '../types';
 import { BookOpenIcon, CheckCircleIcon, GrammarIcon, UsersIcon, CheckIcon, ExclamationTriangleIcon, SparklesIcon, WrenchScrewdriverIcon } from './icons';
 
@@ -7,6 +8,9 @@ interface FeedbackDisplayProps {
   taskType: TaskType;
   feedback: Feedback | null;
   isLoading: boolean;
+  onGenerateModelEssay: () => void;
+  isLoadingModelEssay: boolean;
+  modelEssay: string | null;
 }
 
 const FeedbackPlaceholder: React.FC = () => (
@@ -152,13 +156,38 @@ const calculateOverallBandScore = (feedback: Feedback): string => {
 };
 
 const OverallScore: React.FC<{ score: string }> = ({ score }) => (
-    <div className="mb-6 bg-red-700 border-b-4 border-amber-500 p-6 rounded-lg text-center shadow-lg transform hover:scale-105 transition-transform">
+    <div className="bg-red-700 border-b-4 border-amber-500 p-6 rounded-lg text-center shadow-lg transform hover:scale-105 transition-transform">
         <p className="text-base font-bold text-amber-400 uppercase tracking-widest">Approximate Band Score</p>
         <p className="text-6xl font-black text-white tracking-tighter drop-shadow-md">{score}</p>
     </div>
 );
 
-const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ taskType, feedback, isLoading }) => {
+const ModelEssayCard: React.FC<{ essay: string }> = ({ essay }) => (
+    <div className="bg-white p-6 md:p-8 rounded-xl border-2 border-amber-400 shadow-lg bg-gradient-to-br from-white to-amber-50/20">
+        <h4 className="text-xl font-bold text-red-900 flex items-center gap-3 mb-6 border-b-2 border-amber-200 pb-3">
+            <SparklesIcon className="h-7 w-7 text-amber-500" />
+            Bài Viết Mẫu Band 7.0+
+        </h4>
+        <div className="prose prose-slate max-w-none text-slate-700 leading-relaxed text-base md:text-lg space-y-4">
+            <ReactMarkdown 
+                components={{
+                    p: ({node, ...props}) => <p className="mb-6 last:mb-0 text-justify" {...props} />
+                }}
+            >
+                {essay}
+            </ReactMarkdown>
+        </div>
+    </div>
+);
+
+const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ 
+    taskType, 
+    feedback, 
+    isLoading, 
+    onGenerateModelEssay, 
+    isLoadingModelEssay, 
+    modelEssay 
+}) => {
   if (isLoading) {
     return <FeedbackSkeleton />;
   }
@@ -175,7 +204,42 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({ taskType, feedback, i
       <h2 className="text-2xl font-bold text-red-900 mb-4 flex items-center gap-2">
           Feedback Analysis
       </h2>
-      <OverallScore score={overallScore} />
+      
+      <div className="mb-6 space-y-4">
+        <OverallScore score={overallScore} />
+        
+        <div className="flex justify-center">
+            <button
+                onClick={onGenerateModelEssay}
+                disabled={isLoadingModelEssay}
+                className={`
+                    flex items-center gap-2 px-6 py-3 rounded-full font-bold shadow-lg transition-all transform hover:scale-105
+                    ${isLoadingModelEssay 
+                        ? 'bg-slate-400 cursor-not-allowed' 
+                        : 'bg-gradient-to-r from-red-600 to-red-800 text-white hover:from-red-700 hover:to-red-900 border-2 border-amber-400'}
+                `}
+            >
+                {isLoadingModelEssay ? (
+                    <>
+                        <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                        Đang tạo bài mẫu...
+                    </>
+                ) : (
+                    <>
+                        <SparklesIcon className="h-5 w-5 text-amber-300" />
+                        Viết Lại Band 7+
+                    </>
+                )}
+            </button>
+        </div>
+      </div>
+
+      {modelEssay && (
+          <div className="mb-8">
+              <ModelEssayCard essay={modelEssay} />
+          </div>
+      )}
+
       <div className="space-y-4">
         <FeedbackCard 
             title={taskCompletionTitle} 

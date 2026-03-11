@@ -69,8 +69,10 @@ export interface TaskContext {
   task1Image: string | null;
   userEssay: string;
   feedback: Feedback | null;
+  modelEssay: string | null;
   isLoadingPrompt: boolean;
   isLoadingIdeas: boolean;
   isLoadingFeedback: boolean;
+  isLoadingModelEssay: boolean;
   isInitialized: boolean;
 }

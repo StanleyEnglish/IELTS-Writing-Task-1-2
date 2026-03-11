@@ -546,3 +546,48 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, api
         handleApiError(error, 'get feedback from the AI');
     }
 };
+
+export const generateModelEssay = async (taskType, prompt, originalEssay, feedback, apiKey) => {
+    if (!apiKey) throw new Error("API key is missing.");
+    const ai = new GoogleGenAI({ apiKey });
+    
+    try {
+        const apiCall = async () => {
+            const systemInstruction = `You are an expert IELTS Writing instructor. 
+            Your task is to rewrite the student's essay into a **Band 7.0 - 7.5** model essay in English.
+            
+            **CRITICAL RULES:**
+            1. **Stick to the Student's Ideas:** Do NOT change the core arguments or ideas provided by the student. Just improve how they are expressed.
+            2. **Target Band 7.0 - 7.5:** Use appropriate academic vocabulary (B2-C1 level) and a variety of sentence structures. Do NOT aim for Band 9.0 (avoid overly obscure words).
+            3. **NO SPECIFIC STATISTICS:** For Task 2, NEVER use specific percentages or numbers in examples (e.g., do NOT say "70% of people"). Instead, use quantity phrases like "the majority of", "a significant proportion of", "a section of", or "many".
+            4. **Everyday Examples:** Use relatable, everyday examples rather than overly scientific or technical ones.
+            5. **Naturalness & Flow:** The essay must sound natural and flow logically.
+            6. **Structure:** Ensure a clear 4-paragraph structure (Intro, Body 1, Body 2, Conclusion). Use exactly ONE blank line between each paragraph.
+            7. **Language:** The output must be entirely in English.
+            
+            **INPUT PROVIDED:**
+            - Task Type: ${taskType}
+            - Prompt: ${prompt}
+            - Original Essay: ${originalEssay}
+            - Feedback Summary: ${JSON.stringify(feedback.taskCompletion)} ${JSON.stringify(feedback.coherenceCohesion)}
+            `;
+
+            const promptContent = `Based on the student's original essay and the feedback provided, rewrite the essay to reach a Band 7.0+ standard while keeping the same core ideas.`;
+
+            const response = await ai.models.generateContent({
+                model: brainstormingModel, // Use the faster model for this
+                contents: { parts: [{ text: promptContent }] },
+                config: {
+                    systemInstruction,
+                    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+                }
+            });
+
+            return response.text;
+        };
+
+        return await callWithRetry(apiCall);
+    } catch (error) {
+        handleApiError(error, 'generate model essay');
+    }
+};
