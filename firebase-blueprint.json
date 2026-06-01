@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "LeaderboardEntry": {
+      "title": "Leaderboard Entry",
+      "description": "A record of a student's test result for the leaderboard.",
+      "type": "object",
+      "properties": {
+        "studentName": {
+          "type": "string",
+          "description": "The name of the student."
+        },
+        "bandScore": {
+          "type": "number",
+          "description": "The overall band score achieved."
+        },
+        "submissionDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the test was submitted."
+        },
+        "durationMinutes": {
+          "type": "number",
+          "description": "The time taken to complete the test in minutes."
+        },
+        "revisionCount": {
+          "type": "number",
+          "description": "The number of revisions made to the essay."
+        },
+        "uid": {
+          "type": "string",
+          "description": "The unique ID of the user who submitted the score."
+        }
+      },
+      "required": ["studentName", "bandScore", "submissionDate", "durationMinutes", "revisionCount", "uid"]
+    }
+  },
+  "firestore": {
+    "/leaderboard/{entryId}": {
+      "schema": "LeaderboardEntry",
+      "description": "Collection of leaderboard entries."
+    }
+  }
+}

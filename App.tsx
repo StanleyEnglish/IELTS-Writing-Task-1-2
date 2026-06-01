@@ -9,6 +9,8 @@ import WritingEditor from './components/WritingEditor';
 import FeedbackDisplay from './components/FeedbackDisplay';
 import Dashboard from './components/Dashboard';
 
+import { saveTestResult, auth } from './firebase';
+
 const getInitialTaskContext = (isLoadingPrompt = false, isInitialized = false): TaskContext => ({
   prompt: '',
   customPromptInput: '',
@@ -60,6 +62,7 @@ const App: React.FC = () => {
 
   // App Mode (Dashboard vs Main)
   const [isAppStarted, setIsAppStarted] = useState(false);
+  const [isSubmittedToLeaderboard, setIsSubmittedToLeaderboard] = useState(false);
 
   // Score History
   const [history, setHistory] = useState<HighScore[]>([]);
@@ -71,6 +74,7 @@ const App: React.FC = () => {
   // Global timer state
   const [timeRemaining, setTimeRemaining] = useState(3600); // 60 minutes
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [practiceStartTime, setPracticeStartTime] = useState<number | null>(null);
 
   const activeContext = taskType === 'Task 1' ? task1Context : task2Context;
   const setActiveContext = taskType === 'Task 1' ? setTask1Context : setTask2Context;
@@ -120,6 +124,7 @@ const App: React.FC = () => {
     setTask2Context(getInitialTaskContext(true, true));
     setError(null);
     setApiKeyError(null);
+    setIsSubmittedToLeaderboard(false);
     
     try {
       const prompts = IELTS_TASK_2_PROMPTS;
@@ -185,6 +190,7 @@ const App: React.FC = () => {
     }
     setError(null);
     setApiKeyError(null);
+    setIsSubmittedToLeaderboard(false);
     setActiveContext(prev => ({ ...prev, isLoadingPrompt: true, guidancePoints: [], task1Guidance: null, brainstormingIdeas: [] }));
 
     try {
@@ -254,6 +260,7 @@ const App: React.FC = () => {
     }
     setError(null);
     setApiKeyError(null);
+    setIsSubmittedToLeaderboard(false);
     setActiveContext(prev => ({ ...prev, isLoadingFeedback: true, feedback: null, modelEssay: null }));
 
     try {
@@ -274,6 +281,18 @@ const App: React.FC = () => {
       };
       
       saveHistory(newRecord);
+      
+      // Save to Firebase Leaderboard if user is logged in
+      if (auth.currentUser) {
+          const durationMinutes = practiceStartTime ? Math.round((Date.now() - practiceStartTime) / 60000) : 0;
+          saveTestResult({
+              studentName: auth.currentUser.displayName || 'Anonymous',
+              bandScore: numericScore,
+              durationMinutes: durationMinutes,
+              revisionCount: 1, // Basic implementation
+          }).then(() => setIsSubmittedToLeaderboard(true))
+          .catch(err => console.error("Failed to save to leaderboard:", err));
+      }
       
       setActiveContext(prev => ({ ...prev, feedback: result, isLoadingFeedback: false }));
     } catch (e) {
@@ -330,6 +349,27 @@ const App: React.FC = () => {
 
   const handleStartPractice = () => {
       setIsAppStarted(true);
+      setPracticeStartTime(Date.now());
+  };
+
+  const handleManualSubmitToLeaderboard = async () => {
+    if (!auth.currentUser || !activeContext.feedback || isSubmittedToLeaderboard) return;
+    
+    const numericScore = calculateScoreNumeric(activeContext.feedback);
+    const durationMinutes = practiceStartTime ? Math.round((Date.now() - practiceStartTime) / 60000) : 0;
+    
+    try {
+        await saveTestResult({
+            studentName: auth.currentUser.displayName || 'Anonymous',
+            bandScore: numericScore,
+            durationMinutes: durationMinutes,
+            revisionCount: 1,
+        });
+        setIsSubmittedToLeaderboard(true);
+    } catch (err) {
+        console.error("Failed to save to leaderboard:", err);
+        setError("Failed to submit to leaderboard. Please try again.");
+    }
   };
 
   const handleExportToWord = () => {
@@ -448,7 +488,6 @@ const App: React.FC = () => {
   if (!isAppStarted) {
       return (
           <Dashboard 
-            history={history}
             apiKey={apiKey}
             onSaveApiKey={handleSaveApiKey}
             onStartPractice={handleStartPractice}
@@ -527,6 +566,8 @@ const App: React.FC = () => {
                 onGenerateModelEssay={handleGenerateModelEssay}
                 isLoadingModelEssay={activeContext.isLoadingModelEssay}
                 modelEssay={activeContext.modelEssay}
+                isSubmittedToLeaderboard={isSubmittedToLeaderboard}
+                onManualSubmitToLeaderboard={handleManualSubmitToLeaderboard}
             />
           </div>
         </div>

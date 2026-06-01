@@ -11,6 +11,8 @@ interface FeedbackDisplayProps {
   onGenerateModelEssay: () => void;
   isLoadingModelEssay: boolean;
   modelEssay: string | null;
+  isSubmittedToLeaderboard: boolean;
+  onManualSubmitToLeaderboard: () => void;
 }
 
 const FeedbackPlaceholder: React.FC = () => (
@@ -186,7 +188,9 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({
     isLoading, 
     onGenerateModelEssay, 
     isLoadingModelEssay, 
-    modelEssay 
+    modelEssay,
+    isSubmittedToLeaderboard,
+    onManualSubmitToLeaderboard
 }) => {
   if (isLoading) {
     return <FeedbackSkeleton />;
@@ -208,7 +212,7 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({
       <div className="mb-6 space-y-4">
         <OverallScore score={overallScore} />
         
-        <div className="flex justify-center">
+        <div className="flex flex-wrap justify-center gap-4">
             <button
                 onClick={onGenerateModelEssay}
                 disabled={isLoadingModelEssay}
@@ -231,6 +235,31 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({
                     </>
                 )}
             </button>
+
+            {feedback && (
+                <button
+                    onClick={onManualSubmitToLeaderboard}
+                    disabled={isSubmittedToLeaderboard}
+                    className={`
+                        flex items-center gap-2 px-6 py-3 rounded-full font-bold shadow-lg transition-all transform hover:scale-105
+                        ${isSubmittedToLeaderboard 
+                            ? 'bg-green-100 text-green-700 border-2 border-green-200 cursor-default' 
+                            : 'bg-white text-red-700 border-2 border-red-700 hover:bg-red-50'}
+                    `}
+                >
+                    {isSubmittedToLeaderboard ? (
+                        <>
+                            <CheckIcon className="h-5 w-5" />
+                            Saved to Leaderboard
+                        </>
+                    ) : (
+                        <>
+                            <UsersIcon className="h-5 w-5" />
+                            Submit to Leaderboard
+                        </>
+                    )}
+                </button>
+            )}
         </div>
       </div>
 

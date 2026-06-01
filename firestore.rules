@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: leaderboard
+    // Document ID: auto-generated
+    // Fields:
+    //   - studentName: string (required, 1-50 chars) - The name of the student.
+    //   - bandScore: number (required, 0-9) - The overall band score achieved.
+    //   - submissionDate: timestamp (required) - The date and time the test was submitted.
+    //   - durationMinutes: number (required, > 0) - The time taken to complete the test in minutes.
+    //   - revisionCount: number (required, >= 0) - The number of revisions made to the essay.
+    //   - uid: string (required) - The unique ID of the user who submitted the score.
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidLeaderboardEntry(data) {
+      return data.keys().hasOnly(['studentName', 'bandScore', 'submissionDate', 'durationMinutes', 'revisionCount', 'uid']) &&
+             data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 50 &&
+             data.bandScore is number && data.bandScore >= 0 && data.bandScore <= 9 &&
+             data.submissionDate is timestamp &&
+             data.durationMinutes is number && data.durationMinutes > 0 &&
+             data.revisionCount is number && data.revisionCount >= 0 &&
+             data.uid is string && data.uid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /leaderboard/{entryId} {
+      // Allow authenticated users to read the leaderboard
+      allow read: if isAuthenticated();
+      
+      // Allow authenticated users to create their own entry
+      allow create: if isAuthenticated() && isValidLeaderboardEntry(request.resource.data);
+      
+      // Leaderboard entries are immutable for now
+      allow update, delete: if false;
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
