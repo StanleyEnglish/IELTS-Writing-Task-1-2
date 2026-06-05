@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, onAuthStateChanged, User } from 'firebase/auth';
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp, Timestamp } from 'firebase/firestore';
 import firebaseConfig from './firebase-applet-config.json';
 
@@ -70,6 +70,15 @@ export const signInWithGoogle = async () => {
   }
 };
 
+export const signInWithGoogleRedirect = async () => {
+  try {
+    await signInWithRedirect(auth, googleProvider);
+  } catch (error) {
+    console.error('Error signing in with Google redirect:', error);
+    throw error;
+  }
+};
+
 export const logout = () => auth.signOut();
 
 export interface LeaderboardEntry {
@@ -80,6 +89,9 @@ export interface LeaderboardEntry {
   durationMinutes: number;
   revisionCount: number;
   uid: string;
+  essay?: string;
+  prompt?: string;
+  taskType?: string;
 }
 
 export const saveTestResult = async (data: Omit<LeaderboardEntry, 'id' | 'submissionDate' | 'uid'>) => {

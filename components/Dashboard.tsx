@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth, signInWithGoogle, logout } from '../firebase';
+import { User, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
+import { auth, signInWithGoogle, signInWithGoogleRedirect, logout } from '../firebase';
 import { SparklesIcon, StickyRiceCakeIcon, UsersIcon } from './icons';
 import Leaderboard from './Leaderboard';
 
@@ -15,8 +15,21 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPractice, apiKeyError }) => {
     const [localApiKey, setLocalApiKey] = useState(apiKey || '');
     const [user, setUser] = useState<User | null>(null);
+    const [authError, setAuthError] = useState<string | null>(null);
 
     useEffect(() => {
+        // Check for redirect sign-in result when component mounts
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result?.user) {
+                    setUser(result.user);
+                }
+            })
+            .catch((error: any) => {
+                console.error('Redirect sign-in error:', error);
+                setAuthError(error.message || String(error));
+            });
+
         const unsubscribe = onAuthStateChanged(auth, (u) => {
             setUser(u);
         });
@@ -30,10 +43,22 @@ const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPrac
     };
 
     const handleSignIn = async () => {
+        setAuthError(null);
         try {
             await signInWithGoogle();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Sign in failed:', error);
+            setAuthError(error.message || String(error));
+        }
+    };
+
+    const handleSignInRedirect = async () => {
+        setAuthError(null);
+        try {
+            await signInWithGoogleRedirect();
+        } catch (error: any) {
+            console.error('Sign in with redirect failed:', error);
+            setAuthError(error.message || String(error));
         }
     };
 
@@ -89,13 +114,45 @@ const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPrac
                                     <p className="text-xs text-slate-500 leading-relaxed">
                                         Sign in to save your results and compete on the global leaderboard!
                                     </p>
-                                    <button
-                                        onClick={handleSignIn}
-                                        className="w-full py-2.5 bg-white border-2 border-slate-200 hover:border-red-300 text-slate-700 font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="h-4 w-4" />
-                                        Sign in with Google
-                                    </button>
+                                    <div className="flex flex-col gap-2">
+                                        <button
+                                            onClick={handleSignIn}
+                                            className="w-full py-2.5 bg-white border-2 border-slate-200 hover:border-red-300 text-slate-700 font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 text-sm"
+                                        >
+                                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="h-4 w-4" />
+                                            Sign in with Google (Popup)
+                                        </button>
+                                        <button
+                                            onClick={handleSignInRedirect}
+                                            className="w-full py-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 text-xs"
+                                        >
+                                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="h-3.5 w-3.5 opacity-85" />
+                                            Try Redirect Fallback (Recommended)
+                                        </button>
+                                    </div>
+                                    <div className="p-3.5 bg-amber-50/70 border border-amber-200 text-xs text-amber-950 rounded-lg space-y-2">
+                                        <p className="font-bold text-amber-900 flex items-center gap-1.5">
+                                            ⚠️ Key Configurations Needed:
+                                        </p>
+                                        <div className="space-y-1.5 pl-1 leading-relaxed text-[11px] text-amber-900/90">
+                                            <p>
+                                                1. <strong>Firebase Authorized Domains (CRITICAL):</strong> Go to your <span className="font-bold text-red-850">Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains</span> and make sure you add this domain name:
+                                                <code className="block bg-amber-100/80 p-1 rounded font-mono mt-1 text-[10px] break-all border border-amber-200 select-all font-semibold">
+                                                    ais-dev-kekbxqciipa4pjlchryegy-312286699948.asia-southeast1.run.app
+                                                </code>
+                                                <em>(If missing, Firebase locks out the pop-up/redirect handshakes instantly).</em>
+                                            </p>
+                                            <p>
+                                                2. <strong>Browser Embedding fallback:</strong> Ensure you open the application in a <strong>New Tab</strong> using the App URL in the top-right corner, as general browser policies block cross-origin popups inside iframes.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {authError && (
+                                        <div className="p-3 bg-red-50 text-red-800 text-xs rounded-lg border border-red-200 space-y-1.5 leading-relaxed">
+                                            <p className="font-bold text-red-900">Current Login Log:</p>
+                                            <p className="font-mono text-[10px] bg-white p-1.5 rounded border border-red-100 overflow-x-auto whitespace-pre-wrap select-text">{authError}</p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -144,11 +201,14 @@ const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPrac
 
                     <div className="md:col-span-2">
                          <div className="bg-white rounded-xl shadow-md border border-amber-200 p-6 h-full">
-                            <div className="flex justify-between items-center mb-6">
+                            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-6 pb-2 border-b border-amber-100">
                                 <h3 className="text-lg font-bold text-red-900 flex items-center gap-2">
                                     <UsersIcon className="h-5 w-5 text-amber-600" />
                                     Global Leaderboard
                                 </h3>
+                                <span className="text-xs text-amber-800 font-medium bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block">
+                                    ⏱️ Start the timer to get ranked.
+                                </span>
                             </div>
                             
                             <div className="bg-amber-50/30 rounded-lg p-4 border border-amber-100 min-h-[400px]">

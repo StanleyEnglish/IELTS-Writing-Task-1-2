@@ -29,6 +29,18 @@
         "uid": {
           "type": "string",
           "description": "The unique ID of the user who submitted the score."
+        },
+        "essay": {
+          "type": "string",
+          "description": "The content of the writing submission."
+        },
+        "prompt": {
+          "type": "string",
+          "description": "The prompt/topic of the task."
+        },
+        "taskType": {
+          "type": "string",
+          "description": "The type of task (Task 1 or Task 2)."
         }
       },
       "required": ["studentName", "bandScore", "submissionDate", "durationMinutes", "revisionCount", "uid"]

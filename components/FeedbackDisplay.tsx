@@ -13,6 +13,7 @@ interface FeedbackDisplayProps {
   modelEssay: string | null;
   isSubmittedToLeaderboard: boolean;
   onManualSubmitToLeaderboard: () => void;
+  completionDuration?: number | null;
 }
 
 const FeedbackPlaceholder: React.FC = () => (
@@ -190,7 +191,8 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({
     isLoadingModelEssay, 
     modelEssay,
     isSubmittedToLeaderboard,
-    onManualSubmitToLeaderboard
+    onManualSubmitToLeaderboard,
+    completionDuration
 }) => {
   if (isLoading) {
     return <FeedbackSkeleton />;
@@ -203,6 +205,15 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({
   const overallScore = calculateOverallBandScore(feedback);
   const taskCompletionTitle = taskType === 'Task 1' ? 'Task Achievement' : 'Task Response';
 
+  const minMinutes = taskType === 'Task 1' ? 10 : 15;
+  const maxMinutes = taskType === 'Task 1' ? 20 : 40;
+  
+  const isEligible = completionDuration === null || completionDuration === undefined || (
+      taskType === 'Task 1' 
+          ? (completionDuration >= 10 && completionDuration <= 20) 
+          : (completionDuration >= 15 && completionDuration <= 40)
+  );
+
   return (
     <div className="h-full">
       <h2 className="text-2xl font-bold text-red-900 mb-4 flex items-center gap-2">
@@ -212,54 +223,76 @@ const FeedbackDisplay: React.FC<FeedbackDisplayProps> = ({
       <div className="mb-6 space-y-4">
         <OverallScore score={overallScore} />
         
-        <div className="flex flex-wrap justify-center gap-4">
-            <button
-                onClick={onGenerateModelEssay}
-                disabled={isLoadingModelEssay}
-                className={`
-                    flex items-center gap-2 px-6 py-3 rounded-full font-bold shadow-lg transition-all transform hover:scale-105
-                    ${isLoadingModelEssay 
-                        ? 'bg-slate-400 cursor-not-allowed' 
-                        : 'bg-gradient-to-r from-red-600 to-red-800 text-white hover:from-red-700 hover:to-red-900 border-2 border-amber-400'}
-                `}
-            >
-                {isLoadingModelEssay ? (
-                    <>
-                        <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-                        Đang tạo bài mẫu...
-                    </>
-                ) : (
-                    <>
-                        <SparklesIcon className="h-5 w-5 text-amber-300" />
-                        Viết Lại Band 7+
-                    </>
-                )}
-            </button>
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-wrap justify-center gap-4">
+              <button
+                  onClick={onGenerateModelEssay}
+                  disabled={isLoadingModelEssay}
+                  className={`
+                      flex items-center gap-2 px-6 py-3 rounded-full font-bold shadow-lg transition-all transform hover:scale-105
+                      ${isLoadingModelEssay 
+                          ? 'bg-slate-400 cursor-not-allowed' 
+                          : 'bg-gradient-to-r from-red-600 to-red-800 text-white hover:from-red-700 hover:to-red-900 border-2 border-amber-400'}
+                  `}
+              >
+                  {isLoadingModelEssay ? (
+                      <>
+                          <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                          Đang tạo bài mẫu...
+                      </>
+                  ) : (
+                      <>
+                          <SparklesIcon className="h-5 w-5 text-amber-300" />
+                          Viết Lại Band 7+
+                      </>
+                  )}
+              </button>
 
-            {feedback && (
-                <button
-                    onClick={onManualSubmitToLeaderboard}
-                    disabled={isSubmittedToLeaderboard}
-                    className={`
-                        flex items-center gap-2 px-6 py-3 rounded-full font-bold shadow-lg transition-all transform hover:scale-105
-                        ${isSubmittedToLeaderboard 
-                            ? 'bg-green-100 text-green-700 border-2 border-green-200 cursor-default' 
-                            : 'bg-white text-red-700 border-2 border-red-700 hover:bg-red-50'}
-                    `}
-                >
-                    {isSubmittedToLeaderboard ? (
-                        <>
-                            <CheckIcon className="h-5 w-5" />
-                            Saved to Leaderboard
-                        </>
-                    ) : (
-                        <>
-                            <UsersIcon className="h-5 w-5" />
-                            Submit to Leaderboard
-                        </>
-                    )}
-                </button>
-            )}
+              {feedback && (
+                  <button
+                      onClick={isEligible ? onManualSubmitToLeaderboard : undefined}
+                      disabled={isSubmittedToLeaderboard || !isEligible}
+                      className={`
+                          flex items-center gap-2 px-6 py-3 rounded-full font-bold shadow-lg transition-all transform hover:scale-105
+                          ${isSubmittedToLeaderboard 
+                              ? 'bg-green-100 text-green-700 border-2 border-green-200 cursor-default animate-none' 
+                              : !isEligible
+                                  ? 'bg-slate-100 text-slate-400 border-2 border-slate-200 cursor-not-allowed opacity-75'
+                                  : 'bg-white text-red-700 border-2 border-red-700 hover:bg-red-50'}
+                      `}
+                  >
+                      {isSubmittedToLeaderboard ? (
+                          <>
+                              <CheckIcon className="h-5 w-5 hover:scale-100" />
+                              Saved to Leaderboard
+                          </>
+                      ) : !isEligible ? (
+                          <>
+                              <ExclamationTriangleIcon className="h-5 w-5 text-slate-400" />
+                              Excluded ({completionDuration}m)
+                          </>
+                      ) : (
+                          <>
+                              <UsersIcon className="h-5 w-5" />
+                              Submit to Leaderboard
+                          </>
+                      )}
+                  </button>
+              )}
+          </div>
+
+          {completionDuration !== null && completionDuration !== undefined && !isEligible && (
+              <div className="w-full max-w-lg bg-red-50 border border-red-200 text-red-900 text-xs rounded-xl p-3.5 space-y-1.5 text-center font-medium shadow-sm transition-all duration-300">
+                <p className="flex items-center justify-center gap-1.5 font-bold text-red-800 text-[13px]">
+                  ⚠️ Leaderboard Exclusion Alert
+                </p>
+                <p className="leading-relaxed">
+                  This practice exam took <span className="font-bold text-red-700 bg-red-100/50 px-1 py-0.5 rounded">{completionDuration} minutes</span>. 
+                  To ensure fairness and prevent plagiarism, the required time window for <span className="font-bold text-slate-800">{taskType}</span> is <span className="font-bold">{minMinutes} to {maxMinutes} minutes</span>. 
+                  Your submission was successfully graded, but is excluded from the Global Leaderboard.
+                </p>
+              </div>
+          )}
         </div>
       </div>
 

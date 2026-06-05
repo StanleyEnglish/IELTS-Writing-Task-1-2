@@ -30,13 +30,17 @@ service cloud.firestore {
     }
 
     function isValidLeaderboardEntry(data) {
-      return data.keys().hasOnly(['studentName', 'bandScore', 'submissionDate', 'durationMinutes', 'revisionCount', 'uid']) &&
-             data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 50 &&
+      return data.keys().hasAll(['studentName', 'bandScore', 'submissionDate', 'durationMinutes', 'revisionCount', 'uid']) &&
+             data.keys().hasOnly(['studentName', 'bandScore', 'submissionDate', 'durationMinutes', 'revisionCount', 'uid', 'essay', 'prompt', 'taskType']) &&
+             data.studentName is string && data.studentName.size() >= 1 && data.studentName.size() <= 150 &&
              data.bandScore is number && data.bandScore >= 0 && data.bandScore <= 9 &&
              data.submissionDate is timestamp &&
-             data.durationMinutes is number && data.durationMinutes > 0 &&
+             data.durationMinutes is number && data.durationMinutes >= 0 &&
              data.revisionCount is number && data.revisionCount >= 0 &&
-             data.uid is string && data.uid == request.auth.uid;
+             data.uid is string && data.uid == request.auth.uid &&
+             (!data.keys().contains('essay') || (data.essay is string && data.essay.size() <= 100000)) &&
+             (!data.keys().contains('prompt') || (data.prompt is string && data.prompt.size() <= 10000)) &&
+             (!data.keys().contains('taskType') || (data.taskType is string && data.taskType.size() <= 50));
     }
 
     // ===============================================================

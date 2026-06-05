@@ -75,6 +75,7 @@ const App: React.FC = () => {
   const [timeRemaining, setTimeRemaining] = useState(3600); // 60 minutes
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [practiceStartTime, setPracticeStartTime] = useState<number | null>(null);
+  const [completionDuration, setCompletionDuration] = useState<number | null>(null);
 
   const activeContext = taskType === 'Task 1' ? task1Context : task2Context;
   const setActiveContext = taskType === 'Task 1' ? setTask1Context : setTask2Context;
@@ -125,6 +126,7 @@ const App: React.FC = () => {
     setError(null);
     setApiKeyError(null);
     setIsSubmittedToLeaderboard(false);
+    setCompletionDuration(null);
     
     try {
       const prompts = IELTS_TASK_2_PROMPTS;
@@ -269,6 +271,9 @@ const App: React.FC = () => {
       const numericScore = calculateScoreNumeric(result);
       const displayScore = formatScore(numericScore);
       
+      const duration = practiceStartTime ? Math.round((Date.now() - practiceStartTime) / 60000) : 0;
+      setCompletionDuration(duration);
+      
       const newRecord: HighScore = {
           id: Date.now().toString(),
           nickname: 'User',
@@ -284,14 +289,24 @@ const App: React.FC = () => {
       
       // Save to Firebase Leaderboard if user is logged in
       if (auth.currentUser) {
-          const durationMinutes = practiceStartTime ? Math.round((Date.now() - practiceStartTime) / 60000) : 0;
-          saveTestResult({
-              studentName: auth.currentUser.displayName || 'Anonymous',
-              bandScore: numericScore,
-              durationMinutes: durationMinutes,
-              revisionCount: 1, // Basic implementation
-          }).then(() => setIsSubmittedToLeaderboard(true))
-          .catch(err => console.error("Failed to save to leaderboard:", err));
+          const isEligible = taskType === 'Task 1' 
+              ? (duration >= 10 && duration <= 20) 
+              : (duration >= 15 && duration <= 40);
+
+          if (isEligible) {
+              saveTestResult({
+                  studentName: auth.currentUser.displayName || 'Anonymous',
+                  bandScore: numericScore,
+                  durationMinutes: duration,
+                  revisionCount: 1, // Basic implementation
+                  essay: activeContext.userEssay,
+                  prompt: promptToUse,
+                  taskType: taskType,
+              }).then(() => setIsSubmittedToLeaderboard(true))
+              .catch(err => console.error("Failed to save to leaderboard:", err));
+          } else {
+              setIsSubmittedToLeaderboard(false);
+          }
       }
       
       setActiveContext(prev => ({ ...prev, feedback: result, isLoadingFeedback: false }));
@@ -350,20 +365,39 @@ const App: React.FC = () => {
   const handleStartPractice = () => {
       setIsAppStarted(true);
       setPracticeStartTime(Date.now());
+      setCompletionDuration(null);
   };
 
   const handleManualSubmitToLeaderboard = async () => {
     if (!auth.currentUser || !activeContext.feedback || isSubmittedToLeaderboard) return;
     
+    // Auto-detect prompt if it's missing but we have a custom input
+    let promptToUse = activeContext.prompt;
+    if (!promptToUse && activeContext.isCustomPromptMode && activeContext.customPromptInput.trim()) {
+        promptToUse = activeContext.customPromptInput.trim();
+    }
+
     const numericScore = calculateScoreNumeric(activeContext.feedback);
-    const durationMinutes = practiceStartTime ? Math.round((Date.now() - practiceStartTime) / 60000) : 0;
+    const duration = completionDuration || (practiceStartTime ? Math.round((Date.now() - practiceStartTime) / 60000) : 0);
     
+    const isEligible = taskType === 'Task 1' 
+        ? (duration >= 10 && duration <= 20) 
+        : (duration >= 15 && duration <= 40);
+
+    if (!isEligible) {
+        setError(`This submission is not eligible for the leaderboard. ${taskType === 'Task 1' ? 'Task 1 requires 10-20 minutes.' : 'Task 2 requires 15-40 minutes.'}`);
+        return;
+    }
+
     try {
         await saveTestResult({
             studentName: auth.currentUser.displayName || 'Anonymous',
             bandScore: numericScore,
-            durationMinutes: durationMinutes,
+            durationMinutes: duration,
             revisionCount: 1,
+            essay: activeContext.userEssay,
+            prompt: promptToUse,
+            taskType: taskType,
         });
         setIsSubmittedToLeaderboard(true);
     } catch (err) {
@@ -568,6 +602,7 @@ const App: React.FC = () => {
                 modelEssay={activeContext.modelEssay}
                 isSubmittedToLeaderboard={isSubmittedToLeaderboard}
                 onManualSubmitToLeaderboard={handleManualSubmitToLeaderboard}
+                completionDuration={completionDuration}
             />
           </div>
         </div>
