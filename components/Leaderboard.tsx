@@ -5,8 +5,7 @@ import { SparklesIcon } from './icons';
 const Leaderboard: React.FC = () => {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hoveredEntry, setHoveredEntry] = useState<LeaderboardEntry | null>(null);
-  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
+  const [activeEssay, setActiveEssay] = useState<{ entry: LeaderboardEntry; top: number; left: number } | null>(null);
 
   useEffect(() => {
     const loadScores = async () => {
@@ -45,17 +44,22 @@ const Leaderboard: React.FC = () => {
   }, []);
 
   const handleMouseEnter = (entry: LeaderboardEntry, e: React.MouseEvent<HTMLTableCellElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    // Position tooltip nicely below the cell, avoiding left-overflow
-    setTooltipPos({
-      top: rect.bottom + window.scrollY + 8,
-      left: Math.max(10, rect.left + window.scrollX - 100),
-    });
-    setHoveredEntry(entry);
+    if (activeEssay && activeEssay.entry.id === entry.id) {
+      // If it is already visible, remove it (make it disappear)
+      setActiveEssay(null);
+    } else {
+      // Position tooltip nicely below the cell, avoiding left-overflow
+      const rect = e.currentTarget.getBoundingClientRect();
+      setActiveEssay({
+        entry,
+        top: rect.bottom + window.scrollY + 8,
+        left: Math.max(10, rect.left + window.scrollX - 100),
+      });
+    }
   };
 
   const handleMouseLeave = () => {
-    setHoveredEntry(null);
+    // Keep visible essays frozen on mouse leave
   };
 
   if (loading) {
@@ -69,6 +73,12 @@ const Leaderboard: React.FC = () => {
 
   return (
     <div className="w-full space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <p className="text-xs text-slate-500 italic">
+          💡 Hover over a Band Score to toggle (show/hide) that student's essay.
+        </p>
+      </div>
+      
       <div className="overflow-visible rounded-xl border border-amber-200 bg-white shadow-sm">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -118,50 +128,53 @@ const Leaderboard: React.FC = () => {
           </tbody>
         </table>
       </div>
-      {/* Floating Hover Card */}
-      {hoveredEntry && (
+
+      {/* Floating Hover Cards */}
+      {activeEssay && (
         <div 
           style={{ 
             position: 'absolute', 
-            top: `${tooltipPos.top}px`, 
-            left: `${tooltipPos.left}px`,
+            top: `${activeEssay.top}px`, 
+            left: `${activeEssay.left}px`,
             width: '320px',
             maxWidth: 'calc(100vw - 20px)'
           }}
-          className="z-50 bg-white rounded-xl shadow-xl border border-amber-200 p-4 font-sans text-left text-xs text-slate-850 pointer-events-none transition-all duration-150 ease-out"
+          className="z-50 bg-white rounded-xl shadow-xl border border-amber-200 p-4 font-sans text-left text-xs text-slate-850 pointer-events-auto transition-all duration-150 ease-out animate-in fade-in zoom-in-95 duration-100"
         >
           <div className="absolute top-0 left-12 -mt-1.5 h-3 w-3 rotate-45 border-t border-l border-amber-200 bg-white" />
           <div className="flex justify-between items-center border-b border-amber-100 pb-2 mb-2">
             <span className="font-bold text-red-900 text-sm truncate max-w-[180px]">
-              {hoveredEntry.studentName}'s Essay
+              {activeEssay.entry.studentName}'s Essay
             </span>
             <span className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded text-[10px] font-bold">
-              {hoveredEntry.taskType || 'Task 2'}
+              {activeEssay.entry.taskType || 'Task 2'}
             </span>
           </div>
           
           <div className="space-y-2.5">
             <div className="flex justify-between text-[11px] text-slate-500 font-medium bg-amber-50/50 p-1.5 rounded border border-amber-100/50">
-              <span>⏱️ Duration: <strong>{hoveredEntry.durationMinutes}m</strong></span>
-              {hoveredEntry.essay && (
-                <span>✍️ Word Count: <strong>{hoveredEntry.essay.trim().split(/\s+/).filter(Boolean).length} words</strong></span>
+              <span>⏱️ Duration: <strong>{activeEssay.entry.durationMinutes}m</strong></span>
+              {activeEssay.entry.essay && (
+                <span>✍️ Word Count: <strong>{activeEssay.entry.essay.trim().split(/\s+/).filter(Boolean).length} words</strong></span>
               )}
             </div>
             
-            {hoveredEntry.prompt && (
+            {activeEssay.entry.prompt && (
               <div>
                 <p className="text-[10px] font-bold text-amber-900 uppercase tracking-wider mb-0.5">Prompt / Topic:</p>
-                <p className="text-slate-600 italic font-serif leading-relaxed line-clamp-3 bg-red-50/20 p-2 rounded border border-red-50/50">
-                  "{hoveredEntry.prompt}"
-                </p>
+                <div className="max-h-20 overflow-y-auto bg-red-50/20 p-2 rounded border border-red-50/50 scrollbar-thin">
+                  <p className="text-slate-600 italic font-serif leading-relaxed">
+                    "{activeEssay.entry.prompt}"
+                  </p>
+                </div>
               </div>
             )}
             
             <div>
               <p className="text-[10px] font-bold text-amber-900 uppercase tracking-wider mb-0.5">Essay Manuscript:</p>
-              {hoveredEntry.essay ? (
-                <div className="bg-slate-50 border border-slate-100 rounded-lg p-2.5 max-h-40 overflow-y-auto leading-relaxed text-[11px] text-slate-700 whitespace-pre-wrap select-none scrollbar-thin">
-                  {hoveredEntry.essay}
+              {activeEssay.entry.essay ? (
+                <div className="bg-slate-50 border border-slate-100 rounded-lg p-2.5 max-h-40 overflow-y-auto leading-relaxed text-[11px] text-slate-700 whitespace-pre-wrap select-text scrollbar-thin">
+                  {activeEssay.entry.essay}
                 </div>
               ) : (
                 <p className="text-slate-400 italic text-center p-2 bg-slate-50 rounded border border-slate-100">

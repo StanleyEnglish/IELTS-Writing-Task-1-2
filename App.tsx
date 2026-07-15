@@ -343,8 +343,8 @@ const App: React.FC = () => {
   };
   
   const handleSaveApiKey = (key: string) => {
-    if (!key.startsWith('AIza')) {
-        setApiKeyError("This doesn't look like a valid Gemini API key. Please check it.");
+    if (!key.startsWith('AIza') && !key.startsWith('AQ')) {
+        setApiKeyError("This doesn't look like a valid Gemini API key. Please check it. It should start with 'AIza' or 'AQ'.");
         return;
     }
     setApiKey(key);

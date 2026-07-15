@@ -169,7 +169,7 @@ const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPrac
                                     </label>
                                     <input
                                         type="password"
-                                        placeholder="AIzaSy..."
+                                        placeholder="AIzaSy... or AQ..."
                                         value={localApiKey}
                                         onChange={(e) => setLocalApiKey(e.target.value)}
                                         className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm ${
