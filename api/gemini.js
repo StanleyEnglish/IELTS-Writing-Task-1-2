@@ -1,9 +1,9 @@
 
-import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { IELTS_TASK_1_BAND_DESCRIPTORS, IELTS_TASK_2_BAND_DESCRIPTORS, IELTS_TASK_1_EXEMPLARS, IELTS_TASK_2_EXEMPLARS, IELTS_TASK_2_BAND_6_7_EXEMPLARS } from '../constants';
 
-const brainstormingModel = 'gemini-3-flash-preview';
-const feedbackModel = 'gemini-3-flash-preview';
+const brainstormingModel = 'gemini-3.5-flash';
+const feedbackModel = 'gemini-3.5-flash';
 
 const handleApiError = (error, context) => {
     console.error(`Error during ${context}:`, error);
@@ -122,7 +122,6 @@ Essay Prompt: "${prompt}"`;
                 config: {
                     systemInstruction,
                     responseMimeType: "application/json",
-                    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {
@@ -164,7 +163,6 @@ Essay Prompt: "${prompt}"`;
           config: {
             systemInstruction,
             responseMimeType: "application/json",
-            thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
@@ -296,7 +294,6 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey, targ
                 config: {
                     systemInstruction: "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline. Use **Bold** for the specific VIETNAMESE headers and labels provided in the prompt. Do NOT merge points into paragraphs; keep each label on a new line starting with a bullet point. For main headers (Mở bài, etc.), do not use dashes or numbers. For 'Giải thích', provide 2 simple ideas using logical flow (A -> B). For 'Ví dụ', provide 1 short example with consequence. Ensure 40/60 balance. Start Body 1 topic sentence with 'Một mặt,'. Start Body 2 topic sentence with 'Mặt khác,'. Insert English vocabulary suggestions directly into the text using square brackets [ ].",
                     responseMimeType: "application/json",
-                    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {
@@ -369,7 +366,6 @@ Suggest the best way to write or use this selected text in a Band 7+ IELTS essay
                 config: {
                     systemInstruction,
                     responseMimeType: "application/json",
-                    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {
@@ -526,7 +522,6 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, api
                 config: {
                     systemInstruction,
                     responseMimeType: "application/json",
-                    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {
@@ -625,7 +620,6 @@ export const generateModelEssay = async (taskType, prompt, originalEssay, feedba
                 contents: { parts: [{ text: promptContent }] },
                 config: {
                     systemInstruction,
-                    thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
                 }
             });
 

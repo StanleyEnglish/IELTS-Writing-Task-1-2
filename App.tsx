@@ -149,10 +149,18 @@ const App: React.FC = () => {
   
   // Initial prompt generation when entering the app
   useEffect(() => {
-    if (isAppStarted && taskType === 'Task 2' && !task2Context.isInitialized && apiKey) {
-      handleNewPrompt();
+    if (isAppStarted && taskType === 'Task 2') {
+      if (apiKey && (!task2Context.isInitialized || !task2Context.prompt)) {
+        handleNewPrompt();
+      } else if (!apiKey && !task2Context.isInitialized) {
+        setTask2Context(prev => ({
+          ...prev,
+          isLoadingPrompt: false,
+          isInitialized: true,
+        }));
+      }
     }
-  }, [isAppStarted, taskType, task2Context.isInitialized, handleNewPrompt, apiKey]);
+  }, [isAppStarted, taskType, task2Context.isInitialized, task2Context.prompt, handleNewPrompt, apiKey]);
   
   useEffect(() => {
     if (!isTimerActive) return;
