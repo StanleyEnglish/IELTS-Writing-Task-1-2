@@ -58,10 +58,7 @@ const App: React.FC = () => {
     ...getInitialTaskContext(false, true),
     isCustomPromptMode: true,
   });
-  const [task2Context, setTask2Context] = useState<TaskContext>({
-    ...getInitialTaskContext(false, true),
-    isCustomPromptMode: true,
-  });
+  const [task2Context, setTask2Context] = useState<TaskContext>(getInitialTaskContext(true, false));
   const [error, setError] = useState<string | null>(null);
 
   // App Mode (Dashboard vs Main)
