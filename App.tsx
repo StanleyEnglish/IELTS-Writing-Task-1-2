@@ -27,6 +27,7 @@ const getInitialTaskContext = (isLoadingPrompt = false, isInitialized = false): 
   isLoadingFeedback: false,
   isLoadingModelEssay: false,
   isInitialized,
+  targetBand: '7.0+',
 });
 
 const calculateScoreNumeric = (feedback: Feedback): number => {
@@ -68,7 +69,7 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<HighScore[]>([]);
 
   // API Key State
-  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem('gemini-api-key'));
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
 
   // Global timer state
@@ -81,11 +82,6 @@ const App: React.FC = () => {
   const setActiveContext = taskType === 'Task 1' ? setTask1Context : setTask2Context;
   
   useEffect(() => {
-    const storedKey = localStorage.getItem('gemini-api-key');
-    if (storedKey) {
-      setApiKey(storedKey);
-    }
-
     const storedHistory = localStorage.getItem('ielts-score-history');
     if (storedHistory) {
         try {
@@ -181,7 +177,7 @@ const App: React.FC = () => {
     setActiveContext(prev => ({...prev, isCustomPromptMode: true}));
   };
 
-  const handleGenerateFromCustomPrompt = async () => {
+  const handleGenerateFromCustomPrompt = async (level?: '5.0-6.0' | '7.0+') => {
     if (!apiKey) {
       setApiKeyError("Please save a valid API key to generate guidance.");
       return;
@@ -190,26 +186,36 @@ const App: React.FC = () => {
       setError("Please enter a prompt.");
       return;
     }
+    const selectedLevel = level || activeContext.targetBand || '7.0+';
     setError(null);
     setApiKeyError(null);
     setIsSubmittedToLeaderboard(false);
-    setActiveContext(prev => ({ ...prev, isLoadingPrompt: true, guidancePoints: [], task1Guidance: null, brainstormingIdeas: [] }));
+    setActiveContext(prev => ({ 
+      ...prev, 
+      isLoadingPrompt: true, 
+      guidancePoints: [], 
+      task1Guidance: null, 
+      brainstormingIdeas: [],
+      targetBand: selectedLevel
+    }));
 
     try {
-      const guidanceResult = await generateGuidance(taskType, activeContext.customPromptInput, activeContext.task1Image, apiKey);
+      const guidanceResult = await generateGuidance(taskType, activeContext.customPromptInput, activeContext.task1Image, apiKey, selectedLevel);
       if (taskType === 'Task 1') {
         setActiveContext(prev => ({ 
           ...prev, 
           prompt: prev.customPromptInput, 
           task1Guidance: guidanceResult,
-          isLoadingPrompt: false
+          isLoadingPrompt: false,
+          targetBand: selectedLevel
         }));
       } else {
          setActiveContext(prev => ({ 
           ...prev, 
           prompt: prev.customPromptInput, 
           guidancePoints: guidanceResult,
-          isLoadingPrompt: false
+          isLoadingPrompt: false,
+          targetBand: selectedLevel
         }));
       }
     } catch (e) {
@@ -218,19 +224,30 @@ const App: React.FC = () => {
     }
   };
 
-  const handleGenerateIdeas = async () => {
+  const handleGenerateIdeas = async (level?: '5.0-6.0' | '7.0+') => {
     if (!apiKey) {
       setApiKeyError("Please save a valid API key to generate ideas.");
       return;
     }
     if (activeContext.guidancePoints.length === 0 || taskType === 'Task 1') return;
+    const selectedLevel = level || activeContext.targetBand || '7.0+';
     setError(null);
     setApiKeyError(null);
-    setActiveContext(prev => ({ ...prev, isLoadingIdeas: true, brainstormingIdeas: [] }));
+    setActiveContext(prev => ({ 
+      ...prev, 
+      isLoadingIdeas: true, 
+      brainstormingIdeas: [],
+      targetBand: selectedLevel
+    }));
 
     try {
-      const ideas = await generateBrainstormingIdeas(activeContext.prompt, activeContext.guidancePoints, apiKey);
-      setActiveContext(prev => ({ ...prev, brainstormingIdeas: ideas, isLoadingIdeas: false }));
+      const ideas = await generateBrainstormingIdeas(activeContext.prompt, activeContext.guidancePoints, apiKey, selectedLevel);
+      setActiveContext(prev => ({ 
+        ...prev, 
+        brainstormingIdeas: ideas, 
+        isLoadingIdeas: false,
+        targetBand: selectedLevel
+      }));
     } catch (e) {
       handleApiError(e);
       setActiveContext(prev => ({ ...prev, isLoadingIdeas: false }));
@@ -576,6 +593,7 @@ const App: React.FC = () => {
                   task1Image={activeContext.task1Image}
                   setTask1Image={(val) => setActiveContext(p => ({...p, task1Image: val}))}
                   apiKey={apiKey}
+                  targetBand={activeContext.targetBand}
                 />
             </div>
             <div className="h-full">

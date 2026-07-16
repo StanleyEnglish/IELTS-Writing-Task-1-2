@@ -75,4 +75,5 @@ export interface TaskContext {
   isLoadingFeedback: boolean;
   isLoadingModelEssay: boolean;
   isInitialized: boolean;
+  targetBand?: '5.0-6.0' | '7.0+';
 }

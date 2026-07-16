@@ -81,20 +81,26 @@ const getRandomExemplars = (exemplarsString, count) => {
     return selected.map(chunk => `### Exemplar${chunk}`).join('\n---\n');
 };
 
-export const generateGuidance = async (taskType, prompt, imageBase64, apiKey) => {
+export const generateGuidance = async (taskType, prompt, imageBase64, apiKey, targetBand = '7.0+') => {
   if (!apiKey) throw new Error("API key is missing.");
   const ai = new GoogleGenAI({ apiKey });
 
   try {
     const apiCall = async () => {
         if (taskType === 'Task 1') {
-            const systemInstruction = "You are an expert IELTS writing instructor. Your task is to provide a structured guide in Vietnamese for an IELTS Writing Task 1 essay based on the user's prompt and image. The guide must follow a specific four-part structure: Introduction, Overall, Body 1, and Body 2. **CRITICAL:** Ensure the division of information between Body 1 and Body 2 is highly logical to maximize Coherence & Cohesion.";
+            const levelInstruction = targetBand === '5.0-6.0'
+                ? "The target student level is Band 5.0-6.0. Focus on simple but very clear ideas and very easy vocabulary and expressions. At this level, students are learning to get used to IELTS writing, so do not put them under pressure. Keep sentence patterns very easy, direct, and straightforward."
+                : "The target student level is Band 7.0+. Focus on clear, highly persuasive ideas, appropriate advanced collocations, precise academic expressions, and advanced grammatical points to help students gain 7+ across the four criteria.";
+
+            const systemInstruction = `You are an expert IELTS writing instructor. Your task is to provide a structured guide in Vietnamese for an IELTS Writing Task 1 essay based on the user's prompt and image. ${levelInstruction} The guide must follow a specific four-part structure: Introduction, Overall, Body 1, and Body 2. **CRITICAL:** Ensure the division of information between Body 1 and Body 2 is highly logical to maximize Coherence & Cohesion.`;
             const promptText = `Analyze the following IELTS Writing Task 1 prompt and the provided image. Based on your analysis, generate a structured guide in Vietnamese that a student can follow to write their essay. The output must be a JSON object with the following structure:
 
 1.  **introduction**: A string suggestion on how to paraphrase the prompt for the introduction.
 2.  **overall**: An array of strings, where each string is a bullet point identifying a main trend or key feature for the 'Overall' paragraph. This should be 2-3 points.
 3.  **body1**: An array of strings, where each string is a bullet point suggesting what information to group and describe in the first body paragraph. **Logic:** Group related data points together.
 4.  **body2**: An array of strings, where each string is a bullet point suggesting what information to group and describe in the second body paragraph. **Logic:** Group the remaining data points logically.
+
+**Target Level constraint:** ${levelInstruction}
 
 Essay Prompt: "${prompt}"`;
 
@@ -189,11 +195,23 @@ Essay Prompt: "${prompt}"`;
 };
 
 
-export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
+export const generateBrainstormingIdeas = async (prompt, questions, apiKey, targetBand = '7.0+') => {
     if (!apiKey) throw new Error("API key is missing.");
     const ai = new GoogleGenAI({ apiKey });
     try {
         const apiCall = async () => {
+            const levelInstruction = targetBand === '5.0-6.0'
+                ? `**CRITICAL INSTRUCTION FOR LEVEL (BAND 5.0-6.0):**
+                  - **Target Level**: Band 5.0-6.0.
+                  - **Idea style**: Simple but very clear ideas, very easy and straightforward explanations. Students are learning to get used to IELTS writing, so do not put them under pressure with complex ideas.
+                  - **Vocabulary**: Suggest very easy, simple, and clear vocabulary and expressions inside square brackets [ ]. Do not use difficult B2-C1 words. Keep it comfortable for a beginner.
+                  - **Grammar/Sentences**: Keep sentence suggestions very easy, clear, and direct.`
+                : `**CRITICAL INSTRUCTION FOR LEVEL (BAND 7.0+):**
+                  - **Target Level**: Band 7.0+.
+                  - **Idea style**: Just clear and persuasive ideas with logical reasoning and excellent development.
+                  - **Vocabulary**: Suggest appropriate advanced collocations, precise expressions, and academic vocabulary inside square brackets [ ] that help students gain 7+ for Lexical Resource.
+                  - **Grammar/Sentences**: Suggest key grammar points and sentence structures (such as relative clauses, inversions, participle clauses) that help students gain 7+ for Grammatical Range & Accuracy.`;
+
             const contents = `Based on the essay prompt and the provided brainstorming questions, create a comprehensive, structured essay outline in Vietnamese.
                 
                 Essay Prompt: "${prompt}"
@@ -203,6 +221,8 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
 
                 The output MUST be an array of exactly 4 strings, representing the 4 main sections of the essay.
                 
+                ${levelInstruction}
+
                 **CRITICAL INSTRUCTION FOR CONTENT STRATEGY (40/60 RULE):**
                 - You MUST adopt a **clear standpoint**. Do not sit on the fence (50/50).
                 - Use a **40/60 structure**:
@@ -211,16 +231,15 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
 
                 **CRITICAL INSTRUCTION FOR IDEA GENERATION (SIMPLE & MEMORABLE):**
                 - **Logic & Flow:** Ensure the logical progression of ideas within and between paragraphs to maximize Coherence & Cohesion (CC).
-                - **Simplicity**: Ideas must be straightforward and easy to explain in English. Avoid overly complex or abstract philosophical arguments.
+                - **Simplicity & Clarity**: Ideas must be straightforward and easy to explain. Avoid overly complex or abstract philosophical arguments.
                 - **Memorability**: Use common, relatable concepts (e.g., family, money, health, convenience, work, education) that students can easily recall.
                 - **Friendly Tone**: The ideas should feel natural and not forced.
                 - **Standard IELTS Themes**: Prioritize high-frequency arguments (e.g., "saves money", "better for health", "broadens horizons", "causes stress").
 
                 **CRITICAL INSTRUCTION FOR BODY PARAGRAPHS (IDEAS & EXAMPLES):**
                 - **Giải thích (Explanation)**: 
-                  - Suggest **2 simple and comprehensible supporting ideas** for the topic sentence.
+                  - Suggest **2 supporting ideas** for the topic sentence.
                   - Use logical flow/arrows (e.g., "Idea -> Result").
-                  - Ideas should be simple enough to be translated easily.
                   - Example style: "Idea 1 -> Consequence 1. Idea 2 -> Consequence 2."
                 - **Ví dụ (Example)**: 
                   - Provide **ONE simple, real-life example**. 
@@ -233,15 +252,15 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey) => {
                 - **Conciseness**: Keep the outline clear and actionable.
 
                 **CRITICAL INSTRUCTION FOR INTRODUCTION:**
-                - **Diễn giải đề**: Paraphrase simple & concise. No clichés.
+                - **Diễn giải đề**: Paraphrase.
                 - **Luận điểm**: Direct standpoint.
 
                 **CRITICAL INSTRUCTION FOR CONCLUSION:**
-                - **Tóm tắt ý chính và quan điểm**: Concise summary & direct opinion. Keep it simple.
+                - **Tóm tắt ý chính và quan điểm**: Concise summary & direct opinion.
 
                 **CRITICAL INSTRUCTION FOR VOCABULARY:**
-                - For **ALL SECTIONS**: Insert natural, topic-specific, B2 - C1 level English collocations directly next to the relevant Vietnamese concepts, enclosed in square brackets [ ].
-                - **Criteria**: Vocabulary must be **common, natural, and practical** (not obscure, complex, or overly academic). Focus on topic-specific language.
+                - For **ALL SECTIONS**: Insert natural, topic-specific English vocabulary or collocations directly next to the relevant Vietnamese concepts, enclosed in square brackets [ ].
+                - Ensure the vocabulary level matches the requested target level (${targetBand}).
 
                 **STRUCTURE & LABELS (STRICT FORMATTING):**
                 - You MUST use the following **VIETNAMESE LABELS** in **Bold** (Markdown style).
@@ -409,32 +428,59 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, api
         - Verify every single identified mistake against the actual manuscript text before outputting.
 
         **SCORING PHILOSOPHY & FLEXIBILITY (CRITICAL):**
-        You should be fair and not overly punitive. Focus on whether the writing effectively communicates ideas and meets task goals.
+        You should be fair and not overly punitive. Focus on whether the writing effectively communicates ideas and meets task goals, EXCEPT where the strict word count or Band 5 limitations are triggered.
 
         **SCORING RULES (STRICT):**
-        - Chỉ chấm điểm CHẴN (số nguyên: 6, 7, 8, 9...) cho 4 tiêu chí thành phần. KHÔNG chấm điểm lẻ như .5 cho từng tiêu chí này.
+        - Chỉ chấm điểm CHẴN (số nguyên: 1, 2, 3, 4, 5, 6, 7, 8, 9...) cho 4 tiêu chí thành phần. KHÔNG chấm điểm lẻ như .5 cho từng tiêu chí này.
 
-        1. **${taskCriterion} (FLEXIBLE GRADING):**
-           - Nếu bài viết có thể trả lời được yêu cầu đề bài, có phát triển ý và có ví dụ minh hoạ thì tiêu chí này đã có thể đạt ít nhất **Band 7.0**.
-           - Do not be overly critical of minor omissions if the core argument is well-sustained.
+        ${isTask1 ? `
+        **CRITICAL ASSESSMENT AND SCORING CRITERIA FOR TASK 1 (ACADEMIC):**
+        1. **Task Achievement (TA)**:
+           - **What to Assess**: Does it accurately summarise/describe the visual data or process? Is there a clear overview of main trends/comparisons? Are key features selected and supported with correct figures/data (not just narrating every number)?
+           - **WORD COUNT LIMITATION**: If the essay is less than 150 words (current word count is ${wordCount} words), you MUST strictly limit the Task Achievement (TA) score to a **maximum of Band 5**.
+           - **CRITERIA LIMITATION**: Even if the essay meets the word count, you MUST limit the Task Achievement (TA) score to a **maximum of Band 5** if it exhibits or fails to overcome any of the following:
+             * Key features which are selected are not adequately covered.
+             * The recounting of detail is mainly mechanical. There may be no data to support the description.
+             * There may be a tendency to focus on details (without referring to the bigger picture).
+             * The inclusion of irrelevant, inappropriate or inaccurate material in key areas detracts from the task achievement.
+             * There is limited detail when extending and illustrating the main points.
+           - **FLEXIBLE GRADING**: Otherwise, if the essay successfully avoids these negative features and answers the prompt with key features and correct data support, it can achieve Band 7.0 or above.
 
-        2. **Coherence & Cohesion (CC):**
-           - **CRITICAL:** Xem xét kỹ ý tưởng/ cách chia body trong task 1 và logic bài viết trong task 2 để tối ưu hóa điểm CC.
-           - Đừng chỉ chăm chăm trừ điểm lặp từ. Lặp từ được cho phép trong IELTS miễn là các từ lặp đi theo các cụm collocations hay idiomatic language.
-           - Chỉ chỉ gợi ý nếu như có lặp từ quá nhiều gây ảnh hưởng mạch lạc.
-           - Nếu một cụm từ xuất hiện quá 4 lần một cách không cần thiết, hãy nhận xét trong 'referencingAndSubstitution' và gợi ý 2-3 từ đồng nghĩa phù hợp.
-           - Reward the flexible use of referencing, substitution, and cohesive devices.
+        2. **Coherence & Cohesion (CC)**:
+           - **What to Assess**: Logical organisation, paragraphing, linking devices, referencing, overall progression.
+           - Xem xét kỹ ý tưởng/ cách chia body trong task 1 để tối ưu hóa điểm CC. Đừng chỉ lặp từ mà trừ điểm; lặp từ được phép trong collocations hoặc cụm tự nhiên. Chỉ gợi ý nếu lặp từ quá nhiều (hơn 4 lần) gây mất mạch lạc.
 
-        3. **Lexical Resource (B2-C1 LEVEL & NATURALNESS):**
-           - Ưu tiên sử dụng các mẫu câu và từ vựng ở mức level B2 - C1, và theo chủ đề.
-           - KHÔNG dùng từ khó, phức tạp hay thiếu tự nhiên.
-           - Chấm thoáng hơn. Ở Band 7.0, khi dùng được vài cụm idiomatic language (kể cả đơn giản) thì cũng đã đạt được điểm số này. 
-           - Một số lỗi nhỏ được chấp nhận, không tính là lỗi hệ thống (systematic errors).
-           - Nếu bài viết không sai sót nhiều, dùng được collocations và idiomatic language chính xác thì có thể chấm **Band 8.0 trở lên**.
+        3. **Lexical Resource (LR)**:
+           - **What to Assess**: Range and accuracy of vocabulary, especially data-description language (trends, comparisons, approximation). Spelling/word formation.
+           - Ưu tiên từ vựng tự nhiên, hữu ích mức B2-C1. Không dùng từ quá khó hay gượng ép.
 
-        4. **Grammatical Range & Accuracy (ERROR TOLERANCE):**
-           - Một số lỗi ngữ pháp cơ bản với tần suất thấp (1-2 lần) không phải lỗi hệ thống thì vẫn có thể được **Band 7.0**.
-           - Khuyến khích và cộng điểm cho các cấu trúc khó như đảo ngữ, mệnh đề phân từ, câu phức.
+        4. **Grammatical Range & Accuracy (GRA)**:
+           - **What to Assess**: Range of sentence structures, accuracy, punctuation.
+           - Khuyến khích cấu trúc phức tạp như đảo ngữ, mệnh đề phân từ. Lỗi nhỏ không hệ thống vẫn được Band 7.0.
+        ` : `
+        **CRITICAL ASSESSMENT AND SCORING CRITERIA FOR TASK 2 (ESSAY):**
+        1. **Task Response (TR)**:
+           - **What to Assess**: Does it fully address all parts of the prompt? Is there a clear, well-developed position throughout? Are ideas relevant, extended, and supported with reasons/examples (not generic or repetitive)?
+           - **WORD COUNT LIMITATION**: If the essay is less than 250 words (current word count is ${wordCount} words), you MUST strictly limit the Task Response (TR) score to a **maximum of Band 5**.
+           - **CRITERIA LIMITATION**: Even if the essay meets the word count, you MUST limit the Task Response (TR) score to a **maximum of Band 5** if it exhibits or fails to overcome any of the following:
+             * The main parts of the prompt are incompletely addressed. The format may be inappropriate in places.
+             * The writer expresses a position, but the development is not always clear.
+             * Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail.
+             * There may be some repetition.
+           - **FLEXIBLE GRADING**: Otherwise, if the essay is fully addressing all parts of the prompt with clear standpoint and examples, it can achieve Band 7.0 or above.
+
+        2. **Coherence & Cohesion (CC)**:
+           - **What to Assess**: Logical progression, effective paragraphing with one central idea each, cohesive devices used naturally (not mechanically inserted).
+           - Gợi ý thay thế nếu có từ xuất hiện quá 4 lần không cần thiết.
+
+        3. **Lexical Resource (LR)**:
+           - **What to Assess**: Range, precision, and naturalness of vocabulary; collocation; spelling/word formation.
+           - Gợi ý từ vựng tự nhiên B2-C1 phù hợp ngữ cảnh, tránh sáo rỗng hay quá cầu kỳ.
+
+        4. **Grammatical Range & Accuracy (GRA)**:
+           - **What to Assess**: Range and accuracy of grammar structures, punctuation control.
+           - Đánh giá cao việc kết hợp cấu trúc đơn và phức tự nhiên.
+        `}
 
         **Examiner's Marking Method:**
         - **Process:** Evaluate ${taskCriterion}, then CC, LR, and GRA.

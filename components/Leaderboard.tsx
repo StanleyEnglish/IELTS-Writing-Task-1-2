@@ -10,9 +10,23 @@ const Leaderboard: React.FC = () => {
   useEffect(() => {
     const loadScores = async () => {
       try {
-        const scores = await fetchTopScores(100);
+        const scores = await fetchTopScores(1000);
         if (scores) {
+          const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
           const filtered = scores.filter((entry) => {
+            if (!entry.submissionDate) return false;
+            
+            let dateMs: number;
+            if (entry.submissionDate && typeof entry.submissionDate.toMillis === 'function') {
+              dateMs = entry.submissionDate.toMillis();
+            } else if (entry.submissionDate && typeof entry.submissionDate.seconds === 'number') {
+              dateMs = entry.submissionDate.seconds * 1000;
+            } else {
+              dateMs = new Date(entry.submissionDate).getTime();
+            }
+            
+            if (dateMs < oneWeekAgo) return false;
+
             const duration = entry.durationMinutes;
             if (duration === undefined) return false;
             
@@ -74,6 +88,9 @@ const Leaderboard: React.FC = () => {
   return (
     <div className="w-full space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <span className="text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shrink-0">
+          🕒 Rolling Weekly Reset
+        </span>
         <p className="text-xs text-slate-500 italic">
           💡 Hover over a Band Score to toggle (show/hide) that student's essay.
         </p>

@@ -110,13 +110,12 @@ export const saveTestResult = async (data: Omit<LeaderboardEntry, 'id' | 'submis
   }
 };
 
-export const fetchTopScores = async (limitCount: number = 10) => {
+export const fetchTopScores = async (limitCount: number = 1000) => {
   const path = 'leaderboard';
   try {
     const q = query(
       collection(db, path),
-      orderBy('bandScore', 'desc'),
-      orderBy('durationMinutes', 'asc'),
+      orderBy('submissionDate', 'desc'),
       limit(limitCount)
     );
     const querySnapshot = await getDocs(q);

@@ -15,15 +15,16 @@ interface PromptSectionProps {
   onNewPrompt: () => void;
   isLoadingPrompt: boolean;
   isLoadingIdeas: boolean;
-  onGenerateIdeas: () => void;
+  onGenerateIdeas: (level?: '5.0-6.0' | '7.0+') => void;
   isCustomPromptMode: boolean;
   onSetCustomPromptMode: () => void;
   customPromptInput: string;
   setCustomPromptInput: (value: string) => void;
-  onGenerateFromCustomPrompt: () => void;
+  onGenerateFromCustomPrompt: (level?: '5.0-6.0' | '7.0+') => void;
   task1Image: string | null;
   setTask1Image: (image: string | null) => void;
   apiKey: string | null;
+  targetBand?: '5.0-6.0' | '7.0+';
 }
 
 const formatIdeaText = (text: string) => {
@@ -123,9 +124,22 @@ const PromptSection: React.FC<PromptSectionProps> = ({
   onGenerateFromCustomPrompt,
   task1Image,
   setTask1Image,
-  apiKey
+  apiKey,
+  targetBand
 }) => {
   const [isGuidanceVisible, setIsGuidanceVisible] = useState(false);
+  const [showLevelSelectorTask1, setShowLevelSelectorTask1] = useState(false);
+  const [showLevelSelectorTask2, setShowLevelSelectorTask2] = useState(false);
+
+  const handleSelectLevelTask1 = (level: '5.0-6.0' | '7.0+') => {
+    setShowLevelSelectorTask1(false);
+    onGenerateFromCustomPrompt(level);
+  };
+
+  const handleSelectLevelTask2 = (level: '5.0-6.0' | '7.0+') => {
+    setShowLevelSelectorTask2(false);
+    onGenerateIdeas(level);
+  };
   
   const [selectedText, setSelectedText] = useState<string | null>(null);
   const [selectionPosition, setSelectionPosition] = useState<{top: number, left: number} | null>(null);
@@ -230,14 +244,53 @@ const PromptSection: React.FC<PromptSectionProps> = ({
             {taskType === 'Task 1' && (
               <ImageUpload image={task1Image} setImage={setTask1Image} disabled={isLoadingPrompt} />
             )}
-            <button
-                onClick={onGenerateFromCustomPrompt}
-                disabled={isLoadingPrompt || !customPromptInput.trim()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors duration-200 disabled:bg-slate-400 disabled:cursor-not-allowed shadow-md"
-            >
-                {isLoadingPrompt ? <LoadingSpinner className="h-5 w-5" /> : <LightbulbIcon className="h-5 w-5" />}
-                How to Brainstorm
-            </button>
+            {showLevelSelectorTask1 ? (
+              <div className="space-y-2 animate-fade-in bg-amber-50/50 p-3 rounded-lg border border-amber-200">
+                <p className="text-xs font-bold text-red-805 text-center">Select Target IELTS Level for Task 1:</p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectLevelTask1('5.0-6.0')}
+                    className="flex-1 py-2.5 px-3 text-xs font-bold text-red-850 bg-white border-2 border-red-200 hover:border-red-400 rounded-md transition-all duration-200 shadow-sm flex flex-col items-center justify-center gap-1 hover:bg-red-50"
+                  >
+                    <span className="text-sm font-extrabold text-red-700">Band 5.0 - 6.0</span>
+                    <span className="text-[10px] text-slate-500 font-normal leading-tight text-center">Simple ideas & basic vocabulary</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectLevelTask1('7.0+')}
+                    className="flex-1 py-2.5 px-3 text-xs font-bold text-white bg-red-700 hover:bg-red-800 rounded-md transition-all duration-200 shadow-sm flex flex-col items-center justify-center gap-1 border-2 border-red-700"
+                  >
+                    <span className="text-sm font-extrabold text-amber-300">Band 7.0+</span>
+                    <span className="text-[10px] text-red-100 font-normal leading-tight text-center">Sophisticated ideas & 7+ collocations</span>
+                  </button>
+                </div>
+                <button 
+                  type="button"
+                  onClick={() => setShowLevelSelectorTask1(false)}
+                  className="w-full text-center text-[11px] text-slate-500 hover:text-slate-700 mt-1 font-medium underline"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                  type="button"
+                  onClick={() => {
+                    if (taskType === 'Task 1') {
+                      setShowLevelSelectorTask1(true);
+                    } else {
+                      // For Task 2 we just brainstorm guidance questions, so we generate directly
+                      onGenerateFromCustomPrompt();
+                    }
+                  }}
+                  disabled={isLoadingPrompt || !customPromptInput.trim()}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors duration-200 disabled:bg-slate-400 disabled:cursor-not-allowed shadow-md"
+              >
+                  {isLoadingPrompt ? <LoadingSpinner className="h-5 w-5" /> : <LightbulbIcon className="h-5 w-5" />}
+                  How to Brainstorm
+              </button>
+            )}
         </div>
       ) : isLoadingPrompt ? (
         <div className="animate-pulse space-y-3">
@@ -260,6 +313,18 @@ const PromptSection: React.FC<PromptSectionProps> = ({
             ) : (
                 taskType === 'Task 1' && task1Guidance ? (
                     <div className="space-y-4 text-slate-600 animate-fade-in bg-amber-50/30 p-4 rounded-lg border border-amber-100">
+                      <div className="flex justify-between items-center border-b border-amber-200 pb-2 mb-2">
+                        <h4 className="text-xs font-bold text-red-800 uppercase tracking-wide">Brainstorming Guide</h4>
+                        {targetBand && (
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                                targetBand === '5.0-6.0' 
+                                    ? 'bg-amber-100 text-amber-800 border border-amber-200' 
+                                    : 'bg-red-100 text-red-800 border border-red-200'
+                            }`}>
+                                Band {targetBand}
+                            </span>
+                        )}
+                      </div>
                       <div>
                         <h4 className="font-bold text-red-800">Mở bài (Introduction):</h4>
                         <p className="pl-4 text-sm font-medium">{task1Guidance.introduction}</p>
@@ -294,11 +359,21 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                         {ideas.length > 0 ? (
                             <div className="mt-6 animate-fade-in">
                                 <div className="flex items-center gap-2 mb-3">
-                                    <h4 className="text-sm font-bold text-red-800 uppercase tracking-wide">
+                                    <h4 className="text-sm font-bold text-red-800 uppercase tracking-wide flex items-center gap-2 flex-wrap">
                                         Outline & Vocabulary
+                                        {targetBand && (
+                                            <span className={`text-[10px] normal-case px-2 py-0.5 rounded-full font-bold border ${
+                                                targetBand === '5.0-6.0' 
+                                                    ? 'bg-amber-100 text-amber-800 border-amber-200' 
+                                                    : 'bg-red-100 text-red-800 border-red-200'
+                                            }`}>
+                                                Band {targetBand}
+                                            </span>
+                                        )}
                                     </h4>
                                     <button
-                                        onClick={onGenerateIdeas}
+                                        type="button"
+                                        onClick={() => onGenerateIdeas()}
                                         disabled={isLoadingIdeas}
                                         className="text-red-400 hover:text-red-700 transition-colors p-1 rounded-full hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="Recalculate Strategy"
@@ -321,23 +396,55 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                         ) : (
                            taskType === 'Task 2' && (
                                 <div className="mt-4">
-                                    <button
-                                        onClick={onGenerateIdeas}
-                                        disabled={isLoadingIdeas}
-                                        className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-900 bg-amber-400 rounded-md hover:bg-amber-500 transition-colors duration-200 disabled:bg-slate-300 disabled:cursor-not-allowed shadow-md"
-                                    >
-                                        {isLoadingIdeas ? (
-                                            <>
-                                                <LoadingSpinner className="h-4 w-4" />
-                                                Sowing Ideas...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <SparklesIcon className="h-4 w-4" />
-                                                Generate Outline
-                                            </>
-                                        )}
-                                    </button>
+                                    {showLevelSelectorTask2 ? (
+                                      <div className="space-y-2 animate-fade-in bg-amber-50/50 p-3 rounded-lg border border-amber-200 max-w-sm">
+                                        <p className="text-xs font-bold text-red-808 text-center">Select Target IELTS Level for Task 2:</p>
+                                        <div className="flex gap-2">
+                                          <button
+                                            type="button"
+                                            onClick={() => handleSelectLevelTask2('5.0-6.0')}
+                                            className="flex-1 py-2.5 px-3 text-xs font-bold text-red-850 bg-white border-2 border-red-200 hover:border-red-400 rounded-md transition-all duration-200 shadow-sm flex flex-col items-center justify-center gap-1 hover:bg-red-50"
+                                          >
+                                            <span className="text-sm font-extrabold text-red-700">Band 5.0 - 6.0</span>
+                                            <span className="text-[10px] text-slate-500 font-normal leading-tight text-center">Simple ideas & basic vocabulary</span>
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleSelectLevelTask2('7.0+')}
+                                            className="flex-1 py-2.5 px-3 text-xs font-bold text-white bg-red-700 hover:bg-red-800 rounded-md transition-all duration-200 shadow-sm flex flex-col items-center justify-center gap-1 border-2 border-red-700"
+                                          >
+                                            <span className="text-sm font-extrabold text-amber-300">Band 7.0+</span>
+                                            <span className="text-[10px] text-red-100 font-normal leading-tight text-center">Sophisticated ideas & 7+ collocations</span>
+                                          </button>
+                                        </div>
+                                        <button 
+                                          type="button"
+                                          onClick={() => setShowLevelSelectorTask2(false)}
+                                          className="w-full text-center text-[11px] text-slate-500 hover:text-slate-700 mt-1 font-medium underline"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <button
+                                          type="button"
+                                          onClick={() => setShowLevelSelectorTask2(true)}
+                                          disabled={isLoadingIdeas}
+                                          className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-900 bg-amber-400 rounded-md hover:bg-amber-500 transition-colors duration-200 disabled:bg-slate-300 disabled:cursor-not-allowed shadow-md"
+                                      >
+                                          {isLoadingIdeas ? (
+                                              <>
+                                                  <LoadingSpinner className="h-4 w-4" />
+                                                  Sowing Ideas...
+                                              </>
+                                          ) : (
+                                              <>
+                                                  <SparklesIcon className="h-4 w-4" />
+                                                  Generate Outline
+                                              </>
+                                          )}
+                                      </button>
+                                    )}
                                 </div>
                            )
                         )}
