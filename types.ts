@@ -71,6 +71,7 @@ export interface TaskContext {
   feedback: Feedback | null;
   modelEssay: string | null;
   isLoadingPrompt: boolean;
+  isLoadingGuidance: boolean;
   isLoadingIdeas: boolean;
   isLoadingFeedback: boolean;
   isLoadingModelEssay: boolean;

@@ -173,7 +173,7 @@ const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPrac
                                     </label>
                                     <input
                                         type="password"
-                                        placeholder="AIzaSy... or AQ..."
+                                        placeholder={(import.meta as any).env?.VITE_GEMINI_API_KEY ? "Using default source API key..." : "AIzaSy... or AQ..."}
                                         value={localApiKey}
                                         onChange={(e) => setLocalApiKey(e.target.value)}
                                         onKeyDown={(e) => {
@@ -187,6 +187,11 @@ const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPrac
                                         }`}
                                     />
                                     {apiKeyError && <p className="text-xs text-red-500 mt-1">{apiKeyError}</p>}
+                                    {(import.meta as any).env?.VITE_GEMINI_API_KEY && !localStorage.getItem('gemini-api-key') && (
+                                        <p className="text-xs text-green-600 font-semibold mt-1.5 bg-green-50 p-1.5 rounded border border-green-100">
+                                            💡 Application key is active! Feel free to enter training immediately or customize with your own key.
+                                        </p>
+                                    )}
                                 </div>
                                 <button
                                     onClick={() => { handleSave(); onStartPractice(); }}

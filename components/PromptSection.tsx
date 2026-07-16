@@ -14,6 +14,7 @@ interface PromptSectionProps {
   ideas: string[];
   onNewPrompt: () => void;
   isLoadingPrompt: boolean;
+  isLoadingGuidance?: boolean;
   isLoadingIdeas: boolean;
   onGenerateIdeas: (level?: '5.0-6.0' | '7.0+') => void;
   isCustomPromptMode: boolean;
@@ -115,6 +116,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
   ideas,
   onNewPrompt, 
   isLoadingPrompt,
+  isLoadingGuidance = false,
   isLoadingIdeas,
   onGenerateIdeas,
   isCustomPromptMode,
@@ -303,10 +305,13 @@ const PromptSection: React.FC<PromptSectionProps> = ({
         </div>
       )}
 
-      {(hasTask1Guidance || hasTask2Guidance || (isLoadingPrompt && isCustomPromptMode)) && (
+      {(hasTask1Guidance || hasTask2Guidance || isLoadingGuidance || (isLoadingPrompt && isCustomPromptMode)) && (
         <div className="mt-6 pt-4 border-t border-amber-200">
-            {isLoadingPrompt && !isCustomPromptMode ? (
+            {isLoadingGuidance ? (
                 <div className="animate-pulse space-y-3">
+                    <p className="text-xs font-bold text-red-600 animate-pulse flex items-center gap-1 bg-red-50 p-2 rounded border border-red-100">
+                        <span>💡 Thầy đang chuẩn bị dàn ý và gợi ý từ vựng cho em, vui lòng đợi chút nhé...</span>
+                    </p>
                     <div className="h-4 bg-red-50 rounded w-full"></div>
                     <div className="h-4 bg-red-50 rounded w-full"></div>
                 </div>

@@ -11,7 +11,7 @@ import Dashboard from './components/Dashboard';
 
 import { saveTestResult, auth } from './firebase';
 
-const getInitialTaskContext = (isLoadingPrompt = false, isInitialized = false): TaskContext => ({
+const getInitialTaskContext = (isLoadingPrompt = false, isInitialized = false, isLoadingGuidance = false): TaskContext => ({
   prompt: '',
   customPromptInput: '',
   isCustomPromptMode: false,
@@ -23,6 +23,7 @@ const getInitialTaskContext = (isLoadingPrompt = false, isInitialized = false): 
   feedback: null,
   modelEssay: null,
   isLoadingPrompt,
+  isLoadingGuidance,
   isLoadingIdeas: false,
   isLoadingFeedback: false,
   isLoadingModelEssay: false,
@@ -69,7 +70,13 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<HighScore[]>([]);
 
   // API Key State
-  const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem('gemini-api-key'));
+  const [apiKey, setApiKey] = useState<string | null>(() => {
+    const stored = localStorage.getItem('gemini-api-key');
+    if (stored) return stored;
+    const envKey = (import.meta as any).env?.VITE_GEMINI_API_KEY;
+    if (envKey) return envKey;
+    return null;
+  });
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
 
   // Global timer state
@@ -118,27 +125,35 @@ const App: React.FC = () => {
       setApiKeyError("Please save a valid API key to generate a new prompt.");
       return;
     }
-    setTask2Context(getInitialTaskContext(true, true));
     setError(null);
     setApiKeyError(null);
     setIsSubmittedToLeaderboard(false);
     setCompletionDuration(null);
     
+    const prompts = IELTS_TASK_2_PROMPTS;
+    const newPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+    // Set the prompt instantly so the user can start writing immediately
+    setTask2Context(prev => ({
+      ...getInitialTaskContext(false, true, true),
+      prompt: newPrompt,
+    }));
+    
     try {
-      const prompts = IELTS_TASK_2_PROMPTS;
-      const newPrompt = prompts[Math.floor(Math.random() * prompts.length)];
       const guidanceResult = await generateGuidance('Task 2', newPrompt, null, apiKey);
 
-      setTask2Context(prev => ({
-        ...prev,
-        prompt: newPrompt,
-        guidancePoints: guidanceResult,
-        isLoadingPrompt: false,
-      }));
+      setTask2Context(prev => {
+        if (prev.prompt !== newPrompt) return prev;
+        return {
+          ...prev,
+          guidancePoints: guidanceResult,
+          isLoadingGuidance: false,
+        };
+      });
       
     } catch (e) {
       handleApiError(e);
-      setTask2Context(prev => ({ ...prev, isLoadingPrompt: false }));
+      setTask2Context(prev => ({ ...prev, isLoadingGuidance: false }));
     }
   }, [apiKey]);
   
@@ -190,9 +205,13 @@ const App: React.FC = () => {
     setError(null);
     setApiKeyError(null);
     setIsSubmittedToLeaderboard(false);
+    
+    // Set the prompt instantly so the user can start writing immediately
     setActiveContext(prev => ({ 
       ...prev, 
-      isLoadingPrompt: true, 
+      prompt: prev.customPromptInput,
+      isLoadingPrompt: false,
+      isLoadingGuidance: true, 
       guidancePoints: [], 
       task1Guidance: null, 
       brainstormingIdeas: [],
@@ -204,23 +223,21 @@ const App: React.FC = () => {
       if (taskType === 'Task 1') {
         setActiveContext(prev => ({ 
           ...prev, 
-          prompt: prev.customPromptInput, 
           task1Guidance: guidanceResult,
-          isLoadingPrompt: false,
+          isLoadingGuidance: false,
           targetBand: selectedLevel
         }));
       } else {
          setActiveContext(prev => ({ 
           ...prev, 
-          prompt: prev.customPromptInput, 
           guidancePoints: guidanceResult,
-          isLoadingPrompt: false,
+          isLoadingGuidance: false,
           targetBand: selectedLevel
         }));
       }
     } catch (e) {
       handleApiError(e);
-      setActiveContext(prev => ({ ...prev, isLoadingPrompt: false }));
+      setActiveContext(prev => ({ ...prev, isLoadingGuidance: false }));
     }
   };
 
@@ -583,6 +600,7 @@ const App: React.FC = () => {
                   ideas={activeContext.brainstormingIdeas}
                   onNewPrompt={handleNewPrompt}
                   isLoadingPrompt={activeContext.isLoadingPrompt}
+                  isLoadingGuidance={activeContext.isLoadingGuidance}
                   isLoadingIdeas={activeContext.isLoadingIdeas}
                   onGenerateIdeas={handleGenerateIdeas}
                   isCustomPromptMode={activeContext.isCustomPromptMode}
