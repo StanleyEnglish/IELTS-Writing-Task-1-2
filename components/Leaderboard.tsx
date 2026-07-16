@@ -7,12 +7,32 @@ const Leaderboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeEssay, setActiveEssay] = useState<{ entry: LeaderboardEntry; top: number; left: number } | null>(null);
 
+  const getStartOfCurrentWeek = () => {
+    const now = new Date();
+    const day = now.getDay();
+    const daysToSubtract = day === 0 ? 6 : day - 1;
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - daysToSubtract);
+    startOfWeek.setHours(0, 0, 0, 0);
+    return startOfWeek.getTime();
+  };
+
+  const getRemainingTimeStr = () => {
+    const startOfWeek = getStartOfCurrentWeek();
+    const nextMonday = startOfWeek + 7 * 24 * 60 * 60 * 1000;
+    const diff = nextMonday - Date.now();
+    if (diff <= 0) return 'Resetting...';
+    const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+    const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+    return `${days}d ${hours}h remaining`;
+  };
+
   useEffect(() => {
     const loadScores = async () => {
       try {
         const scores = await fetchTopScores(1000);
         if (scores) {
-          const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+          const startOfWeekMs = getStartOfCurrentWeek();
           const filtered = scores.filter((entry) => {
             if (!entry.submissionDate) return false;
             
@@ -25,7 +45,7 @@ const Leaderboard: React.FC = () => {
               dateMs = new Date(entry.submissionDate).getTime();
             }
             
-            if (dateMs < oneWeekAgo) return false;
+            if (dateMs < startOfWeekMs) return false;
 
             const duration = entry.durationMinutes;
             if (duration === undefined) return false;
@@ -89,7 +109,7 @@ const Leaderboard: React.FC = () => {
     <div className="w-full space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <span className="text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shrink-0">
-          🕒 Rolling Weekly Reset
+          🕒 Weekly Reset (Monday 00:00) • {getRemainingTimeStr()}
         </span>
         <p className="text-xs text-slate-500 italic">
           💡 Hover over a Band Score to toggle (show/hide) that student's essay.
