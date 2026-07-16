@@ -74,11 +74,7 @@ const App: React.FC = () => {
 
   // API Key State
   const [apiKey, setApiKey] = useState<string | null>(() => {
-    const stored = localStorage.getItem('gemini-api-key');
-    if (stored) return stored;
-    const envKey = (import.meta as any).env?.VITE_GEMINI_API_KEY;
-    if (envKey) return envKey;
-    return null;
+    return localStorage.getItem('gemini-api-key');
   });
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
 
