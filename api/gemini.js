@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 import { IELTS_TASK_1_BAND_DESCRIPTORS, IELTS_TASK_2_BAND_DESCRIPTORS, IELTS_TASK_1_EXEMPLARS, IELTS_TASK_2_EXEMPLARS, IELTS_TASK_2_BAND_6_7_EXEMPLARS } from '../constants';
 
-const brainstormingModel = 'gemini-3-flash-preview';
+const brainstormingModel = 'gemini-3.5-flash';
 const feedbackModel = 'gemini-3-flash-preview';
 
 const handleApiError = (error, context) => {
