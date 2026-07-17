@@ -347,14 +347,18 @@ Suggest the best way to write or use this selected text in a Band 7+ IELTS essay
 3. **Quantity:** Provide EXACTLY ONE best suggestion.`;
             
             const promptContent = `
-            Context: IELTS Writing Task 2 Brainstorming.
+            Context: IELTS Writing Task 1 or Task 2 Brainstorming.
             Selected Text: "${textToAnalyze}"
 
-            Provide exactly ONE suggestion in JSON format:
+            Provide exactly ONE writing suggestion inside the "suggestions" array wrapper in JSON format:
             {
-              "english": "The complete suggested sentence or phrase.",
-              "tone": "e.g., Natural & Academic",
-              "explanation": "Brief reason for this phrasing."
+              "suggestions": [
+                {
+                  "english": "The complete suggested sentence or phrase.",
+                  "tone": "e.g., Natural & Academic",
+                  "explanation": "Brief reason for this phrasing."
+                }
+              ]
             }
             `;
 

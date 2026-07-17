@@ -108,12 +108,19 @@ const App: React.FC = () => {
   
   const handleApiError = (e: unknown) => {
     const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
-    const isApiKeyError = /API key not valid|permission denied|API key is missing|quota|429/i.test(errorMessage);
+    
+    // Check if it's explicitly an invalid API key error
+    const isInvalidKey = /API key not valid|invalid API key|API_KEY_INVALID/i.test(errorMessage);
+    // Check if it's a quota or rate limit error
+    const isQuotaError = /quota|429|RESOURCE_EXHAUSTED/i.test(errorMessage);
 
-    if (isApiKeyError) {
+    if (isInvalidKey) {
       localStorage.removeItem('gemini-api-key');
       setApiKey(null);
-      setApiKeyError("Your API key has issues (Invalid or Quota Exceeded). Please provide a new one.");
+      setApiKeyError("Your API key is invalid or has expired. Please check it and provide a valid key.");
+    } else if (isQuotaError) {
+      // Do NOT remove the API key from localStorage! Keep it so they can retry.
+      setApiKeyError("API Rate Limit Exceeded (Error 429). Free Gemini API keys are limited to 15 requests per minute. Please wait a few seconds and try again.");
     } else {
       setError(errorMessage);
     }

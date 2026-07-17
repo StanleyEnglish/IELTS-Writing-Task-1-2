@@ -54,7 +54,8 @@ const SuggestionsModal: React.FC<{
     selectedText: string; 
     suggestions: WritingSuggestion[]; 
     isLoading: boolean; 
-}> = ({ isOpen, onClose, selectedText, suggestions, isLoading }) => {
+    error: string | null;
+}> = ({ isOpen, onClose, selectedText, suggestions, isLoading, error }) => {
     if (!isOpen) return null;
 
     return (
@@ -80,17 +81,26 @@ const SuggestionsModal: React.FC<{
                             <LoadingSpinner className="h-8 w-8 text-red-500 mb-3" />
                             <p className="text-slate-500 text-sm">Consulting the scholars...</p>
                         </div>
+                    ) : error ? (
+                        <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs rounded-md space-y-1.5 leading-relaxed">
+                            <p className="font-bold text-red-900">⚠️ Suggestion Error:</p>
+                            <p className="font-mono text-[10px] bg-white p-1.5 rounded border border-red-100 overflow-x-auto whitespace-pre-wrap select-text">{error}</p>
+                        </div>
                     ) : (
                         <div className="space-y-4">
-                            {suggestions.map((sug, idx) => (
-                                <div key={idx} className="border-l-4 border-amber-500 bg-amber-50 p-3 rounded-r-md">
-                                    <p className="font-bold text-slate-800 text-lg mb-1">{sug.english}</p>
-                                    <div className="flex gap-2 items-center text-xs mb-2">
-                                        <span className="px-2 py-0.5 bg-amber-200 text-amber-800 rounded-full font-bold">{sug.tone}</span>
+                            {suggestions.length === 0 ? (
+                                <p className="text-slate-500 text-sm text-center py-4">No suggestions could be generated for this selection. Try selecting a complete sentence or phrase.</p>
+                            ) : (
+                                suggestions.map((sug, idx) => (
+                                    <div key={idx} className="border-l-4 border-amber-500 bg-amber-50 p-3 rounded-r-md">
+                                        <p className="font-bold text-slate-800 text-lg mb-1">{sug.english}</p>
+                                        <div className="flex gap-2 items-center text-xs mb-2">
+                                            <span className="px-2 py-0.5 bg-amber-200 text-amber-800 rounded-full font-bold">{sug.tone}</span>
+                                        </div>
+                                        <p className="text-sm text-slate-600">{sug.explanation}</p>
                                     </div>
-                                    <p className="text-sm text-slate-600">{sug.explanation}</p>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     )}
                 </div>
@@ -148,6 +158,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
   const [suggestions, setSuggestions] = useState<WritingSuggestion[]>([]);
   const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
+  const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -191,14 +202,19 @@ const PromptSection: React.FC<PromptSectionProps> = ({
       setShowSuggestionsModal(true);
       setIsGeneratingSuggestions(true);
       setSuggestions([]);
+      setSuggestionsError(null);
 
       try {
           const result = await generateWritingSuggestions(selectedText, apiKey);
-          if (result) {
+          if (result && Array.isArray(result) && result.length > 0) {
               setSuggestions(result);
+          } else {
+              setSuggestionsError("No suggestions could be generated for this selection. Try selecting a different phrase.");
           }
       } catch (e) {
           console.error(e);
+          const errorMsg = e instanceof Error ? e.message : String(e);
+          setSuggestionsError(errorMsg);
       } finally {
           setIsGeneratingSuggestions(false);
       }
@@ -482,6 +498,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
         selectedText={selectedText || ''}
         suggestions={suggestions}
         isLoading={isGeneratingSuggestions}
+        error={suggestionsError}
     />
     </>
   );
