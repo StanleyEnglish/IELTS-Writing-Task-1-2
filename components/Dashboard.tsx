@@ -133,24 +133,7 @@ const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPrac
                                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="h-3.5 w-3.5 opacity-85" />
                                             Try Redirect Fallback (Recommended)
                                         </button>
-                                    </div>
-                                    <div className="p-3.5 bg-amber-50/70 border border-amber-200 text-xs text-amber-950 rounded-lg space-y-2">
-                                        <p className="font-bold text-amber-900 flex items-center gap-1.5">
-                                            ⚠️ Key Configurations Needed:
-                                        </p>
-                                        <div className="space-y-1.5 pl-1 leading-relaxed text-[11px] text-amber-900/90">
-                                            <p>
-                                                1. <strong>Firebase Authorized Domains (CRITICAL):</strong> Go to your <span className="font-bold text-red-850">Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains</span> and make sure you add this domain name:
-                                                <code className="block bg-amber-100/80 p-1 rounded font-mono mt-1 text-[10px] break-all border border-amber-200 select-all font-semibold">
-                                                    ais-dev-kekbxqciipa4pjlchryegy-312286699948.asia-southeast1.run.app
-                                                </code>
-                                                <em>(If missing, Firebase locks out the pop-up/redirect handshakes instantly).</em>
-                                            </p>
-                                            <p>
-                                                2. <strong>Browser Embedding fallback:</strong> Ensure you open the application in a <strong>New Tab</strong> using the App URL in the top-right corner, as general browser policies block cross-origin popups inside iframes.
-                                            </p>
-                                        </div>
-                                    </div>
+                                    </div >
                                     {authError && (
                                         <div className="p-3 bg-red-50 text-red-800 text-xs rounded-lg border border-red-200 space-y-1.5 leading-relaxed">
                                             <p className="font-bold text-red-900">Current Login Log:</p>
