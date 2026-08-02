@@ -8,6 +8,7 @@ import PromptSection from './components/PromptSection';
 import WritingEditor from './components/WritingEditor';
 import FeedbackDisplay from './components/FeedbackDisplay';
 import Dashboard from './components/Dashboard';
+import { ExportModal } from './components/ExportModal';
 
 import { saveTestResult, auth } from './firebase';
 
@@ -68,6 +69,9 @@ const App: React.FC = () => {
   // App Mode (Dashboard vs Main)
   const [isAppStarted, setIsAppStarted] = useState(false);
   const [isSubmittedToLeaderboard, setIsSubmittedToLeaderboard] = useState(false);
+
+  // Global modal state
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Score History
   const [history, setHistory] = useState<HighScore[]>([]);
@@ -447,114 +451,7 @@ const App: React.FC = () => {
   };
 
   const handleExportToWord = () => {
-    const feedback = activeContext.feedback;
-    const essay = activeContext.userEssay;
-    const prompt = activeContext.prompt;
-
-    if (!feedback) return;
-
-    const overallScore = formatScore(calculateScoreNumeric(feedback));
-    
-    // Create HTML content for the Word document
-    const htmlContent = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head>
-            <meta charset="utf-8">
-            <title>IELTS Feedback Report</title>
-            <style>
-                body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.5; }
-                h1 { font-size: 18pt; font-weight: bold; text-align: center; margin-bottom: 20px; color: #b91c1c; }
-                h2 { font-size: 14pt; font-weight: bold; margin-top: 15px; margin-bottom: 10px; color: #78350f; }
-                .essay-section { margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 20px; }
-                .score-box { font-size: 16pt; font-weight: bold; color: #e74c3c; margin-bottom: 20px; text-align: center; }
-                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                th, td { border: 1px solid #000; padding: 10px; vertical-align: top; }
-                th { background-color: #f2f2f2; font-weight: bold; }
-                .criteria-name { font-weight: bold; color: #b91c1c; }
-                .score-cell { font-weight: bold; text-align: center; }
-            </style>
-        </head>
-        <body>
-            <h1>IELTS Instructor Feedback Report</h1>
-            
-            <div class="score-box">
-                Overall Band Score: ${overallScore}
-            </div>
-
-            <div class="essay-section">
-                <h2>Prompt</h2>
-                <p><i>${prompt}</i></p>
-                
-                <h2>Your Essay</h2>
-                <p>${essay.replace(/\n/g, '<br>')}</p>
-            </div>
-
-            <h2>Detailed Evaluation</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 20%">Criteria</th>
-                        <th style="width: 10%">Score</th>
-                        <th style="width: 35%">Strengths</th>
-                        <th style="width: 35%">Weaknesses</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="criteria-name">${taskType === 'Task 1' ? 'Task Achievement' : 'Task Response'}</td>
-                        <td class="score-cell">${feedback.taskCompletionScore}</td>
-                        <td>${feedback.taskCompletion.strengths}</td>
-                        <td>${feedback.taskCompletion.weaknesses}</td>
-                    </tr>
-                    <tr>
-                        <td class="criteria-name">Coherence & Cohesion</td>
-                        <td class="score-cell">${feedback.coherenceCohesionScore}</td>
-                        <td>${feedback.coherenceCohesion.strengths}</td>
-                        <td>${feedback.coherenceCohesion.weaknesses}</td>
-                    </tr>
-                    <tr>
-                        <td class="criteria-name">Lexical Resource</td>
-                        <td class="score-cell">${feedback.lexicalResourceScore}</td>
-                        <td>${feedback.lexicalResource.strengths}</td>
-                        <td>
-                            ${feedback.lexicalResource.weaknesses}
-                            ${feedback.lexicalResource.mistakes && feedback.lexicalResource.mistakes.length > 0 ? 
-                                '<br><b>Mistakes:</b><br>' + feedback.lexicalResource.mistakes.map(m => `"${m.originalPhrase}" -> "${m.suggestedCorrection}"`).join('<br>') 
-                                : ''}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="criteria-name">Grammatical Range & Accuracy</td>
-                        <td class="score-cell">${feedback.grammaticalRangeScore}</td>
-                        <td>${feedback.grammaticalRange.strengths}</td>
-                        <td>
-                            ${feedback.grammaticalRange.weaknesses}
-                             ${feedback.grammaticalRange.mistakes && feedback.grammaticalRange.mistakes.length > 0 ? 
-                                '<br><b>Mistakes:</b><br>' + feedback.grammaticalRange.mistakes.map(m => `"${m.originalPhrase}" -> "${m.suggestedCorrection}"`).join('<br>') 
-                                : ''}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <br>
-            <p><i>Wishing you high scores and success!</i></p>
-        </body>
-        </html>
-    `;
-
-    // Create a Blob and trigger download
-    const blob = new Blob(['\ufeff', htmlContent], {
-        type: 'application/msword'
-    });
-    
-    // Create link and simulate click
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `IELTS_Instructor_Feedback_${new Date().toISOString().slice(0,10)}.doc`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    setIsExportModalOpen(true);
   };
   
   const isLoading = activeContext.isLoadingPrompt || activeContext.isLoadingFeedback;
@@ -645,9 +542,18 @@ const App: React.FC = () => {
                 isSubmittedToLeaderboard={isSubmittedToLeaderboard}
                 onManualSubmitToLeaderboard={handleManualSubmitToLeaderboard}
                 completionDuration={completionDuration}
+                onOpenExportModal={handleExportToWord}
             />
           </div>
         </div>
+
+        <ExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          task1Context={task1Context}
+          task2Context={task2Context}
+          activeTaskType={taskType}
+        />
         {error && (
             <div className="fixed bottom-5 right-5 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg z-50" role="alert">
                 <strong className="font-bold">Error: </strong>

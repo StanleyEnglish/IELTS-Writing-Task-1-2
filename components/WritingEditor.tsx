@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import type { TaskType, Feedback, MistakeCorrection } from '../types';
+import type { TaskType, Feedback } from '../types';
 import { SparklesIcon, EyeIcon, PencilIcon } from './icons';
 import { LoadingSpinner } from './LoadingSpinner';
+import { generateAnnotatedEssayHtml } from '../services/exportService';
 
 interface WritingEditorProps {
   taskType: TaskType;
@@ -19,10 +20,6 @@ const DocumentIcon: React.FC<{ className?: string }> = (props) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
   </svg>
 );
-
-function escapeRegExp(string: string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
-}
 
 const WritingEditor: React.FC<WritingEditorProps> = ({ 
     taskType, 
@@ -47,34 +44,7 @@ const WritingEditor: React.FC<WritingEditorProps> = ({
   const wordTarget = taskType === 'Task 1' ? 150 : 250;
 
   const highlightedContent = useMemo(() => {
-    if (!feedback) return essay;
-
-    let processedHtml = essay
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\n/g, "<br/>");
-
-    const allMistakes: MistakeCorrection[] = [
-        ...(feedback.lexicalResource.mistakes || []),
-        ...(feedback.grammaticalRange.mistakes || [])
-    ];
-
-    allMistakes.sort((a, b) => b.originalPhrase.length - a.originalPhrase.length);
-
-    allMistakes.forEach(mistake => {
-        const cleanPhrase = escapeRegExp(mistake.originalPhrase.trim());
-        if (!cleanPhrase) return;
-
-        const regex = new RegExp(`(${cleanPhrase})(?![^<]*>|[^<>]*<\/span>)`, 'gi');
-        
-        processedHtml = processedHtml.replace(regex, (match) => {
-            const explanation = mistake.explanation.replace(/"/g, '&quot;');
-            return `<span class="bg-red-100 text-red-600 line-through decoration-red-400 px-1 rounded-sm mx-0.5">${match}</span><span class="bg-amber-100 text-amber-800 font-bold px-1 rounded-sm mx-0.5 cursor-help border-b border-amber-500 border-dotted" title="${explanation}">${mistake.suggestedCorrection}</span>`;
-        });
-    });
-
-    return processedHtml;
+    return generateAnnotatedEssayHtml(essay, feedback, false);
   }, [essay, feedback]);
 
   return (
@@ -128,16 +98,6 @@ const WritingEditor: React.FC<WritingEditorProps> = ({
       </div>
 
       <div className="mt-4 flex justify-end gap-3">
-        {feedback && onExportWord && (
-             <button
-                onClick={onExportWord}
-                className="flex items-center justify-center gap-2 px-4 py-3 text-base font-bold text-red-700 bg-amber-100 rounded-lg shadow-sm hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all duration-200"
-                title="Download report"
-            >
-                <DocumentIcon className="h-5 w-5" />
-                Export
-            </button>
-        )}
         <button
           onClick={onSubmit}
           disabled={isLoading || wordCount === 0}
