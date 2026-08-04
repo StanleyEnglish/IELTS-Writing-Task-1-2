@@ -114,7 +114,7 @@ const App: React.FC = () => {
     const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
     
     // Check if it's explicitly an invalid API key error
-    const isInvalidKey = /API key not valid|invalid API key|API_KEY_INVALID/i.test(errorMessage);
+    const isInvalidKey = /API key not valid|invalid API key|API_KEY_INVALID|UNAUTHENTICATED|ACCESS_TOKEN_TYPE_UNSUPPORTED|invalid authentication credentials|401/i.test(errorMessage);
     // Check if it's a quota or rate limit error
     const isQuotaError = /quota|429|RESOURCE_EXHAUSTED/i.test(errorMessage);
 

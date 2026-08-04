@@ -26,8 +26,15 @@ const handleApiError = (error, context) => {
         errorMessage = String(error);
     }
 
-    if (errorMessage.includes('API key not valid') || errorMessage.includes('API_KEY_INVALID')) {
-        throw new Error("Your API key is not valid. Please check it and try again.");
+    if (
+        errorMessage.includes('API key not valid') || 
+        errorMessage.includes('API_KEY_INVALID') ||
+        errorMessage.includes('UNAUTHENTICATED') ||
+        errorMessage.includes('ACCESS_TOKEN_TYPE_UNSUPPORTED') ||
+        errorMessage.includes('invalid authentication credentials') ||
+        error?.error?.code === 401
+    ) {
+        throw new Error("Mã API Key không hợp lệ hoặc đã bị hết hạn/hủy (Lỗi 401 Xác thực). Vui lòng kiểm tra và nhập lại Gemini API Key hợp lệ trong phần Cài Đặt.");
     }
     
     if (errorMessage.includes('429') || 
