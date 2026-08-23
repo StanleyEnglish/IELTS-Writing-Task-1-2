@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 import { auth, signInWithGoogle, signInWithGoogleRedirect, logout } from '../firebase';
-import { SparklesIcon, StickyRiceCakeIcon, UsersIcon } from './icons';
+import { SparklesIcon, UsersIcon, CoffeeIcon, StickyRiceCakeIcon } from './icons';
 import Leaderboard from './Leaderboard';
 
 interface DashboardProps {
@@ -10,9 +10,10 @@ interface DashboardProps {
     onSaveApiKey: (key: string) => void;
     onStartPractice: () => void;
     apiKeyError: string | null;
+    onOpenSupportModal?: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPractice, apiKeyError }) => {
+const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPractice, apiKeyError, onOpenSupportModal }) => {
     const [localApiKey, setLocalApiKey] = useState(apiKey || '');
     const [user, setUser] = useState<User | null>(null);
     const [authError, setAuthError] = useState<string | null>(null);
@@ -190,6 +191,24 @@ const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPrac
                                 </div>
                             </div>
                         </div>
+
+                        {onOpenSupportModal && (
+                            <div className="bg-gradient-to-br from-amber-50 to-orange-50/40 rounded-xl shadow-xs border border-amber-200/90 p-4 text-center space-y-2">
+                                <div className="flex items-center justify-center gap-1.5 text-amber-900 font-bold text-sm">
+                                    <CoffeeIcon className="w-4 h-4 text-red-700" />
+                                    Ủng Hộ Tác Giả
+                                </div>
+                                <p className="text-xs text-amber-900/80 leading-relaxed">
+                                    Nếu ứng dụng hữu ích cho bạn, hãy mời tác giả một ly cà phê tiếp thêm động lực nhé!
+                                </p>
+                                <button
+                                    onClick={onOpenSupportModal}
+                                    className="w-full py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-red-950 font-bold rounded-lg text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-98"
+                                >
+                                    ☕ Quét mã VietQR / Chuyển khoản
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="md:col-span-2">
@@ -210,6 +229,19 @@ const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPrac
                          </div>
                     </div>
                 </div>
+
+                {/* Dashboard Footer */}
+                <footer className="text-center pt-4 pb-2 border-t border-amber-200/60 text-xs text-slate-500 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                    <span>IELTS Instructor • Designed for IELTS Learners</span>
+                    {onOpenSupportModal && (
+                        <button
+                            onClick={onOpenSupportModal}
+                            className="text-red-700 hover:text-red-900 font-semibold inline-flex items-center gap-1 hover:underline"
+                        >
+                            ☕ <span>Support Me (NGO MINH QUAN)</span>
+                        </button>
+                    )}
+                </footer>
             </div>
         </div>
     );

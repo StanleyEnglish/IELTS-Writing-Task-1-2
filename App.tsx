@@ -9,6 +9,7 @@ import WritingEditor from './components/WritingEditor';
 import FeedbackDisplay from './components/FeedbackDisplay';
 import Dashboard from './components/Dashboard';
 import { ExportModal } from './components/ExportModal';
+import { SupportModal } from './components/SupportModal';
 
 import { saveTestResult, auth } from './firebase';
 
@@ -72,6 +73,7 @@ const App: React.FC = () => {
 
   // Global modal state
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
 
   // Score History
   const [history, setHistory] = useState<HighScore[]>([]);
@@ -458,12 +460,19 @@ const App: React.FC = () => {
 
   if (!isAppStarted) {
       return (
+        <>
           <Dashboard 
             apiKey={apiKey}
             onSaveApiKey={handleSaveApiKey}
             onStartPractice={handleStartPractice}
             apiKeyError={apiKeyError}
+            onOpenSupportModal={() => setIsSupportModalOpen(true)}
           />
+          <SupportModal
+            isOpen={isSupportModalOpen}
+            onClose={() => setIsSupportModalOpen(false)}
+          />
+        </>
       );
   }
 
@@ -480,6 +489,7 @@ const App: React.FC = () => {
         apiKey={apiKey}
         onSaveApiKey={handleSaveApiKey}
         apiKeyError={apiKeyError}
+        onOpenSupportModal={() => setIsSupportModalOpen(true)}
       />
       <main className="flex-grow container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
         <div className="flex flex-col gap-8">
@@ -554,6 +564,10 @@ const App: React.FC = () => {
           task2Context={task2Context}
           activeTaskType={taskType}
         />
+        <SupportModal
+          isOpen={isSupportModalOpen}
+          onClose={() => setIsSupportModalOpen(false)}
+        />
         {error && (
             <div className="fixed bottom-5 right-5 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg z-50" role="alert">
                 <strong className="font-bold">Error: </strong>
@@ -564,6 +578,17 @@ const App: React.FC = () => {
             </div>
         )}
       </main>
+
+      {/* Main Page Subtle Footer */}
+      <footer className="mt-auto py-3 bg-amber-50/50 border-t border-amber-200/60 text-center text-xs text-slate-500 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 px-4">
+        <span>IELTS Instructor • Designed for IELTS Learners</span>
+        <button
+          onClick={() => setIsSupportModalOpen(true)}
+          className="text-red-700 hover:text-red-900 font-semibold inline-flex items-center gap-1 hover:underline cursor-pointer"
+        >
+          ☕ <span>Support Me (NGO MINH QUAN)</span>
+        </button>
+      </footer>
     </div>
   );
 };

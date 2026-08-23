@@ -119,6 +119,12 @@ export const HorseIcon: React.FC<{ className?: string }> = (props) => (
   </svg>
 );
 
+export const CoffeeIcon: React.FC<{ className?: string }> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m3-8.25h1.5a3 3 0 013 3v.75a3 3 0 01-3 3h-1.5m-3-6H3.75a1.5 1.5 0 00-1.5 1.5v6.75a6 6 0 006 6h4.5a6 6 0 006-6V7.5a1.5 1.5 0 00-1.5-1.5h-.75zM4.5 19.5h12" />
+  </svg>
+);
+
 export const StickyRiceCakeIcon: React.FC<{ className?: string }> = (props) => (
   <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
     <rect x="35" y="10" width="55" height="55" rx="4" fill="#15803d" stroke="#064e3b" strokeWidth="1.5" />
@@ -142,3 +148,5 @@ export const StickyRiceCakeIcon: React.FC<{ className?: string }> = (props) => (
     <circle cx="65" cy="35" r="3" fill="#facc15" opacity="0.6" />
   </svg>
 );
+
+

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import type { TaskType } from '../types';
 import Timer from './Timer';
-import { HorseIcon } from './icons';
+import { CoffeeIcon } from './icons';
 
 interface HeaderProps {
     taskType: TaskType;
@@ -15,6 +15,7 @@ interface HeaderProps {
     apiKey: string | null;
     onSaveApiKey: (key: string) => void;
     apiKeyError: string | null;
+    onOpenSupportModal?: () => void;
 }
 
 const TaskToggleButton: React.FC<{
@@ -49,7 +50,8 @@ const Header: React.FC<HeaderProps> = ({
     onResetTimer, 
     apiKey,
     onSaveApiKey,
-    apiKeyError
+    apiKeyError,
+    onOpenSupportModal
 }) => {
     const [localApiKey, setLocalApiKey] = useState(apiKey || '');
 
@@ -100,7 +102,18 @@ const Header: React.FC<HeaderProps> = ({
             )}
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+            {onOpenSupportModal && (
+              <button
+                onClick={onOpenSupportModal}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-900 bg-gradient-to-r from-amber-300 to-amber-400 hover:from-amber-200 hover:to-amber-300 rounded-md shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-amber-200 hover:scale-105 active:scale-95"
+                title="Ủng hộ tác giả cốc cà phê"
+              >
+                <CoffeeIcon className="w-4 h-4 text-red-800" />
+                <span className="hidden sm:inline">Support Me</span>
+              </button>
+            )}
+
             <Timer
                 timeRemaining={timeRemaining}
                 isTimerActive={isTimerActive}
