@@ -8,12 +8,24 @@ import Leaderboard from './Leaderboard';
 interface DashboardProps {
     apiKey: string | null;
     onSaveApiKey: (key: string) => void;
+    onRemoveApiKey?: () => void;
+    hasCustomApiKey?: boolean;
+    hasSystemKey?: boolean;
     onStartPractice: () => void;
     apiKeyError: string | null;
     onOpenSupportModal?: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPractice, apiKeyError, onOpenSupportModal }) => {
+const Dashboard: React.FC<DashboardProps> = ({ 
+    apiKey, 
+    onSaveApiKey, 
+    onRemoveApiKey, 
+    hasCustomApiKey, 
+    hasSystemKey, 
+    onStartPractice, 
+    apiKeyError, 
+    onOpenSupportModal 
+}) => {
     const [localApiKey, setLocalApiKey] = useState(apiKey || '');
     const [user, setUser] = useState<User | null>(null);
     const [authError, setAuthError] = useState<string | null>(null);
@@ -146,48 +158,85 @@ const Dashboard: React.FC<DashboardProps> = ({ apiKey, onSaveApiKey, onStartPrac
                         </div>
 
                         <div className="bg-white rounded-xl shadow-md border border-amber-200 p-6">
-                            <h3 className="text-lg font-bold text-red-700 mb-4 flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-red-700 mb-2 flex items-center gap-2">
                                 <SparklesIcon className="h-5 w-5 text-amber-500" />
                                 Start Practicing
                             </h3>
+
+                            {hasSystemKey && !hasCustomApiKey && (
+                                <div className="mb-3 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-center gap-2">
+                                    <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0"></span>
+                                    <span>Hệ thống đã tích hợp sẵn Gemini AI. Bạn có thể vào luyện tập ngay hoặc dùng Key riêng bên dưới.</span>
+                                </div>
+                            )}
+
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                        Google Gemini API Key
-                                    </label>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <label className="block text-sm font-medium text-slate-700">
+                                            Google Gemini API Key
+                                        </label>
+                                        {hasCustomApiKey && onRemoveApiKey && (
+                                            <button
+                                                type="button"
+                                                onClick={onRemoveApiKey}
+                                                className="text-[11px] text-red-600 hover:text-red-800 underline font-semibold"
+                                            >
+                                                Xóa key cá nhân
+                                            </button>
+                                        )}
+                                    </div>
                                     <input
                                         type="password"
-                                        placeholder="AIzaSy... or AQ..."
+                                        placeholder="AIzaSy... hoặc AQ..."
                                         value={localApiKey}
                                         onChange={(e) => setLocalApiKey(e.target.value)}
                                         onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && localApiKey.trim()) {
-                                                handleSave();
+                                            if (e.key === 'Enter') {
+                                                if (localApiKey.trim()) handleSave();
                                                 onStartPractice();
                                             }
                                         }}
                                         className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm ${
-                                            apiKeyError ? 'border-red-500' : 'border-slate-300'
+                                            apiKeyError ? 'border-red-500 bg-red-50/40' : 'border-slate-300'
                                         }`}
                                     />
-                                    {apiKeyError && <p className="text-xs text-red-500 mt-1">{apiKeyError}</p>}
+                                    {apiKeyError && (
+                                        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md text-xs text-red-700 space-y-1">
+                                            <p className="font-bold">⚠️ Thông báo lỗi API Key:</p>
+                                            <p className="leading-relaxed">{apiKeyError}</p>
+                                            {onRemoveApiKey && hasSystemKey && (
+                                                <button
+                                                    type="button"
+                                                    onClick={onRemoveApiKey}
+                                                    className="mt-1 px-2.5 py-1 text-xs font-bold bg-amber-400 text-red-950 rounded hover:bg-amber-300 transition-colors shadow-xs"
+                                                >
+                                                    Chuyển sang Key mặc định hệ thống
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
+
                                 <button
-                                    onClick={() => { handleSave(); onStartPractice(); }}
-                                    disabled={!localApiKey.trim()}
+                                    onClick={() => { 
+                                        if (localApiKey.trim()) handleSave();
+                                        onStartPractice(); 
+                                    }}
+                                    disabled={!localApiKey.trim() && !hasSystemKey}
                                     className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-md transition-all disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     Enter Training &rarr;
                                 </button>
-                                <div className="pt-4 border-t border-red-50 border-t-red-100 text-center">
-                                    <a 
-                                        href="https://aistudio.google.com/app/apikey" 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="text-xs text-red-600 font-semibold hover:underline"
-                                    >
-                                        Get a free API Key
-                                    </a>
+
+                                <div className="pt-3 border-t border-red-50 border-t-red-100 text-xs text-slate-500 space-y-1">
+                                    <p className="font-semibold text-slate-700">💡 Hướng dẫn tạo API Key không bị lỗi 403:</p>
+                                    <p className="leading-relaxed">
+                                        1. Truy cập trực tiếp <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-red-600 font-bold underline hover:text-red-700">Google AI Studio</a>.
+                                    </p>
+                                    <p className="leading-relaxed">
+                                        2. Chọn <b>"Create API key"</b> &rarr; <b>"Create key in new project"</b> để được cấp đầy đủ quyền tự động.
+                                    </p>
                                 </div>
                             </div>
                         </div>

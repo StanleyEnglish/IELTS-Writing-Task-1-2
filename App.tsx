@@ -78,9 +78,14 @@ const App: React.FC = () => {
   // Score History
   const [history, setHistory] = useState<HighScore[]>([]);
 
-  // API Key State
+  // System Default API Key if configured in build/env
+  const SYSTEM_API_KEY = (process.env.GEMINI_API_KEY || (process.env as any).API_KEY || '').trim();
+
+  // API Key State - loads custom key from localStorage or falls back to system key
   const [apiKey, setApiKey] = useState<string | null>(() => {
-    return localStorage.getItem('gemini-api-key');
+    const saved = localStorage.getItem('gemini-api-key');
+    if (saved && saved.trim()) return saved.trim();
+    return SYSTEM_API_KEY || null;
   });
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
 
@@ -113,20 +118,31 @@ const App: React.FC = () => {
   };
   
   const handleApiError = (e: unknown) => {
-    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+    const errorMessage = e instanceof Error ? e.message : (typeof e === 'object' && e !== null ? JSON.stringify(e) : String(e));
     
-    // Check if it's explicitly an invalid API key error
-    const isInvalidKey = /API key not valid|invalid API key|API_KEY_INVALID|UNAUTHENTICATED|ACCESS_TOKEN_TYPE_UNSUPPORTED|invalid authentication credentials|401/i.test(errorMessage);
+    // Check if it's explicitly a permission denied error (403)
+    const isPermissionError = /PERMISSION_DENIED|does not have permission|The caller does not have permission|403/i.test(errorMessage);
+    // Check if it's explicitly an unauthenticated / invalid API key error (401)
+    const isAuthError = /API key not valid|invalid API key|API_KEY_INVALID|UNAUTHENTICATED|ACCESS_TOKEN_TYPE_UNSUPPORTED|invalid authentication credentials|401/i.test(errorMessage);
     // Check if it's a quota or rate limit error
     const isQuotaError = /quota|429|RESOURCE_EXHAUSTED/i.test(errorMessage);
 
-    if (isInvalidKey) {
+    if (isPermissionError || isAuthError) {
       localStorage.removeItem('gemini-api-key');
-      setApiKey(null);
-      setApiKeyError("Your API key is invalid or has expired. Please check it and provide a valid key.");
+      
+      const errorReason = isPermissionError 
+        ? "API Key của bạn không có quyền truy cập Gemini API (Lỗi 403 PERMISSION_DENIED: The caller does not have permission). Nguyên nhân: API Key tạo trong Google Cloud Console chưa bật 'Generative Language API', hoặc bị giới hạn quyền truy cập. Vui lòng tạo key mới tại Google AI Studio (aistudio.google.com/app/apikey) với tùy chọn 'Create key in new project'."
+        : "Mã API Key không hợp lệ hoặc đã hết hạn/hủy (Lỗi 401). Vui lòng kiểm tra và nhập lại key hợp lệ.";
+
+      if (SYSTEM_API_KEY) {
+        setApiKey(SYSTEM_API_KEY);
+        setApiKeyError(`${errorReason} Hệ thống đã tạm thời chuyển sang API Key mặc định để bạn tiếp tục luyện tập.`);
+      } else {
+        setApiKey(null);
+        setApiKeyError(errorReason);
+      }
     } else if (isQuotaError) {
-      // Do NOT remove the API key from localStorage! Keep it so they can retry.
-      setApiKeyError("API Rate Limit Exceeded (Error 429). Free Gemini API keys are limited to 15 requests per minute. Please wait a few seconds and try again.");
+      setApiKeyError("Đã vượt quá giới hạn lượt dùng API (Lỗi 429 Quota Exceeded). Gói Gemini miễn phí giới hạn 15 lượt gọi/phút. Vui lòng đợi vài giây và thử lại.");
     } else {
       setError(errorMessage);
     }
@@ -389,12 +405,27 @@ const App: React.FC = () => {
   };
   
   const handleSaveApiKey = (key: string) => {
-    if (!key.startsWith('AIza') && !key.startsWith('AQ')) {
-        setApiKeyError("This doesn't look like a valid Gemini API key. Please check it. It should start with 'AIza' or 'AQ'.");
+    const trimmed = key.trim();
+    if (!trimmed) {
+      handleRemoveApiKey();
+      return;
+    }
+    if (!trimmed.startsWith('AIza') && !trimmed.startsWith('AQ')) {
+        setApiKeyError("Mã API Key không đúng định dạng. Gemini API key thường bắt đầu bằng 'AIza' hoặc 'AQ'.");
         return;
     }
-    setApiKey(key);
-    localStorage.setItem('gemini-api-key', key);
+    setApiKey(trimmed);
+    localStorage.setItem('gemini-api-key', trimmed);
+    setApiKeyError(null);
+  };
+
+  const handleRemoveApiKey = () => {
+    localStorage.removeItem('gemini-api-key');
+    if (SYSTEM_API_KEY) {
+      setApiKey(SYSTEM_API_KEY);
+    } else {
+      setApiKey(null);
+    }
     setApiKeyError(null);
   };
 
@@ -458,12 +489,18 @@ const App: React.FC = () => {
   
   const isLoading = activeContext.isLoadingPrompt || activeContext.isLoadingFeedback;
 
+  const hasCustomApiKey = Boolean(localStorage.getItem('gemini-api-key'));
+  const hasSystemKey = Boolean(SYSTEM_API_KEY);
+
   if (!isAppStarted) {
       return (
         <>
           <Dashboard 
             apiKey={apiKey}
             onSaveApiKey={handleSaveApiKey}
+            onRemoveApiKey={handleRemoveApiKey}
+            hasCustomApiKey={hasCustomApiKey}
+            hasSystemKey={hasSystemKey}
             onStartPractice={handleStartPractice}
             apiKeyError={apiKeyError}
             onOpenSupportModal={() => setIsSupportModalOpen(true)}
@@ -488,6 +525,9 @@ const App: React.FC = () => {
         onResetTimer={handleResetTimer}
         apiKey={apiKey}
         onSaveApiKey={handleSaveApiKey}
+        onRemoveApiKey={handleRemoveApiKey}
+        hasCustomApiKey={hasCustomApiKey}
+        hasSystemKey={hasSystemKey}
         apiKeyError={apiKeyError}
         onOpenSupportModal={() => setIsSupportModalOpen(true)}
       />

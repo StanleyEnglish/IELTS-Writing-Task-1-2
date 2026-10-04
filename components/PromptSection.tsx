@@ -348,24 +348,24 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                       </div>
                       <div>
                         <h4 className="font-bold text-red-800">Mở bài (Introduction):</h4>
-                        <p className="pl-4 text-sm font-medium">{task1Guidance.introduction}</p>
+                        <p className="pl-4 text-sm font-medium">{formatIdeaText(task1Guidance.introduction)}</p>
                       </div>
                       <div>
                         <h4 className="font-bold text-red-800">Đoạn tổng quan (Overall):</h4>
                         <ul className="pl-8 list-disc space-y-1 text-sm text-slate-600 font-medium">
-                          {task1Guidance.overall.map((point, index) => <li key={index}>{point}</li>)}
+                          {task1Guidance.overall.map((point, index) => <li key={index}>{formatIdeaText(point)}</li>)}
                         </ul>
                       </div>
                       <div>
                         <h4 className="font-bold text-red-800">Thân bài 1 (Body 1):</h4>
                         <ul className="pl-8 list-disc space-y-1 text-sm text-slate-600 font-medium">
-                          {task1Guidance.body1.map((point, index) => <li key={index}>{point}</li>)}
+                          {task1Guidance.body1.map((point, index) => <li key={index}>{formatIdeaText(point)}</li>)}
                         </ul>
                       </div>
                       <div>
                         <h4 className="font-bold text-red-800">Thân bài 2 (Body 2):</h4>
                         <ul className="pl-8 list-disc space-y-1 text-sm text-slate-600 font-medium">
-                          {task1Guidance.body2.map((point, index) => <li key={index}>{point}</li>)}
+                          {task1Guidance.body2.map((point, index) => <li key={index}>{formatIdeaText(point)}</li>)}
                         </ul>
                       </div>
                     </div>
@@ -435,7 +435,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                                             className="flex-1 py-2.5 px-3 text-xs font-bold text-white bg-red-700 hover:bg-red-800 rounded-md transition-all duration-200 shadow-sm flex flex-col items-center justify-center gap-1 border-2 border-red-700"
                                           >
                                             <span className="text-sm font-extrabold text-amber-300">Band 7.0+</span>
-                                            <span className="text-[10px] text-red-100 font-normal leading-tight text-center">Sophisticated ideas & 7+ collocations</span>
+                                            <span className="text-[10px] text-red-100 font-normal leading-tight text-center">Deep ideas & natural written vocabulary</span>
                                           </button>
                                         </div>
                                         <button 
