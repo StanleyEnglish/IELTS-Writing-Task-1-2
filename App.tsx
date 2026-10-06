@@ -57,15 +57,84 @@ const formatScore = (average: number): string => {
 
 const App: React.FC = () => {
   const [taskType, setTaskType] = useState<TaskType>('Task 2');
-  const [task1Context, setTask1Context] = useState<TaskContext>({
-    ...getInitialTaskContext(false, true),
-    isCustomPromptMode: true,
+  const [task1Context, setTask1Context] = useState<TaskContext>(() => {
+    const savedEssay = localStorage.getItem('ielts-draft-task1') || '';
+    const savedPrompt = localStorage.getItem('ielts-draft-task1-prompt') || '';
+    const savedCustomInput = localStorage.getItem('ielts-draft-task1-custom') || '';
+    const savedImage = localStorage.getItem('ielts-draft-task1-image') || null;
+    return {
+      ...getInitialTaskContext(false, true),
+      isCustomPromptMode: true,
+      userEssay: savedEssay,
+      prompt: savedPrompt,
+      customPromptInput: savedCustomInput,
+      task1Image: savedImage,
+    };
   });
-  const [task2Context, setTask2Context] = useState<TaskContext>({
-    ...getInitialTaskContext(false, true),
-    isCustomPromptMode: true,
+  const [task2Context, setTask2Context] = useState<TaskContext>(() => {
+    const savedEssay = localStorage.getItem('ielts-draft-task2') || '';
+    const savedPrompt = localStorage.getItem('ielts-draft-task2-prompt') || '';
+    const savedCustomInput = localStorage.getItem('ielts-draft-task2-custom') || '';
+    return {
+      ...getInitialTaskContext(false, true),
+      isCustomPromptMode: true,
+      userEssay: savedEssay,
+      prompt: savedPrompt,
+      customPromptInput: savedCustomInput,
+    };
   });
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-save draft for Task 1
+  useEffect(() => {
+    try {
+      if (task1Context.userEssay !== undefined) {
+        localStorage.setItem('ielts-draft-task1', task1Context.userEssay);
+      }
+      if (task1Context.prompt) {
+        localStorage.setItem('ielts-draft-task1-prompt', task1Context.prompt);
+      }
+      if (task1Context.customPromptInput) {
+        localStorage.setItem('ielts-draft-task1-custom', task1Context.customPromptInput);
+      }
+      if (task1Context.task1Image) {
+        localStorage.setItem('ielts-draft-task1-image', task1Context.task1Image);
+      }
+    } catch (e) {
+      console.warn("Could not save Task 1 draft:", e);
+    }
+  }, [task1Context.userEssay, task1Context.prompt, task1Context.customPromptInput, task1Context.task1Image]);
+
+  // Auto-save draft for Task 2
+  useEffect(() => {
+    try {
+      if (task2Context.userEssay !== undefined) {
+        localStorage.setItem('ielts-draft-task2', task2Context.userEssay);
+      }
+      if (task2Context.prompt) {
+        localStorage.setItem('ielts-draft-task2-prompt', task2Context.prompt);
+      }
+      if (task2Context.customPromptInput) {
+        localStorage.setItem('ielts-draft-task2-custom', task2Context.customPromptInput);
+      }
+    } catch (e) {
+      console.warn("Could not save Task 2 draft:", e);
+    }
+  }, [task2Context.userEssay, task2Context.prompt, task2Context.customPromptInput]);
+
+  // Safeguard: Save before leaving or refreshing the page
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      try {
+        if (task1Context.userEssay) localStorage.setItem('ielts-draft-task1', task1Context.userEssay);
+        if (task2Context.userEssay) localStorage.setItem('ielts-draft-task2', task2Context.userEssay);
+      } catch (e) {
+        // ignore
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [task1Context.userEssay, task2Context.userEssay]);
 
   // App Mode (Dashboard vs Main)
   const [isAppStarted, setIsAppStarted] = useState(false);
@@ -78,14 +147,11 @@ const App: React.FC = () => {
   // Score History
   const [history, setHistory] = useState<HighScore[]>([]);
 
-  // System Default API Key if configured in build/env
-  const SYSTEM_API_KEY = (process.env.GEMINI_API_KEY || (process.env as any).API_KEY || '').trim();
-
-  // API Key State - loads custom key from localStorage or falls back to system key
+  // API Key State - user always uses their own key stored in localStorage
   const [apiKey, setApiKey] = useState<string | null>(() => {
     const saved = localStorage.getItem('gemini-api-key');
     if (saved && saved.trim()) return saved.trim();
-    return SYSTEM_API_KEY || null;
+    return null;
   });
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
 
@@ -129,20 +195,15 @@ const App: React.FC = () => {
 
     if (isPermissionError || isAuthError) {
       localStorage.removeItem('gemini-api-key');
-      
       const errorReason = isPermissionError 
-        ? "API Key của bạn không có quyền truy cập Gemini API (Lỗi 403 PERMISSION_DENIED: The caller does not have permission). Nguyên nhân: API Key tạo trong Google Cloud Console chưa bật 'Generative Language API', hoặc bị giới hạn quyền truy cập. Vui lòng tạo key mới tại Google AI Studio (aistudio.google.com/app/apikey) với tùy chọn 'Create key in new project'."
-        : "Mã API Key không hợp lệ hoặc đã hết hạn/hủy (Lỗi 401). Vui lòng kiểm tra và nhập lại key hợp lệ.";
-
-      if (SYSTEM_API_KEY) {
-        setApiKey(SYSTEM_API_KEY);
-        setApiKeyError(`${errorReason} Hệ thống đã tạm thời chuyển sang API Key mặc định để bạn tiếp tục luyện tập.`);
-      } else {
-        setApiKey(null);
-        setApiKeyError(errorReason);
-      }
+        ? "API Key của bạn không có quyền truy cập Gemini API (Lỗi 403: PERMISSION_DENIED). Vui lòng tạo key mới tại Google AI Studio."
+        : "Mã API Key không hợp lệ hoặc đã hết hạn (Lỗi 401). Vui lòng kiểm tra và nhập lại key hợp lệ.";
+      setApiKey(null);
+      setApiKeyError(errorReason);
     } else if (isQuotaError) {
-      setApiKeyError("Đã vượt quá giới hạn lượt dùng API (Lỗi 429 Quota Exceeded). Gói Gemini miễn phí giới hạn 15 lượt gọi/phút. Vui lòng đợi vài giây và thử lại.");
+      const quotaMsg = "Đã vượt quá giới hạn lượt dùng API (Lỗi 429 Quota Exceeded). Gói Gemini miễn phí giới hạn lượt gọi theo phút/ngày. Vui lòng đợi vài giây hoặc đổi sang API Key khác.";
+      setApiKeyError(quotaMsg);
+      setError(quotaMsg);
     } else {
       setError(errorMessage);
     }
@@ -421,11 +482,7 @@ const App: React.FC = () => {
 
   const handleRemoveApiKey = () => {
     localStorage.removeItem('gemini-api-key');
-    if (SYSTEM_API_KEY) {
-      setApiKey(SYSTEM_API_KEY);
-    } else {
-      setApiKey(null);
-    }
+    setApiKey(null);
     setApiKeyError(null);
   };
 
@@ -489,8 +546,7 @@ const App: React.FC = () => {
   
   const isLoading = activeContext.isLoadingPrompt || activeContext.isLoadingFeedback;
 
-  const hasCustomApiKey = Boolean(localStorage.getItem('gemini-api-key'));
-  const hasSystemKey = Boolean(SYSTEM_API_KEY);
+  const hasCustomApiKey = Boolean(apiKey);
 
   if (!isAppStarted) {
       return (
@@ -500,7 +556,6 @@ const App: React.FC = () => {
             onSaveApiKey={handleSaveApiKey}
             onRemoveApiKey={handleRemoveApiKey}
             hasCustomApiKey={hasCustomApiKey}
-            hasSystemKey={hasSystemKey}
             onStartPractice={handleStartPractice}
             apiKeyError={apiKeyError}
             onOpenSupportModal={() => setIsSupportModalOpen(true)}
@@ -527,7 +582,6 @@ const App: React.FC = () => {
         onSaveApiKey={handleSaveApiKey}
         onRemoveApiKey={handleRemoveApiKey}
         hasCustomApiKey={hasCustomApiKey}
-        hasSystemKey={hasSystemKey}
         apiKeyError={apiKeyError}
         onOpenSupportModal={() => setIsSupportModalOpen(true)}
       />

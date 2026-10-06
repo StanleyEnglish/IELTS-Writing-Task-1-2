@@ -10,7 +10,6 @@ interface DashboardProps {
     onSaveApiKey: (key: string) => void;
     onRemoveApiKey?: () => void;
     hasCustomApiKey?: boolean;
-    hasSystemKey?: boolean;
     onStartPractice: () => void;
     apiKeyError: string | null;
     onOpenSupportModal?: () => void;
@@ -21,7 +20,6 @@ const Dashboard: React.FC<DashboardProps> = ({
     onSaveApiKey, 
     onRemoveApiKey, 
     hasCustomApiKey, 
-    hasSystemKey, 
     onStartPractice, 
     apiKeyError, 
     onOpenSupportModal 
@@ -163,29 +161,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                                 Start Practicing
                             </h3>
 
-                            {hasSystemKey && !hasCustomApiKey && (
-                                <div className="mb-3 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-center gap-2">
-                                    <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0"></span>
-                                    <span>Hệ thống đã tích hợp sẵn Gemini AI. Bạn có thể vào luyện tập ngay hoặc dùng Key riêng bên dưới.</span>
-                                </div>
-                            )}
-
                             <div className="space-y-4">
                                 <div>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <label className="block text-sm font-medium text-slate-700">
-                                            Google Gemini API Key
-                                        </label>
-                                        {hasCustomApiKey && onRemoveApiKey && (
-                                            <button
-                                                type="button"
-                                                onClick={onRemoveApiKey}
-                                                className="text-[11px] text-red-600 hover:text-red-800 underline font-semibold"
-                                            >
-                                                Xóa key cá nhân
-                                            </button>
-                                        )}
-                                    </div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                                        Google Gemini API Key
+                                    </label>
                                     <input
                                         type="password"
                                         placeholder="AIzaSy... hoặc AQ..."
@@ -205,15 +185,6 @@ const Dashboard: React.FC<DashboardProps> = ({
                                         <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md text-xs text-red-700 space-y-1">
                                             <p className="font-bold">⚠️ Thông báo lỗi API Key:</p>
                                             <p className="leading-relaxed">{apiKeyError}</p>
-                                            {onRemoveApiKey && hasSystemKey && (
-                                                <button
-                                                    type="button"
-                                                    onClick={onRemoveApiKey}
-                                                    className="mt-1 px-2.5 py-1 text-xs font-bold bg-amber-400 text-red-950 rounded hover:bg-amber-300 transition-colors shadow-xs"
-                                                >
-                                                    Chuyển sang Key mặc định hệ thống
-                                                </button>
-                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -223,20 +194,21 @@ const Dashboard: React.FC<DashboardProps> = ({
                                         if (localApiKey.trim()) handleSave();
                                         onStartPractice(); 
                                     }}
-                                    disabled={!localApiKey.trim() && !hasSystemKey}
+                                    disabled={!localApiKey.trim()}
                                     className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-md transition-all disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     Enter Training &rarr;
                                 </button>
 
-                                <div className="pt-3 border-t border-red-50 border-t-red-100 text-xs text-slate-500 space-y-1">
-                                    <p className="font-semibold text-slate-700">💡 Hướng dẫn tạo API Key không bị lỗi 403:</p>
-                                    <p className="leading-relaxed">
-                                        1. Truy cập trực tiếp <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-red-600 font-bold underline hover:text-red-700">Google AI Studio</a>.
-                                    </p>
-                                    <p className="leading-relaxed">
-                                        2. Chọn <b>"Create API key"</b> &rarr; <b>"Create key in new project"</b> để được cấp đầy đủ quyền tự động.
-                                    </p>
+                                <div className="pt-4 border-t border-red-50 border-t-red-100 text-center">
+                                    <a 
+                                        href="https://aistudio.google.com/app/apikey" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-red-600 font-semibold hover:underline"
+                                    >
+                                        Get a new API Key
+                                    </a>
                                 </div>
                             </div>
                         </div>

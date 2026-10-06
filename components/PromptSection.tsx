@@ -64,7 +64,7 @@ const SuggestionsModal: React.FC<{
                 <div className="flex justify-between items-center p-4 border-b border-slate-200">
                     <h3 className="text-lg font-semibold text-red-800 flex items-center gap-2">
                         <SparklesIcon className="h-5 w-5 text-amber-500" />
-                        Writing Suggestion
+                        Gợi ý viết câu mẫu (Band 7.0+)
                     </h3>
                     <button onClick={onClose} className="text-slate-400 hover:text-red-600">
                         <XCircleIcon className="h-6 w-6" />
@@ -72,32 +72,32 @@ const SuggestionsModal: React.FC<{
                 </div>
                 <div className="p-4 overflow-y-auto custom-scrollbar">
                     <div className="mb-4 bg-red-50 p-3 rounded-md border border-red-100">
-                        <p className="text-xs text-red-500 uppercase tracking-wide font-bold mb-1">Selected Passage:</p>
+                        <p className="text-xs text-red-500 uppercase tracking-wide font-bold mb-1">Nội dung được chọn:</p>
                         <p className="text-slate-700 italic">"{selectedText}"</p>
                     </div>
 
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-8">
                             <LoadingSpinner className="h-8 w-8 text-red-500 mb-3" />
-                            <p className="text-slate-500 text-sm">Consulting the scholars...</p>
+                            <p className="text-slate-500 text-sm">Đang xây dựng câu mẫu chuẩn Band 7.0+ (Hedging & Tự nhiên)...</p>
                         </div>
                     ) : error ? (
                         <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs rounded-md space-y-1.5 leading-relaxed">
-                            <p className="font-bold text-red-900">⚠️ Suggestion Error:</p>
+                            <p className="font-bold text-red-900">⚠️ Lỗi gợi ý:</p>
                             <p className="font-mono text-[10px] bg-white p-1.5 rounded border border-red-100 overflow-x-auto whitespace-pre-wrap select-text">{error}</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
                             {suggestions.length === 0 ? (
-                                <p className="text-slate-500 text-sm text-center py-4">No suggestions could be generated for this selection. Try selecting a complete sentence or phrase.</p>
+                                <p className="text-slate-500 text-sm text-center py-4">Không tạo được gợi ý cho đoạn này. Hãy thử bôi đen một cụm ý hoặc câu hoàn chỉnh.</p>
                             ) : (
                                 suggestions.map((sug, idx) => (
                                     <div key={idx} className="border-l-4 border-amber-500 bg-amber-50 p-3 rounded-r-md">
-                                        <p className="font-bold text-slate-800 text-lg mb-1">{sug.english}</p>
+                                        <p className="font-bold text-slate-800 text-base mb-1">{sug.english}</p>
                                         <div className="flex gap-2 items-center text-xs mb-2">
                                             <span className="px-2 py-0.5 bg-amber-200 text-amber-800 rounded-full font-bold">{sug.tone}</span>
                                         </div>
-                                        <p className="text-sm text-slate-600">{sug.explanation}</p>
+                                        <p className="text-sm text-slate-600 leading-relaxed">{sug.explanation}</p>
                                     </div>
                                 ))
                             )}
@@ -109,7 +109,7 @@ const SuggestionsModal: React.FC<{
                         onClick={onClose}
                         className="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded transition-colors"
                     >
-                        Dismiss
+                        Đóng
                     </button>
                 </div>
             </div>
@@ -485,7 +485,7 @@ const PromptSection: React.FC<PromptSectionProps> = ({
                 className="flex items-center gap-2 bg-red-600 text-white px-3 py-1.5 rounded-full shadow-lg hover:bg-red-700 transition-transform hover:scale-105 font-bold text-xs border border-amber-300"
               >
                   <SparklesIcon className="h-4 w-4 text-amber-300" />
-                  Viết Mẫu?
+                  Viết câu mẫu ✨
               </button>
               <div className="w-3 h-3 bg-red-600 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2 -z-10 border-r border-b border-amber-300"></div>
           </div>

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import type { TaskType, Feedback } from '../types';
-import { SparklesIcon, EyeIcon, PencilIcon } from './icons';
+import { SparklesIcon, EyeIcon, PencilIcon, CheckIcon } from './icons';
 import { LoadingSpinner } from './LoadingSpinner';
 import { generateAnnotatedEssayHtml } from '../services/exportService';
 
@@ -49,10 +49,40 @@ const WritingEditor: React.FC<WritingEditorProps> = ({
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-amber-100 h-full flex flex-col">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold text-red-800">Your Manuscript</h2>
+      <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <div className="flex items-center gap-2.5">
+          <h2 className="text-lg font-bold text-red-800">Your Manuscript</h2>
+          {essay.trim() ? (
+            <span 
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200" 
+              title="Bản nháp tự động lưu vào trình duyệt (localStorage)"
+            >
+              <CheckIcon className="w-3 h-3 text-emerald-600" />
+              Đã lưu nháp
+            </span>
+          ) : (
+            <span className="text-[11px] text-slate-400 italic">
+              Tự động lưu nháp
+            </span>
+          )}
+        </div>
         
-        {feedback && (
+        <div className="flex items-center gap-2">
+          {viewMode === 'write' && essay.trim() && !isLoading && (
+            <button
+              onClick={() => {
+                if (window.confirm("Bạn có muốn xóa bài đang viết để bắt đầu bản nháp mới?")) {
+                  setEssay('');
+                }
+              }}
+              className="text-xs text-slate-400 hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50"
+              title="Xóa trắng để viết lại từ đầu"
+            >
+              Xóa nháp
+            </button>
+          )}
+
+          {feedback && (
             <div className="flex bg-red-50 rounded-lg p-1 border border-red-100">
                 <button
                     onClick={() => setViewMode('write')}
@@ -73,7 +103,8 @@ const WritingEditor: React.FC<WritingEditorProps> = ({
                     Peer Review
                 </button>
             </div>
-        )}
+          )}
+        </div>
       </div>
 
       <div className="relative flex-grow min-h-[500px]">

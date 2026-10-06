@@ -2,8 +2,33 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { IELTS_TASK_1_BAND_DESCRIPTORS, IELTS_TASK_2_BAND_DESCRIPTORS, IELTS_TASK_1_EXEMPLARS, IELTS_TASK_2_EXEMPLARS, IELTS_TASK_2_BAND_6_7_EXEMPLARS } from '../constants';
 
-const brainstormingModel = 'gemini-3.5-flash';
-const feedbackModel = 'gemini-3.5-flash';
+export const CANDIDATE_MODELS = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
+const brainstormingModel = CANDIDATE_MODELS[0];
+const feedbackModel = CANDIDATE_MODELS[0];
+
+const executeWithModelFallback = async (ai, requestParams) => {
+    let lastError = null;
+    for (const model of CANDIDATE_MODELS) {
+        try {
+            return await ai.models.generateContent({
+                ...requestParams,
+                model,
+            });
+        } catch (error) {
+            lastError = error;
+            const errorMsg = error instanceof Error ? error.message : (typeof error === 'object' && error !== null ? JSON.stringify(error) : String(error));
+            const isQuotaError = /429|RESOURCE_EXHAUSTED|quota/i.test(errorMsg);
+            const isModelError = /not found|unsupported|not supported|model/i.test(errorMsg);
+
+            if (isQuotaError || isModelError) {
+                console.warn(`Model "${model}" hit quota or error (${errorMsg.slice(0, 120)}...). Trying next candidate model...`);
+                continue;
+            }
+            throw error;
+        }
+    }
+    throw lastError;
+};
 
 const handleApiError = (error, context) => {
     console.error(`Error during ${context}:`, error);
@@ -167,8 +192,7 @@ Essay Prompt: "${prompt}"`;
             parts.push({ text: promptText });
             const contents = { parts };
 
-            const response = await ai.models.generateContent({
-                model: brainstormingModel,
+            const response = await executeWithModelFallback(ai, {
                 contents,
                 config: {
                     systemInstruction,
@@ -182,12 +206,12 @@ Essay Prompt: "${prompt}"`;
                                 description: "An array of bullet points in Vietnamese for the 'Overall' paragraph.",
                                 items: { type: Type.STRING }
                             },
-                            body1: {
+                            body1: { 
                                 type: Type.ARRAY,
                                 description: "An array of bullet points in Vietnamese for the first body paragraph.",
                                 items: { type: Type.STRING }
                             },
-                            body2: {
+                            body2: { 
                                 type: Type.ARRAY,
                                 description: "An array of bullet points in Vietnamese for the second body paragraph.",
                                 items: { type: Type.STRING }
@@ -208,8 +232,7 @@ Essay Prompt: "${prompt}"`;
         
         const contents = { parts: [{ text: fullContent }] };
 
-        const response = await ai.models.generateContent({
-          model: brainstormingModel,
+        const response = await executeWithModelFallback(ai, {
           contents,
           config: {
             systemInstruction,
@@ -260,8 +283,18 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey, targ
                 : `**CRITICAL INSTRUCTION FOR LEVEL (BAND 7.0+):**
                   - **Target Level**: Band 7.0+.
                   - **Idea style**: Highly persuasive, deeply analyzed, and logically coherent ideas.
-                  - **Vocabulary**: Suggest practical, natural, and common English vocabulary and collocations inside square brackets [ ]. Vocabulary should NOT be obscure, excessively difficult, or rare ("không cần từ đắt giá hay xa lạ"). Instead, prioritize clear, high-utility, and common vocabulary that strictly adheres to formal academic written style (giữ đúng phong cách văn viết trang trọng, tự nhiên, dễ dùng và không quá khó).
-                  - **Grammar/Sentences**: Suggest effective, natural sentence structures suited for academic writing that help students gain 7+ for Grammatical Range & Accuracy.`;
+                  - **CRITICAL: ELIMINATE OVERGENERALIZATION & MANDATE HEDGING (TUYỆT ĐỐI TRÁNH TUYỆT ĐỐI HÓA - BẮT BUỘC DÙNG HEDGING)**:
+                    * **Tránh tuyệt đối hóa (Overgeneralization)**: Trong IELTS Writing Band 7.0 - 8.0+, lỗi tuyệt đối hóa ("tất cả mọi người", "luôn luôn gây ra...", "chắc chắn phá hủy hoàn toàn...", "all people", "always", "inevitably", "will always be the key", "completely ruins") sẽ bị giám khảo trừ điểm nặng tiêu chí Task Achievement (bị đánh giá là lập luận thiếu chín chắn/thiếu khách quan).
+                    * **Sử dụng Hedging (Ngôn ngữ cẩn trọng / Giới hạn phạm vi lập luận)**: Mọi luận điểm, phân tích và hệ quả phải được diễn đạt chừng mực, thực tế và khách quan:
+                      + Dùng động từ tình thái & xác suất: [tend to], [are likely to], [can potentially], [may contribute to], [often result in], [may encourage].
+                      + Dùng trạng từ học thuật mang tính cẩn trọng: [largely], [predominantly], [frequently], [in many instances], [arguably], [generally].
+                      + Giới hạn nhóm đối tượng (Scope limiters): [many individuals], [a significant proportion of students], [certain groups in society], [some business leaders] thay vì vơ đũa cả nắm ("everyone", "all citizens").
+                      + Thêm điều kiện giới hạn ngữ cảnh: [when pursued in a balanced manner], [when guided by ethical principles], [if left unchecked].
+                  - **CRITICAL: TỪ VỰNG TỰ NHIÊN, ĐƠN GIẢN, KHÔNG CẦU KỲ / HOA MỸ (SIMPLICITY OVER POMPOUSNESS)**:
+                    * Giám khảo IELTS Band 7.0 - 8.0 đánh giá cao tính chuẩn xác (precision), tự nhiên (natural collocations) và mạch lạc, KHÔNG chuộng từ ngữ đao to búa lớn, hoa mỹ sáo rỗng hay "học thuật giả tạo".
+                    * **TRÁNH TUYỆT ĐỐI các từ ngữ bóng bẩy, sáo ngữ hoặc quá cầu kỳ khó dùng**: KHÔNG gợi ý các cụm như [paramount importance], [primary catalyst], [devolving into], [unbridled ambition], [deterioration of personal relationships], [resilient against adversity].
+                    * **ƯU TIÊN các từ vựng học thuật phổ biến, gãy gọn, tự nhiên và dễ dùng**: ví dụ [an essential and generally positive quality], [pursued in a balanced and responsible manner], [powerful motivator for progress], [tend to place themselves under constant pressure], [resulting in burnout], [strained personal relationships], [compromise ethical standards], [stay resilient against challenges], [continually improve their skills], [contribute to higher productivity], [transform industries], [valuable quality], [excessive ambition].
+                  - **Grammar/Sentences**: Suggest effective, natural sentence structures suited for academic writing that help students gain 7+ for Grammatical Range & Accuracy (ví dụ dùng mệnh đề phân từ chỉ hệ quả tự nhiên: ", resulting in...", ", thereby harming...", ", ultimately contributing to...").`;
 
             const bodyStrategyInstruction = isBand56
                 ? `**CRITICAL INSTRUCTION FOR BODY PARAGRAPHS (BAND 5.0 - 6.0):**
@@ -274,15 +307,16 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey, targ
                 - **Tính đơn giản & rõ ràng**: Giữ các ý tưởng trực diện, dễ hiểu, dễ viết thành câu hoàn chỉnh.`
                 : `**CRITICAL INSTRUCTION FOR BODY PARAGRAPHS (BAND 7.0+):**
                 - **Cấu trúc thân bài 1 và 2 (GIỮ NGUYÊN 4 NHÃN):**
-                  - **Câu chủ đề**: Cô đọng, học thuật, định hướng sắc bén (Thân bài 1 bắt đầu bằng "Một mặt,", Thân bài 2 bắt đầu bằng "Mặt khác,").
+                  - **Câu chủ đề**: Cô đọng, học thuật, định hướng sắc bén, có sắc thái cẩn trọng/hedging hợp lý (Thân bài 1 bắt đầu bằng "Một mặt,", Thân bài 2 bắt đầu bằng "Mặt khác,").
                   - **Giải thích**: PHÂN TÍCH SÂU SẮC CHO DUY NHẤT 1 Ý TƯỞNG ĐƯỢC ĐƯA RA (Chỉ cần 1 ý tưởng duy nhất cho mỗi thân bài, KHÔNG liệt kê nhiều ý). Phân tích sâu về tác động theo nhiều mặt (cá nhân, xã hội, kinh tế, tâm lý, hoặc ngắn hạn vs dài hạn) và vẫn có liên quan chặt chẽ, trực tiếp đến đề bài.
+                    * **Tuyệt đối tránh Overgeneralization**: Khai thác tác động một cách thực tế, có tính chừng mực (hedging), nhìn nhận các đối tượng chịu ảnh hưởng cụ thể thay vì khái quát hoá tuyệt đối cho toàn bộ xã hội.
                     * **Phát triển ý theo tiến trình mạch lạc (Cohesion & Coherence)**: Sử dụng các mô hình:
                       + **Rhyme-theme progression / Theme-rheme progression**: Phân tách thông tin và mở rộng chủ đề một cách tự nhiên, liền mạch.
                       + **Constant progression**: Giữ vững đối tượng trung tâm và liên tục khai thác các chiều kích tác động sâu hơn.
                       + **Linear progression**: Rheme của câu trước trở thành Theme của câu tiếp theo (A dẫn đến B -> B tạo tiền đề dẫn đến C -> C tác động trực tiếp đến D).
-                  - **Ví dụ**: Cung cấp một ví dụ thực tế hoặc tình huống cụ thể, sắc sảo minh chứng rõ nét cho tác động đa chiều đã phân tích ở trên.
-                  - **Kết quả/ liên kết**: Đánh giá tổng hợp hoặc liên kết sâu sắc trở lại lập trường và câu hỏi đề bài.
-                - **Tiêu chuẩn từ vựng trong [ ]**: Sử dụng từ vựng và collocations phổ biến, chuẩn văn viết (formal written style), dễ sử dụng và tự nhiên, KHÔNG cần từ vựng "đắt giá", xa lạ hay quá khó hiểu.`;
+                  - **Ví dụ**: Cung cấp một ví dụ thực tế hoặc tình huống cụ thể, sắc sảo minh chứng rõ nét cho tác động đa chiều đã phân tích ở trên (tránh đưa ra số liệu bịa đặt hay khẳng định tuyệt đối).
+                  - **Kết quả/ liên kết**: Đánh giá tổng hợp hoặc liên kết sâu sắc trở lại lập trường và câu hỏi đề bài với ngôn từ học thuật, cẩn trọng (cautious academic conclusion).
+                - **Tiêu chuẩn từ vựng trong [ ]**: Sử dụng từ vựng và collocations phổ biến, chuẩn văn viết (formal written style), kết hợp các cụm từ hedging học thuật (\`[tend to]\`, \`[is likely to]\`, \`[can potentially]\`, \`[may contribute to]\`, \`[essential and generally positive quality]\`, \`[powerful motivator for progress]\`, \`[strained personal relationships]\`), dễ sử dụng và tự nhiên. TUYỆT ĐỐI KHÔNG dùng từ vựng "đắt giá" gượng gạo, sáo rỗng hoặc quá khó hiểu như \`[paramount importance]\`, \`[primary catalyst]\`, \`[devolving into]\`, \`[unbridled ambition]\`.`;
 
             const structureTemplate = isBand56
                 ? `**Mở bài**:
@@ -326,7 +360,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey, targ
 
             const systemInstruction = isBand56
                 ? "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline for Band 5.0 - 6.0 learners. Use **Bold** for the specific VIETNAMESE headers and labels provided. Do NOT merge points into paragraphs; keep each label on a new line starting with a bullet point (-). For main headers (Mở bài, Thân bài 1, Thân bài 2, Kết bài), do not use dashes or numbers. For Thân bài 1 and Thân bài 2, you MUST strictly use the 5 labels: **Câu chủ đề**:, **Giải thích 1**:, **Ví dụ 1**:, **Giải thích 2**:, **Kết quả/ liên kết**:. For 'Ví dụ 1', provide a specific location or context (such as a specific country, region, e.g. Vietnam, Japan, or real-life trend), but keep the example as simple and concise as possible for beginner learners. Suggest simple, clear English vocabulary in square brackets [ ]. Ensure 40/60 balance. Start Body 1 topic sentence with 'Một mặt,'. Start Body 2 topic sentence with 'Mặt khác,'."
-                : "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline for Band 7.0+ candidates. Use **Bold** for the specific VIETNAMESE headers and labels provided. Do NOT merge points into paragraphs; keep each label on a new line starting with a bullet point (-). For main headers (Mở bài, Thân bài 1, Thân bài 2, Kết bài), do not use dashes or numbers. For Thân bài 1 and Thân bài 2, maintain the 4 labels: **Câu chủ đề**:, **Giải thích**:, **Ví dụ**:, **Kết quả/ liên kết**:. In 'Giải thích', focus on ONLY 1 central idea, but analyze it deeply regarding multifaceted impacts (social, economic, psychological, individual, etc.) strictly relevant to the prompt, utilizing thematic progression (rhyme-theme progression, constant progression, or linear progression) for superior cohesion. Vocabulary suggestions in square brackets [ ] must be practical, common, and easy to use while strictly maintaining a proper formal written style (do not use rare, obscure, or overly complex 'fancy' words). Ensure 40/60 balance. Start Body 1 topic sentence with 'Một mặt,'. Start Body 2 topic sentence with 'Mặt khác,'.";
+                : "You are an expert IELTS writing instructor. Provide a structured, bulleted essay outline for Band 7.0+ candidates. Use **Bold** for the specific VIETNAMESE headers and labels provided. Do NOT merge points into paragraphs; keep each label on a new line starting with a bullet point (-). For main headers (Mở bài, Thân bài 1, Thân bài 2, Kết bài), do not use dashes or numbers. For Thân bài 1 and Thân bài 2, maintain the 4 labels: **Câu chủ đề**:, **Giải thích**:, **Ví dụ**:, **Kết quả/ liên kết**:. In 'Giải thích', focus on ONLY 1 central idea, but analyze it deeply regarding multifaceted impacts (social, economic, psychological, individual, etc.) strictly relevant to the prompt, utilizing thematic progression (rhyme-theme progression, constant progression, or linear progression) for superior cohesion. CRITICAL: Strictly avoid overgeneralization or sweeping, absolute claims (never state that 'everyone', 'all people', or 'always' happens). Mandate academic hedging in ideas and vocabulary (e.g. 'tend to', 'are likely to', 'can potentially', 'in many instances', 'may encourage'). Vocabulary suggestions in square brackets [ ] must be practical, natural, and simple to use while strictly maintaining a proper formal written style with hedging (avoid pretentious words like 'paramount importance', 'primary catalyst', or 'devolving into'). Ensure 40/60 balance. Start Body 1 topic sentence with 'Một mặt,'. Start Body 2 topic sentence with 'Mặt khác,'.";
 
             const contents = `Based on the essay prompt and the provided brainstorming questions, create a comprehensive, structured essay outline in Vietnamese.
                 
@@ -379,8 +413,7 @@ export const generateBrainstormingIdeas = async (prompt, questions, apiKey, targ
 
                 Language: Vietnamese for the outline content. English for the specific Vocabulary items inside square brackets [ ].`;
 
-            const response = await ai.models.generateContent({
-                model: brainstormingModel,
+            const response = await executeWithModelFallback(ai, {
                 contents,
                 config: {
                     systemInstruction,
@@ -418,24 +451,63 @@ export const generateWritingSuggestions = async (textToAnalyze, apiKey) => {
     
     try {
         const apiCall = async () => {
-            const systemInstruction = `You are a helpful IELTS Writing tutor. The user has selected a portion of text from their essay outline.
+            const systemInstruction = `You are an expert IELTS Writing instructor specializing in Band 7.0 - 7.5 writing.
+The user has highlighted/selected a part of their essay outline to generate an exemplary academic sentence ("Viết Câu Mẫu").
 
-**YOUR TASK:**
-Suggest the best way to write or use this selected text in a Band 7+ IELTS essay.
+**YOUR GOAL:**
+Transform the selected outline idea into EXACTLY ONE elegant, crystal-clear, and natural Band 7.0+ academic English sentence.
 
-**CRITICAL RULES FOR VOCABULARY:**
-1. **B2 - C1 Level & Authenticity:** You MUST suggest **natural, topic-specific vocabulary at B2 - C1 level**.
-2. **Avoid Obscurity:** Do NOT use complex, archaic, or overly "fancy" words that feel unnatural.
-3. **Naturalness:** Prioritize natural collocations used by native speakers.
-4. **Logic:** The suggestion must be appropriate for the context and topic.
+**CRITICAL PEDAGOGICAL PRINCIPLES (CONTRASTING POMPOUS/OVER-COMPLICATED WRITING VS. AUTHENTIC BAND 7.0+ MASTERY):**
+
+1. **SIMPLICITY & NATURALNESS OVER POMPOUSNESS (TỪ VỰNG TỰ NHIÊN, GÃY GỌN, KHÔNG CẦU KỲ/BÓNG BẨY):**
+   - High-scoring IELTS essays (Band 7.0 - 8.0) are characterized by precision, natural collocations, and seamless flow—NEVER by convoluted syntax or pretentious "thesaurus-dumping" (purple prose).
+   - **STRICTLY AVOID** bombastic, artificial, or archaic vocabulary:
+     * AVOID: "is of paramount importance and is an inherently positive characteristic as it acts as a driving force"
+     * AVOID: "primary catalyst for progress"
+     * AVOID: "devolving into selfishness"
+     * AVOID: "subject themselves to constant pressure that leads to mental burnout and the deterioration of personal relationships"
+     * AVOID: "unbridled ambition"
+     * AVOID: "resilient against adversity"
+   - **STRONGLY PREFER** clear, concise, and high-utility academic collocations:
+     * PREFER: "an essential and generally positive quality when pursued in a balanced and responsible manner"
+     * PREFER: "a powerful motivator for progress"
+     * PREFER: "leading to selfishness"
+     * PREFER: "they may place themselves under constant pressure, resulting in burnout and strained personal relationships"
+     * PREFER: "stay resilient against challenges"
+     * PREFER: "continually improve their skills, ultimately contributing to higher productivity"
+     * PREFER: "strive to achieve their potential"
+     * PREFER: "transform industries and improve the quality of life"
+     * PREFER: "excessive ambition" / "uncontrolled ambition"
+
+2. **SYSTEMATIC HEDGING & ANTI-OVERGENERALIZATION (BẮT BUỘC DÙNG HEDGING, TRÁNH TUYỆT ĐỐI HÓA):**
+   - NEVER make absolute or dogmatic statements (e.g. avoid: "will always be the key", "all people", "completely ruins", "inevitably destroys", "clearly indispensable").
+   - Actively employ prudent modal verbs, adverbs, and condition qualifiers:
+     * Modals: 'may encourage', 'can potentially', 'could facilitate'.
+     * Probability & tendency: 'tend to', 'are likely to', 'often result in', 'in many cases'.
+     * Scope qualifiers: 'some business leaders', 'many individuals', 'a significant proportion of'.
+     * Contextual conditions: 'when pursued in a balanced manner', 'when guided by ethical principles', 'if left unchecked'.
+
+3. **COHESION & SENTENCE STRUCTURE WITHOUT REPETITION (TRÁNH LẶP TỪ, KẾT CẤU GÃY GỌN):**
+   - NEVER repeat the same word or concept within the sentence (e.g., NEVER write "enhance productivity... boosting overall labor productivity").
+   - Prefer natural participial clauses for results or consequences:
+     * ", resulting in [noun phrase]"
+     * ", thereby [verb-ing]"
+     * ", ultimately contributing to [noun phrase]"
+     * ", which can [verb]"
+
+4. **REALISTIC, GROUNDED EXAMPLES (VÍ DỤ THỰC TẾ, VỪA PHẢI):**
+   - If writing an example, keep it realistic, concise, and plausible (e.g., "For instance, some ambitious business leaders may cut workplace safety standards or ignore environmental regulations to maximize profits, resulting in industrial accidents and ecological damage.") rather than exaggerated claims or celebrity name-dropping.
 
 **OTHER RULES:**
 1. **Input Analysis:** 
-   - If Input is a **Word/Collocation**: Provide a complete, natural sentence.
-   - If Input is a **Sentence/Idea**: Translate/Refine it into a single, strong academic English sentence using simple but precise words.
+   - If Input is a **Word/Collocation**: Provide a complete, natural sentence demonstrating how to use it in an academic essay with hedging.
+   - If Input is a **Sentence/Idea**: Translate/Refine it into a single, strong academic English sentence using simple but precise words and appropriate hedging.
 2. **Mandatory Vocabulary Usage:** 
-   - If the input text contains specific English vocabulary suggestions (e.g. inside brackets [ ]), you **MUST** use that exact vocabulary.
-3. **Quantity:** Provide EXACTLY ONE best suggestion.`;
+   - If the input text contains specific English vocabulary suggestions inside brackets [ ], incorporate them naturally.
+3. **Quantity & Tone:**
+   - Provide EXACTLY ONE best suggestion.
+   - Tone should be "Natural Academic (Band 7.0 - 7.5)".
+   - The "explanation" must be in concise Vietnamese explaining why the phrasing is natural, balanced, and appropriately hedged.`;
             
             const promptContent = `
             Context: IELTS Writing Task 1 or Task 2 Brainstorming.
@@ -455,8 +527,7 @@ Suggest the best way to write or use this selected text in a Band 7+ IELTS essay
 
             const contents = { parts: [{ text: promptContent }] };
             
-            const response = await ai.models.generateContent({
-                model: brainstormingModel,
+            const response = await executeWithModelFallback(ai, {
                 contents,
                 config: {
                     systemInstruction,
@@ -611,8 +682,7 @@ export const getIeltsFeedback = async (taskType, prompt, essay, imageBase64, api
         };
 
         const apiCall = async () => {
-            const response = await ai.models.generateContent({
-                model: feedbackModel,
+            const response = await executeWithModelFallback(ai, {
                 contents,
                 config: {
                     systemInstruction,
@@ -690,16 +760,21 @@ export const generateModelEssay = async (taskType, prompt, originalEssay, feedba
     try {
         const apiCall = async () => {
             const systemInstruction = `You are an expert IELTS Writing instructor. 
-            Your task is to rewrite the student's essay into a **Band 7.0 - 7.5** model essay in English.
+            Your task is to rewrite the student's essay into a pristine **Band 7.0 - 7.5** model essay in English.
             
             **CRITICAL RULES:**
             1. **Stick to the Student's Ideas:** Do NOT change the core arguments or ideas provided by the student. Just improve how they are expressed.
-            2. **Target Band 7.0 - 7.5:** Use appropriate academic vocabulary (B2-C1 level) and a variety of sentence structures. Do NOT aim for Band 9.0 (avoid overly obscure words).
-            3. **NO SPECIFIC STATISTICS:** For Task 2, NEVER use specific percentages or numbers in examples (e.g., do NOT say "70% of people"). Instead, use quantity phrases like "the majority of", "a significant proportion of", "a section of", or "many".
-            4. **Everyday Examples:** Use relatable, everyday examples rather than overly scientific or technical ones.
-            5. **Naturalness & Flow:** The essay must sound natural and flow logically.
-            6. **Structure:** Ensure a clear 4-paragraph structure (Intro, Body 1, Body 2, Conclusion). Use exactly ONE blank line between each paragraph.
-            7. **Language:** The output must be entirely in English.
+            2. **Target Band 7.0 - 7.5 (Clarity & Simplicity Over Pompousness):**
+               - Use natural, high-utility academic vocabulary (B2-C1 level) rather than archaic or overly "fancy" words.
+               - STRICTLY AVOID pretentious, pompous expressions (e.g., avoid "is of paramount importance and is an inherently positive characteristic as it acts as a driving force", "primary catalyst for progress", "devolving into", "unbridled", "deterioration of personal relationships").
+               - STRONGLY PREFER clear, natural phrasing (e.g., "is an essential and generally positive quality when pursued in a balanced and responsible manner", "a powerful motivator for progress", "leading to", "strained personal relationships", "stay resilient against challenges", "continually improve their skills, ultimately contributing to higher productivity").
+            3. **ACADEMIC HEDGING & AVOIDING OVERGENERALIZATION (MANDATORY):** Strictly avoid absolute claims (do NOT say "everyone will...", "this inevitably ruins...", "always", "will always be the key"). Employ cautious academic phrasing and hedging (e.g., "tend to", "are likely to", "can potentially lead to", "in many cases", "a significant proportion of people", "may encourage", "when guided by ethical principles").
+            4. **Avoid Repetition Within Sentences:** Ensure sentence structures do not repeat the same words or concepts (e.g., never say "enhance productivity... boosting overall labor productivity").
+            5. **NO SPECIFIC STATISTICS:** For Task 2, NEVER use specific percentages or numbers in examples (e.g., do NOT say "70% of people"). Instead, use quantity phrases like "the majority of", "a significant proportion of", "a section of", or "many".
+            6. **Grounded Examples:** Use plausible, relatable real-world examples rather than celebrity hero-worship or overly dramatic scenarios.
+            7. **Naturalness & Flow:** The essay must sound natural and flow logically with seamless cohesion.
+            8. **Structure:** Ensure a clear 4-paragraph structure (Intro, Body 1, Body 2, Conclusion). Use exactly ONE blank line between each paragraph.
+            9. **Language:** The output must be entirely in English.
             
             **INPUT PROVIDED:**
             - Task Type: ${taskType}
@@ -710,8 +785,7 @@ export const generateModelEssay = async (taskType, prompt, originalEssay, feedba
 
             const promptContent = `Based on the student's original essay and the feedback provided, rewrite the essay to reach a Band 7.0+ standard while keeping the same core ideas.`;
 
-            const response = await ai.models.generateContent({
-                model: brainstormingModel, // Use the faster model for this
+            const response = await executeWithModelFallback(ai, {
                 contents: { parts: [{ text: promptContent }] },
                 config: {
                     systemInstruction,
